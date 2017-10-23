@@ -6,6 +6,8 @@ export default SelectBoxKitComponent.extend({
   autoFilterable: true,
   headerComponent: "combo-box/combo-box-header",
 
+  pluginApiKeys: ["combo-box"],
+
   caretUpIcon: "caret-up",
   caretDownIcon: "caret-down",
   clearable: false,

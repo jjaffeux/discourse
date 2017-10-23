@@ -4,8 +4,18 @@ import computed from "ember-addons/ember-computed-decorators";
 import UtilsMixin from "select-box-kit/mixins/utils";
 import DomHelpersMixin from "select-box-kit/mixins/dom-helpers";
 import KeyboardMixin from "select-box-kit/mixins/keyboard";
+import PluginApiMixin from "select-box-kit/mixins/plugin-api";
 
-export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin, {
+const _addContentCallbacks = {};
+export function appendContentToSelectBoxKit(pluginApiKey, contentFunction) {
+  if (Ember.isNone(_addContentCallbacks[pluginApiKey])) {
+    _addContentCallbacks[pluginApiKey] = [];
+  }
+
+  _addContentCallbacks[pluginApiKey].push(contentFunction);
+}
+
+export default Ember.Component.extend(PluginApiMixin, UtilsMixin, DomHelpersMixin, KeyboardMixin, {
   layoutName: "select-box-kit/templates/components/select-box-kit",
   classNames: "select-box-kit",
   classNameBindings: [
@@ -51,6 +61,7 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   allowValueMutation: true,
   autoSelectFirst: true,
 
+  pluginApiKeys: ["select-box-kit"],
   init() {
     this._super();
 
@@ -167,6 +178,13 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   @computed("content.[]")
   computedContent(content) {
     this._mutateValue();
+
+    this.get("pluginApiKeys").forEach((key) => {
+      (Ember.get(_addContentCallbacks, key) || []).forEach((c) => {
+        content = content.concat(c(this));
+      });
+    });
+
     return this.formatContents(content || []);
   },
 

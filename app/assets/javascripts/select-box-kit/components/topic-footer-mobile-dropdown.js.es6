@@ -9,6 +9,7 @@ export default ComboBoxComponent.extend({
   autoFilterable: false,
   allowValueMutation: false,
   autoSelectFirst: false,
+  pluginApiKeys: ["topic-footer-mobile-dropdown"],
 
   @on("didReceiveAttrs")
   _setTopicFooterMobileDropdownOptions() {
