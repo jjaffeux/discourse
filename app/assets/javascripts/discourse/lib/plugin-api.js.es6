@@ -20,7 +20,7 @@ import { addPostTransformCallback } from 'discourse/widgets/post-stream';
 import { attachAdditionalPanel } from 'discourse/widgets/header';
 import { registerIconRenderer, replaceIcon } from 'discourse-common/lib/icon-library';
 import { addNavItem } from 'discourse/models/nav-item';
-import { appendContentToSelectBoxKit } from 'select-box-kit/components/select-box-kit';
+import { selectBoxKit } from 'select-box-kit/mixins/plugin-api';
 
 
 // If you add any methods to the API ensure you bump up this number
@@ -574,17 +574,17 @@ class PluginApi {
 
   /**
   *
-  * Append content to the existing content of a select-box-kit instance
+  * Access SelectBoxKit plugin api
   *
   * Example:
   *
-  * appendContentToSelectBox("topic-footer-mobile-dropdown", (component) => [{
+  * selectBoxKit("topic-footer-mobile-dropdown").appendContent((component) => [{
   *   name: "discourse",
   *   id: 1
   * }])
   */
-  appendContentToSelectBoxKit(pluginApiKey, callback) {
-    appendContentToSelectBoxKit(pluginApiKey, callback);
+  selectBoxKit(pluginApiKey) {
+    return selectBoxKit(pluginApiKey);
   }
 }
 

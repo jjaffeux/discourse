@@ -1,4 +1,5 @@
 import componentTest from 'helpers/component-test';
+import { withPluginApi } from 'discourse/lib/plugin-api';
 
 moduleForComponent('select-box-kit', { integration: true });
 
@@ -288,6 +289,51 @@ componentTest('supports mutating value when no value given', {
   test(assert) {
     andThen(() => {
       assert.equal(this.get("value"), "1");
+    });
+  }
+});
+
+componentTest('support appending content through plugin api', {
+  template: '{{select-box-kit content=content}}',
+
+  beforeEach() {
+    withPluginApi('0.8.11', api => {
+      api.selectBoxKit("select-box-kit")
+         .appendContent(() => [{ id: "2", name: "regis"}] );
+    });
+
+    this.set("content", [{ id: "1", name: "robin"}]);
+  },
+
+  test(assert) {
+    expandSelectBox();
+
+    andThen(() => {
+      assert.equal(selectBox().rows.length, 2);
+      assert.equal(selectBox().rows.eq(1).data("name"), "regis");
+    });
+  }
+});
+
+
+componentTest('support prepending content through plugin api', {
+  template: '{{select-box-kit content=content}}',
+
+  beforeEach() {
+    withPluginApi('0.8.11', api => {
+      api.selectBoxKit("select-box-kit")
+         .prependContent(() => [{ id: "2", name: "regis"}] );
+    });
+
+    this.set("content", [{ id: "1", name: "robin"}]);
+  },
+
+  test(assert) {
+    expandSelectBox();
+
+    andThen(() => {
+      assert.equal(selectBox().rows.length, 2);
+      assert.equal(selectBox().rows.eq(0).data("name"), "regis");
     });
   }
 });
