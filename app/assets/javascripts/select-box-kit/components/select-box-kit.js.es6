@@ -126,6 +126,10 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     }
   },
 
+  contentForValue(value) {
+    return this.get("computedContent").findBy("value", this._castInteger(value));
+  },
+
   formatContent(content) {
     return {
       value: this.valueForContent(content),
@@ -318,6 +322,12 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   },
 
   defaultOnSelect(value) {
+    const content = this.contentForValue(value);
+    if (content.originalContent.action) {
+      content.originalContent.action();
+      return;
+    }
+
     if (value === "") { value = null; }
 
     this.setProperties({
