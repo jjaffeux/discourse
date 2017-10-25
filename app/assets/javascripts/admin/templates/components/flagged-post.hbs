@@ -115,7 +115,7 @@
           action="showAgreeFlagModal"
           ellipsis=true}}
 
-        {{admin-agree-dropdown post=flaggedPost onRemoveAfterPromise=(action "onRemoveAfterPromise")}}
+        {{admin-agree-flag-dropdown post=flaggedPost onRemoveAfterPromise=(action "onRemoveAfterPromise")}}
 
         {{#if flaggedPost.postHidden}}
           {{d-button

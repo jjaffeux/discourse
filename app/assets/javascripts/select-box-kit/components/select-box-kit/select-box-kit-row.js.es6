@@ -11,11 +11,15 @@ export default Ember.Component.extend(UtilsMixin, {
   attributeBindings: [
     "title",
     "content.value:data-value",
-    "content.name:data-name"
+    "name:data-name"
   ],
   classNameBindings: ["isHighlighted", "isSelected"],
 
-  title: Ember.computed.alias("content.name"),
+  @computed("options.dataSources.titleForRowInSection")
+  title(titleForRowInSection) { return titleForRowInSection(this); },
+
+  @computed("options.dataSources.nameForRowInSection")
+  name(nameForRowInSection) { return nameForRowInSection(this); },
 
   @computed("templateForRow")
   template(templateForRow) { return templateForRow(this); },

@@ -4,8 +4,9 @@ import computed from "ember-addons/ember-computed-decorators";
 import UtilsMixin from "select-box-kit/mixins/utils";
 import DomHelpersMixin from "select-box-kit/mixins/dom-helpers";
 import KeyboardMixin from "select-box-kit/mixins/keyboard";
+import DataSourcesMixin from "select-box-kit/mixins/data-sources";
 
-export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin, {
+export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin, DataSourcesMixin, {
   layoutName: "select-box-kit/templates/components/select-box-kit",
   classNames: "select-box-kit",
   classNameBindings: [
@@ -37,10 +38,14 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   filterPlaceholder: "select_box.filter_placeholder",
   filterIcon: "search",
   rowComponent: "select-box-kit/select-box-kit-row",
+  rowComponentOptions: Ember.Object.create({
+    dataSources: Ember.Object.create()
+  }),
   noneRowComponent: "select-box-kit/select-box-kit-none-row",
   createRowComponent: "select-box-kit/select-box-kit-create-row",
   filterComponent: "select-box-kit/select-box-kit-filter",
   headerComponent: "select-box-kit/select-box-kit-header",
+  headerComponentOptions: Ember.Object.create(),
   collectionComponent: "select-box-kit/select-box-kit-collection",
   collectionHeight: 200,
   verticalOffset: 0,
@@ -50,6 +55,16 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   allowAny: false,
   allowValueMutation: true,
   autoSelectFirst: true,
+
+  @on("didReceiveAttrs")
+  _setSelectBoxKitOptions() {
+    this
+      .get("rowComponentOptions.dataSources")
+      .setProperties({
+        titleForRowInSection: this.get("titleForRowInSection"),
+        nameForRowInSection: this.get("nameForRowInSection"),
+      });
+  },
 
   init() {
     this._super();

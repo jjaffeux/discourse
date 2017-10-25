@@ -1,11 +1,30 @@
+import { iconHTML } from 'discourse-common/lib/icon-library';
 import DropdownSelectBox from "select-box-kit/components/dropdown-select-box";
 import computed from "ember-addons/ember-computed-decorators";
+import { on } from "ember-addons/ember-computed-decorators";
 
 export default DropdownSelectBox.extend({
-  removeAfter: null,
-  nameProperty: "label",
+  headerText: "admin.flags.agree",
+  headerIcon: "thumbs-o-up",
+  classNames: ["admin-agree-flag-dropdown"],
 
   adminTools: Ember.inject.service(),
+
+  @on("didReceiveAttrs")
+  _setAdminAgreeDropdownOptions() {
+    this.set("headerComponentOptions.selectedName", `${I18n.t(this.get("headerText"))}...`);
+    this.set("headerComponentOptions.icon", iconHTML("thumbs-o-up"));
+  },
+
+  titleForRowInSection(rowComponent) {
+    const title = rowComponent.get("content.originalContent.title");
+    return I18n.t(title);
+  },
+
+  nameForRowInSection(rowComponent) {
+    const label = rowComponent.get("content.originalContent.label");
+    return I18n.t(label);
+  },
 
   @computed("adminTools", "post.user")
   spammerDetails(adminTools, user) {
@@ -20,35 +39,39 @@ export default DropdownSelectBox.extend({
 
     if (post.user_deleted) {
       content.push({
+        title: "admin.flags.agree_flag_restore_post_title",
         icon: "eye",
         id: "confirm-agree-restore",
         action: () => this.send("perform", "restore"),
-        label: I18n.t("admin.flags.agree_flag_restore_post"),
+        label: "admin.flags.agree_flag_restore_post",
       });
     } else {
-      if (!post.postHidden) {
+      if (post.get("postHidden") === false) {
         content.push({
+          title: "admin.flags.agree_flag_hide_post_title",
           icon: "eye-slash",
           action: () => this.send("perform", "hide"),
           id: "confirm-agree-hide",
-          label: I18n.t("admin.flags.agree_flag_hide_post"),
+          label: "admin.flags.agree_flag_hide_post",
         });
       }
     }
 
     content.push({
+      title: "admin.flags.agree_flag_title",
       icon: "thumbs-o-up",
       id: "confirm-agree-keep",
       action: () => this.send("perform", "keep"),
-      label: I18n.t("admin.flags.agree_flag"),
+      label: "admin.flags.agree_flag",
     });
 
     if (canDeleteSpammer) {
       content.push({
+        title: "admin.flags.delete_spammer_title",
         icon: "exclamation-triangle",
         id: "delete-spammer",
         action: () => this.send("deleteSpammer"),
-        label: I18n.t("admin.flags.delete_spammer"),
+        label: "admin.flags.delete_spammer",
       });
     }
 
