@@ -21,16 +21,16 @@ export default DropdownSelectBoxComponent.extend({
   showFullTitle: true,
 
   @on("didReceiveAttrs", "didUpdateAttrs")
-  _setComponentOptions() {
-    this.set("headerComponentOptions", Ember.Object.create({
+  _setNotificationsButtonOptions() {
+    this.get("headerComponentOptions").setProperties({
       i18nPrefix: this.get("i18nPrefix"),
       showFullTitle: this.get("showFullTitle"),
-    }));
+    });
 
-    this.set("rowComponentOptions", Ember.Object.create({
+    this.get("rowComponentOptions").setProperties({
       i18nPrefix: this.get("i18nPrefix"),
       i18nPostfix: this.get("i18nPostfix")
-    }));
+    });
   },
 
   @computed("computedValue")

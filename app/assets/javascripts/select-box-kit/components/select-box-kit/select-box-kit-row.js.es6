@@ -1,10 +1,8 @@
-import { iconHTML } from 'discourse-common/lib/icon-library';
 import { on } from 'ember-addons/ember-computed-decorators';
 import computed from 'ember-addons/ember-computed-decorators';
 const { run, isPresent } = Ember;
-import UtilsMixin from "select-box-kit/mixins/utils";
 
-export default Ember.Component.extend(UtilsMixin, {
+export default Ember.Component.extend({
   layoutName: "select-box-kit/templates/components/select-box-kit/select-box-kit-row",
   classNames: "select-box-kit-row",
   tagName: "li",
@@ -13,51 +11,58 @@ export default Ember.Component.extend(UtilsMixin, {
     "content.value:data-value",
     "name:data-name"
   ],
-  classNameBindings: ["isHighlighted", "isSelected"],
+  classNameBindings: ["isHighlighted", "isSelected", "customClassNamesBindings"],
 
-  @computed("options.dataSources.titleForRowInSection")
-  title(titleForRowInSection) { return titleForRowInSection(this); },
+  delegates: Ember.computed.alias("options.delegates"),
+  dataSources: Ember.computed.alias("options.dataSources"),
 
-  @computed("options.dataSources.nameForRowInSection")
-  name(nameForRowInSection) { return nameForRowInSection(this); },
+  @computed("row", "section")
+  indexPath(row, section) { return Ember.Object.create({ row, section }); },
+
+  @computed("dataSources.classNamesForRowAtIndexPath", "indexPath", "isHighlighted", "isSelected", "content.@each")
+  customClassNamesBindings(classNamesForRow, indexPath) {
+    return classNamesForRow(this, indexPath);
+  },
+
+  @computed("dataSources.iconForRowAtIndexPath", "indexPath", "content.@each")
+  icon(iconForRow, indexPath) { return iconForRow(this, indexPath); },
+
+  @computed("dataSources.titleForRowAtIndexPath", "indexPath")
+  title(titleForRowAtIndexPath, indexPath) {
+    return titleForRowAtIndexPath(this, indexPath);
+  },
+
+  @computed("dataSources.nameForRowAtIndexPath", "indexPath")
+  name(nameForRowAtIndexPath, indexPath) {
+    return nameForRowAtIndexPath(this, indexPath);
+  },
 
   @computed("templateForRow")
   template(templateForRow) { return templateForRow(this); },
 
-  @on("didReceiveAttrs")
-  _setSelectionState() {
-    const contentValue = this.get("content.value");
-    this.set("isSelected", this.get("value") === contentValue);
-    this.set("isHighlighted", this._castInteger(this.get("highlightedValue")) === this._castInteger(contentValue));
+  @computed("delegates.shouldSelectRowAtIndexPath", "indexPath", "selectedIndexPaths.[]")
+  isSelected(shouldSelectRowAtIndexPath, indexPath) {
+    return shouldSelectRowAtIndexPath(this, indexPath);
   },
 
-  @on("willDestroyElement")
-  _clearDebounce() {
-    const hoverDebounce = this.get("hoverDebounce");
-
-    if (isPresent(hoverDebounce)) {
-      run.cancel(hoverDebounce);
-    }
-  },
-
-  @computed("content.originalContent.icon", "content.originalContent.iconClass")
-  icon(icon, cssClass) {
-    if (icon) {
-      return iconHTML(icon, { class: cssClass });
-    }
-
-    return null;
+  @computed("delegates.shouldHighlightRowAtIndexPath", "indexPath", "highlightedIndexPaths.[]")
+  isHighlighted(shouldHighlightRowAtIndexPath, indexPath) {
+    return shouldHighlightRowAtIndexPath(this, indexPath);
   },
 
   mouseEnter() {
-    this.set("hoverDebounce", run.debounce(this, this._sendOnHighlightAction, 32));
+    this.set("mouseEnterDebounce", run.debounce(this, this._sendOnHighlightAction, 32));
   },
 
-  click() {
-    this.sendAction("onSelect", this.get("content.value"));
+  click() { this.get("delegates.didSelectRowAtIndexPath")(this, this.get("indexPath")); },
+
+  @on("willDestroyElement")
+  _clearDebounce() {
+    const mouseEnter = this.get("mouseEnter");
+    if (isPresent(mouseEnter)) { run.cancel(mouseEnter); }
   },
 
   _sendOnHighlightAction() {
-    this.sendAction("onHighlight", this.get("content.value"));
+    this.get("delegates.didHighlightRowAtIndexPath")(this, this.get("indexPath"));
   }
 });

@@ -28,9 +28,12 @@
   }}
 {{/if}}
 
-{{#each filteredContent as |content|}}
+{{#each filteredContent as |content index|}}
+  {{selectedIndexPaths.0.row}}
   {{component rowComponent
     content=content
+    section=0
+    row=index
     templateForRow=templateForRow
     titleForRow=titleForRow
     iconForRow=iconForRow
@@ -39,6 +42,8 @@
     onHighlight=onHighlight
     value=computedValue
     options=rowComponentOptions
+    selectedIndexPaths=selectedIndexPaths
+    highlightedIndexPaths=highlightedIndexPaths
   }}
 {{else}}
   {{#if noContentLabel}}

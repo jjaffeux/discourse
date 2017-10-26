@@ -190,7 +190,7 @@
       padding: 0;
       margin: 0;
 
-      &:hover .select-box-kit-row.is-highlighted:hover {
+      &:hover .select-box-kit-row:not(.is-selected).is-highlighted:hover {
         background: $tertiary-low;
       }
     }

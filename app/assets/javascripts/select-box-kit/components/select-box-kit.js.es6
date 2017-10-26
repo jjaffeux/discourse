@@ -5,8 +5,9 @@ import UtilsMixin from "select-box-kit/mixins/utils";
 import DomHelpersMixin from "select-box-kit/mixins/dom-helpers";
 import KeyboardMixin from "select-box-kit/mixins/keyboard";
 import DataSourcesMixin from "select-box-kit/mixins/data-sources";
+import DelegatesMixin from "select-box-kit/mixins/delegates";
 
-export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin, DataSourcesMixin, {
+export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin, DelegatesMixin, DataSourcesMixin, {
   layoutName: "select-box-kit/templates/components/select-box-kit",
   classNames: "select-box-kit",
   classNameBindings: [
@@ -39,7 +40,8 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   filterIcon: "search",
   rowComponent: "select-box-kit/select-box-kit-row",
   rowComponentOptions: Ember.Object.create({
-    dataSources: Ember.Object.create()
+    dataSources: Ember.Object.create(),
+    delegates: Ember.Object.create(),
   }),
   noneRowComponent: "select-box-kit/select-box-kit-none-row",
   createRowComponent: "select-box-kit/select-box-kit-create-row",
@@ -56,13 +58,27 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   allowValueMutation: true,
   autoSelectFirst: true,
 
+  selectedIndexPaths: Ember.A(),
+  highlightedIndexPaths: Ember.A(),
+
   @on("didReceiveAttrs")
   _setSelectBoxKitOptions() {
     this
       .get("rowComponentOptions.dataSources")
       .setProperties({
-        titleForRowInSection: this.get("titleForRowInSection"),
-        nameForRowInSection: this.get("nameForRowInSection"),
+        titleForRowAtIndexPath: this.get("titleForRowAtIndexPath").bind(this),
+        nameForRowAtIndexPath: this.get("nameForRowAtIndexPath").bind(this),
+        classNamesForRowAtIndexPath: this.get("classNamesForRowAtIndexPath").bind(this),
+        iconForRowAtIndexPath: this.get("iconForRowAtIndexPath").bind(this),
+      });
+
+    this
+      .get("rowComponentOptions.delegates")
+      .setProperties({
+        didHighlightRowAtIndexPath: this.get("didHighlightRowAtIndexPath").bind(this),
+        didSelectRowAtIndexPath: this.get("didSelectRowAtIndexPath").bind(this),
+        shouldSelectRowAtIndexPath: this.get("shouldSelectRowAtIndexPath").bind(this),
+        shouldHighlightRowAtIndexPath: this.get("shouldHighlightRowAtIndexPath").bind(this)
       });
   },
 
@@ -260,17 +276,21 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
 
     if (isNone(this.get("highlightedValue")) && !isEmpty(filteredContent)) {
       this.set("highlightedValue", get(filteredContent, "firstObject.value"));
+      this.get("highlightedIndexPaths").pushObject(Ember.Object.create({ section: 0, row: 0 }));
       return;
     }
 
     if (display === true && isEmpty(filteredContent)) {
       this.set("highlightedValue", this.get("filter"));
+      this.get("highlightedIndexPaths").pushObject(Ember.Object.create({ section: 0, row: 0 }));
     }
     else if (!isEmpty(filteredContent)) {
       this.set("highlightedValue", get(filteredContent, "firstObject.value"));
+      this.get("highlightedIndexPaths").pushObject(Ember.Object.create({ section: 0, row: 0 }));
     }
     else if (isEmpty(filteredContent) && isPresent(none) && display === false) {
       this.set("highlightedValue", get(none, "value"));
+      this.get("highlightedIndexPaths").pushObject(Ember.Object.create({ section: 0, row: 0 }));
     }
   },
 
@@ -317,12 +337,16 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
       this.set("filter", filter);
     },
 
-    onHighlight(value) {
+    onHighlight(value, indexPath) {
       this.set("highlightedValue", value);
+
+      this.get("highlightedIndexPaths").pushObject(indexPath);
     },
 
     onClearSelection() {
       this.send("onSelect", null);
+
+      // this.set("selectedIndexPaths", []);
     },
 
     onSelect(value) {
@@ -333,6 +357,8 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     onDeselect() {
       this.defaultOnDeselect();
       this.set("value", null);
+
+      // this.set("selectedIndexPaths", []);
     }
   },
 
@@ -347,6 +373,7 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
 
     this.setProperties({
       highlightedValue: null,
+      highlightedIndexPaths: Ember.A(),
       isExpanded: false,
       filter: ""
     });
@@ -507,6 +534,8 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
       Ember.run.scheduleOnce("sync", () => {
         const firstValue = this.get(`content.0.${this.get("valueAttribute")}`);
         this.set("value", firstValue);
+
+        // this.set("selectedIndexPaths", [Ember.Object.create({ section: 0, row: 0 })]);
       });
     }
   }

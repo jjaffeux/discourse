@@ -1,9 +1,13 @@
 export default Ember.Mixin.create({
-  titleForRowInSection(rowComponent) {
+  titleForRowAtIndexPath(rowComponent) {
     return rowComponent.get("content.name");
   },
 
-  nameForRowInSection(rowComponent) {
+  nameForRowAtIndexPath(rowComponent) {
     return rowComponent.get("content.name");
-  }
+  },
+
+  classNamesForRowAtIndexPath() { return null; },
+
+  iconForRowAtIndexPath() { return null; },
 });
