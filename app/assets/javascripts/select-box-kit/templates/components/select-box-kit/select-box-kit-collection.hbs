@@ -1,50 +1,21 @@
-{{#if none}}
-  {{#if selectedContent}}
-    {{component noneRowComponent
-      content=none
-      templateForRow=templateForNoneRow
-      titleForRow=titleForRow
-      iconForRow=iconForRow
-      highlightedValue=highlightedValue
-      onClearSelection=onClearSelection
-      onHighlight=onHighlight
-      value=computedValue
-      options=rowComponentOptions
-    }}
-  {{/if}}
-{{/if}}
-
-{{#if shouldDisplayCreateRow}}
-  {{component createRowComponent
-    content=createRowContent
-    templateForRow=templateForCreateRow
-    titleForRow=titleForRow
-    iconForRow=iconForRow
-    highlightedValue=highlightedValue
-    onHighlight=onHighlight
-    onCreateContent=onCreateContent
-    value=computedValue
-    options=rowComponentOptions
-  }}
-{{/if}}
-
-{{#each filteredContent as |content index|}}
-  {{selectedIndexPaths.0.row}}
-  {{component rowComponent
-    content=content
-    section=0
-    row=index
+{{#each rows as |row|}}
+  {{!-- {{component rowComponent
+    content=c
+    section=section
+    row=row
     templateForRow=templateForRow
-    titleForRow=titleForRow
-    iconForRow=iconForRow
-    highlightedValue=highlightedValue
-    onSelect=onSelect
-    onHighlight=onHighlight
-    value=computedValue
     options=rowComponentOptions
+    onUnHighlightRow=onUnHighlightRow
+    onHighlightRow=onHighlightRow
+    onSelectRow=onSelectRow
+    onClearSelection=onClearSelection
     selectedIndexPaths=selectedIndexPaths
     highlightedIndexPaths=highlightedIndexPaths
-  }}
+  }} --}}
+  {{!-- {{{row}}} --}}
+
+  {{!-- {{fast-row onHighlightRow=onHighlightRow}} --}}
+  {{mount-widget widget="select-box-kit-row" onHighlightRow=onHighlightRow}}
 {{else}}
   {{#if noContentLabel}}
     <li class="select-box-kit-row no-content">

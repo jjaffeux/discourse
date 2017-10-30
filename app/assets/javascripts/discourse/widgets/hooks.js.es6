@@ -5,6 +5,7 @@ const CLICK_OUTSIDE_ATTRIBUTE_NAME = '_discourse_click_outside_widget';
 const KEY_UP_ATTRIBUTE_NAME        = '_discourse_key_up_widget';
 const KEY_DOWN_ATTRIBUTE_NAME      = '_discourse_key_down_widget';
 const DRAG_ATTRIBUTE_NAME          = '_discourse_drag_widget';
+const MOUSE_ENTER_ATTRIBUTE_NAME   = '_discourse_mouse_enter_widget';
 
 function buildHook(attributeName, setAttr) {
   return class {
@@ -33,6 +34,7 @@ export const WidgetClickOutsideHook = buildHook(CLICK_OUTSIDE_ATTRIBUTE_NAME, 'd
 export const WidgetKeyUpHook = buildHook(KEY_UP_ATTRIBUTE_NAME);
 export const WidgetKeyDownHook = buildHook(KEY_DOWN_ATTRIBUTE_NAME);
 export const WidgetDragHook = buildHook(DRAG_ATTRIBUTE_NAME);
+export const WidgetMouseEnterHook = buildHook(MOUSE_ENTER_ATTRIBUTE_NAME);
 
 
 function nodeCallback(node, attrName, cb) {
@@ -51,6 +53,7 @@ function findWidget(node, attrName) {
 }
 
 let _watchingDocument = false;
+let _watchingMouseEnterDocument = false;
 let _dragging;
 
 const DRAG_NAME       = "mousemove.discourse-widget-drag";
@@ -65,6 +68,17 @@ function cancelDrag(e) {
     _dragging = null;
   }
 }
+
+WidgetMouseEnterHook.setupDocumentCallback = function(element) {
+  $(element).on('mouseenter.discource-widget-mouse-enter', e => {
+    const widget = findWidget(e.target, MOUSE_ENTER_ATTRIBUTE_NAME);
+    if (widget) {
+      e.preventDefault();
+      e.stopPropagation();
+      widget.mouseEnter(e);
+    }
+  });
+};
 
 WidgetClickHook.setupDocumentCallback = function() {
   if (_watchingDocument) { return; }

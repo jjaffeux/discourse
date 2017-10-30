@@ -1,13 +1,51 @@
-const { get, isNone, isEmpty, isPresent } = Ember;
-import { on, observes } from "ember-addons/ember-computed-decorators";
+const { get, isNone, isEmpty } = Ember;
+import { on } from "ember-addons/ember-computed-decorators";
 import computed from "ember-addons/ember-computed-decorators";
 import UtilsMixin from "select-box-kit/mixins/utils";
 import DomHelpersMixin from "select-box-kit/mixins/dom-helpers";
 import KeyboardMixin from "select-box-kit/mixins/keyboard";
-import DataSourcesMixin from "select-box-kit/mixins/data-sources";
-import DelegatesMixin from "select-box-kit/mixins/delegates";
 
-export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin, DelegatesMixin, DataSourcesMixin, {
+export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin, {
+  baseRowTemplate(innerTemplate, content) {
+    const classNames = content.classNames || [];
+
+    classNames.push("select-box-kit-row");
+
+    if (this.shouldSelectRowInSection(content.row, 0)) {
+      classNames.push("is-selected");
+    }
+
+    if (this.shouldHighlightRowInSection(content.row, 0)) {
+      classNames.push("is-highlighted");
+    }
+
+    return `
+      <li title="${content.title || content.name}"
+          class="${classNames.join(" ")}"
+          data-value="${content.value}"
+          data-name="${content.name}"
+          data-row="${content.row}">
+        ${innerTemplate}
+      </li>
+    `;
+  },
+
+  shouldHighlightRowInSection(row, section) {
+    const paths = this.get("highlightedIndexPaths").find((x) => {
+      return x.row === row && x.section === section;
+    });
+
+    return !isEmpty(paths);
+  },
+
+  shouldSelectRowInSection(row, section) {
+    const paths = this.get("selectedIndexPaths").find((x) => {
+      return x.row === row && x.section === section;
+    });
+
+    return !isEmpty(paths);
+  },
+
   layoutName: "select-box-kit/templates/components/select-box-kit",
   classNames: "select-box-kit",
   classNameBindings: [
@@ -24,7 +62,7 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   isExpanded: false,
   isFocused: false,
   isHidden: false,
-  renderBody: false,
+  bodyRendered: false,
   tabindex: 0,
   scrollableParentSelector: ".modal-body",
   value: null,
@@ -38,13 +76,7 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   filter: "",
   filterPlaceholder: "select_box.filter_placeholder",
   filterIcon: "search",
-  rowComponent: "select-box-kit/select-box-kit-row",
-  rowComponentOptions: Ember.Object.create({
-    dataSources: Ember.Object.create(),
-    delegates: Ember.Object.create(),
-  }),
-  noneRowComponent: "select-box-kit/select-box-kit-none-row",
-  createRowComponent: "select-box-kit/select-box-kit-create-row",
+  rowComponentOptions: null,
   filterComponent: "select-box-kit/select-box-kit-filter",
   headerComponent: "select-box-kit/select-box-kit-header",
   headerComponentOptions: Ember.Object.create(),
@@ -57,30 +89,8 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   allowAny: false,
   allowValueMutation: true,
   autoSelectFirst: true,
-
-  selectedIndexPaths: Ember.A(),
-  highlightedIndexPaths: Ember.A(),
-
-  @on("didReceiveAttrs")
-  _setSelectBoxKitOptions() {
-    this
-      .get("rowComponentOptions.dataSources")
-      .setProperties({
-        titleForRowAtIndexPath: this.get("titleForRowAtIndexPath").bind(this),
-        nameForRowAtIndexPath: this.get("nameForRowAtIndexPath").bind(this),
-        classNamesForRowAtIndexPath: this.get("classNamesForRowAtIndexPath").bind(this),
-        iconForRowAtIndexPath: this.get("iconForRowAtIndexPath").bind(this),
-      });
-
-    this
-      .get("rowComponentOptions.delegates")
-      .setProperties({
-        didHighlightRowAtIndexPath: this.get("didHighlightRowAtIndexPath").bind(this),
-        didSelectRowAtIndexPath: this.get("didSelectRowAtIndexPath").bind(this),
-        shouldSelectRowAtIndexPath: this.get("shouldSelectRowAtIndexPath").bind(this),
-        shouldHighlightRowAtIndexPath: this.get("shouldHighlightRowAtIndexPath").bind(this)
-      });
-  },
+  selectedIndexPaths: [],
+  highlightedIndexPaths: [],
 
   init() {
     this._super();
@@ -121,8 +131,8 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
 
   createFunction(input) {
     return (selectedBox) => {
-      const formatedContent = selectedBox.formatContent(input);
-      formatedContent.meta.generated = true;
+      const formatedContent = selectedBox.formatContentForRowInSection(input);
+      formatedContent.generated = true;
       return formatedContent;
     };
   },
@@ -130,17 +140,13 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   filterFunction(content) {
     return selectBox => {
       const filter = selectBox.get("filter").toLowerCase();
-      return _.filter(content, c => {
-        return get(c, "name").toLowerCase().indexOf(filter) > -1;
+      return content.filter(c => {
+        return c.name.toLowerCase().indexOf(filter) > -1;
       });
     };
   },
 
   nameForContent(content) {
-    if (isNone(content)) {
-      return null;
-    }
-
     if (typeof content === "object") {
       return get(content, this.get("nameProperty"));
     }
@@ -151,27 +157,100 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   valueForContent(content) {
     switch (typeof content) {
     case "string":
-      return this._castInteger(content);
+    case "number":
+      return content;
     default:
-      return this._castInteger(get(content, this.get("valueAttribute")));
+      return get(content, this.get("valueAttribute"));
     }
   },
 
   contentForValue(value) {
-    return this.get("computedContent").findBy("value", this._castInteger(value));
+    return this.get("formatedContent").findBy("value", this._castInteger(value));
   },
 
-  formatContent(content) {
+  formatContentForRowInSection(content, row) {
     return {
       value: this.valueForContent(content),
       name: this.nameForContent(content),
-      originalContent: content,
-      meta: { generated: false }
+      row,
+      generated: false
     };
   },
 
+  @computed("computedFilterable", "none", "content.[]", "selectedIndexPaths.[]", "highlightedIndexPaths.[]")
+  sections() {
+    // this._mutateValue();
+    //
+    // return [
+    //   {
+    //     content: this.formatedContentForCreateRow(),
+    //     component: "select-box-kit/select-box-kit-create-row",
+    //   },
+    //   {
+    //     content: this.formatedContentForNoneRow(),
+    //     component: "select-box-kit/select-box-kit-none-row",
+    //   }
+    // ].concat(this.formatedContentForSections());
+    return this.formatedContentForSections();
+  },
+
+  formatedContentForSections() {
+    return [
+      this.formatedContentForSection(2)
+    ];
+  },
+
+  formatedContentForSection() {
+    let content = this.formatContents(this.getWithDefault("content", []));
+    if (this.get("computedFilterable") === false) { return content; }
+    content = this.filterFunction(content)(this);
+
+    // if (section === 2) {
+    //   if (!isEmpty(this.get("filter"))) {
+    //     let firstVisibleContent = filteredContent.findBy("isHidden", false);
+    //     if (firstVisibleContent) {
+    //       this.get("highlightedIndexPaths")
+    //           .pushObject({ section: 2, row: firstVisibleContent.row });
+    //     }
+    //   }
+    // }
+
+    return content;
+  },
+
+  formatedContentForCreateRow() {
+    if (this.get("allowAny") === true) {
+      let content = {};
+      content[this.get("valueAttribute")] = this.get("filter");
+      content[this.get("nameProperty")] = this.get("filter");
+      return [ this.formatContentForRowInSection(content) ];
+    }
+
+    return [];
+  },
+
+  formatedContentForNoneRow() {
+    if (isNone(this.get("none")) || isEmpty(this.get("selectedIndexPaths"))) {
+      return [];
+    }
+
+    let content = {};
+
+    switch (typeof this.get("none")) {
+    case "string":
+      content[this.get("valueAttribute")] = null;
+      content[this.get("nameProperty")] = I18n.t(this.get("none"));
+      content = this.formatContentForRowInSection(content);
+      break;
+    default:
+      content = this.formatContentForRowInSection(this.get("none"));
+    }
+
+    return [ content ];
+  },
+
   formatContents(contents) {
-    return contents.map(content => this.formatContent(content));
+    return contents.map((content, row) => this.formatContentForRowInSection(content, row));
   },
 
   @computed("filter", "filterable", "autoFilterable")
@@ -192,58 +271,20 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     return computedFilterable === true && filter.length > 0 && allow === true;
   },
 
-  @computed("filter", "allowAny")
-  createRowContent(filter, allow) {
-    if (allow === true) {
-      return Ember.Object.create({ value: filter, name: filter });
+  formatedContentAtIndexPath(indexPath, formatedContent) {
+    formatedContent = formatedContent || this.get("formatedContent");
+
+    if (formatedContent && formatedContent[indexPath.row]) {
+      return formatedContent[indexPath.row];
     }
+
+    return null;
   },
 
-  @computed("content.[]")
-  computedContent(content) {
-    this._mutateValue();
-    return this.formatContents(content || []);
-  },
-
-  @computed("value", "none", "computedContent.firstObject.value")
-  computedValue(value, none, firstContentValue) {
-    if (isNone(value) && isNone(none) && this.get("autoSelectFirst") === true) {
-      return this._castInteger(firstContentValue);
-    }
-
-    return this._castInteger(value);
-  },
-
-  @computed
-  templateForRow() { return () => null; },
-
-  @computed
-  templateForNoneRow() { return () => null; },
-
-  @computed
-  templateForCreateRow() { return () => null; },
-
-  @computed("none")
-  computedNone(none) {
-    if (isNone(none)) {
-      return null;
-    }
-
-    switch (typeof none) {
-    case "string":
-      return Ember.Object.create({ name: I18n.t(none), value: "" });
-    default:
-      return this.formatContent(none);
-    }
-  },
-
-  @computed("computedValue", "computedContent.[]")
-  selectedContent(computedValue, computedContent) {
-    if (isNone(computedValue)) {
-      return [];
-    }
-
-    return [ computedContent.findBy("value", this._castInteger(computedValue)) ];
+  @computed("selectedIndexPaths.firstObject", "sections.[]")
+  selectedContent() {
+    // if (isNone(indexPath)) { return null; }
+    // return sections[indexPath.section].formatedContent[indexPath.row];
   },
 
   @on("didRender")
@@ -255,7 +296,75 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
         this._positionWrapper();
       });
     }
+
+    // this.$(".select-box-kit-row").off("click.select-box-kit");
+    // this.$(".select-box-kit-row").on("click.select-box-kit", (event) => {
+    //   const $row = $(event.currentTarget);
+    //   this.send("onSelectRow", {section: 0, row: $row.data("row")});
+    //   return false;
+    // });
+    //
+    // this.$(".select-box-kit-row").off("mouseenter.select-box-kit");
+    // this.$(".select-box-kit-row").on("mouseenter.select-box-kit", (event) => {
+    //   console.log("enter")
+    //   this._killEvent(event);
+    //   const $row = $(event.currentTarget);
+    //
+    //   if (!$row.hasClass("is-highlighted")) {
+    //     console.log("onhigh")
+    //     this.send("onHighlightRow", {section: 0, row: $row.data("row")});
+    //   }
+    //   // return false;
+    // });
+    //
+    // this.$(".select-box-kit-row").off("mouseleave.select-box-kit");
+    // this.$(".select-box-kit-row").on("mouseleave.select-box-kit", (event) => {
+    //   if ($(this).hasClass("is-highlighted")) {
+    //     this.send("onUnHighlightRow");
+    //   }
+    //   this._killEvent(event);
+    // });
+
+    // if (isEmpty(this.get("highlightedIndexPaths")) && !isEmpty(this.get("filter"))) {
+    //   const $rows = this.$contentRows();
+    //   if (!isEmpty($rows)) {
+    //     $rows.eq(0).trigger("mouseover");
+    //   } else if (!isNone(this.get("none"))) {
+    //     this.$rows().eq(0).trigger("mouseover");
+    //   }
+    // }
   },
+
+  // @computed("sections.[]")
+  // firstVisibleIndexPath(sections) {
+  //   const contentSections = sections.filter((el, i) => [2].includes(i) );
+  //   const flattenedSections = Array.prototype.concat(...contentSections);
+  //
+  //   return flattenedSections.filter(el => return el.isHidden);
+  // },
+
+  @on("willRender")
+  _autoSelect() {
+    if (!isEmpty(this.get("selectedIndexPaths"))) { return; }
+
+    if (this.get("autoSelectFirst") === true && isEmpty(this.get("none"))) {
+      this.set("selectedIndexPaths", [ { section: 2, row: 0 } ]);
+      return;
+    }
+
+    if (this.get("autoSelectFirst") === true && !isEmpty(this.get("none"))) {
+      this.set("selectedIndexPaths", [ { section: 1, row: 0 } ]);
+      return;
+    }
+  },
+
+  // @on("willRender")
+  // _autoHighlight() {
+  //   if (isEmpty(this.get("highlightedIndexPaths")) && !isEmpty(this.get("filter"))) {
+  //     this.set("highlightedIndexPaths", [ { section: 2, row: 0 } ]);
+  //     return;
+  //   }
+  // },
 
   @on("willDestroyElement")
   _cleanHandlers() {
@@ -265,54 +374,20 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
 
   @on("didInsertElement")
   _setupResizeListener() {
-    $(window).on("resize.select-box-kit", () => this.set("isExpanded", false) );
+    $(window).on("resize.select-box-kit", this.collapse.bind(this));
   },
 
-  @observes("filter", "filteredContent.[]", "shouldDisplayCreateRow")
-  _setHighlightedValue() {
-    const filteredContent = this.get("filteredContent");
-    const display = this.get("shouldDisplayCreateRow");
-    const none = this.get("computedNone");
-
-    if (isNone(this.get("highlightedValue")) && !isEmpty(filteredContent)) {
-      this.set("highlightedValue", get(filteredContent, "firstObject.value"));
-      this.get("highlightedIndexPaths").pushObject(Ember.Object.create({ section: 0, row: 0 }));
-      return;
-    }
-
-    if (display === true && isEmpty(filteredContent)) {
-      this.set("highlightedValue", this.get("filter"));
-      this.get("highlightedIndexPaths").pushObject(Ember.Object.create({ section: 0, row: 0 }));
-    }
-    else if (!isEmpty(filteredContent)) {
-      this.set("highlightedValue", get(filteredContent, "firstObject.value"));
-      this.get("highlightedIndexPaths").pushObject(Ember.Object.create({ section: 0, row: 0 }));
-    }
-    else if (isEmpty(filteredContent) && isPresent(none) && display === false) {
-      this.set("highlightedValue", get(none, "value"));
-      this.get("highlightedIndexPaths").pushObject(Ember.Object.create({ section: 0, row: 0 }));
-    }
-  },
-
-  @observes("isExpanded")
-  _isExpandedChanged() {
-    if (this.get("isExpanded") === true) {
+  expand() {
+    this.setProperties({ isExpanded: true, shouldRenderBody: true, isFocused: true });
+    Ember.run.scheduleOnce("afterRender", () => {
       this._applyFixedPosition();
-
-      this.setProperties({
-        highlightedValue: this.get("computedValue"),
-        renderBody: true,
-        isFocused: true
-      });
-    } else {
-      this._removeFixedPosition();
-    }
+      this.focus();
+    });
   },
 
-  @computed("filter", "computedFilterable", "computedContent.[]", "computedValue.[]")
-  filteredContent(filter, computedFilterable, computedContent, computedValue) {
-    if (computedFilterable === false) { return computedContent; }
-    return this.filterFunction(computedContent)(this, computedValue);
+  collapse() {
+    this.setProperties({ isExpanded: false, filter: "" });
+    Ember.run.scheduleOnce("afterRender", this, "_removeFixedPosition");
   },
 
   @computed("scrollableParentSelector")
@@ -321,222 +396,80 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   },
 
   actions: {
-    onToggle() {
-      this.toggleProperty("isExpanded");
+    onClearSelection() {
+      this.get("selectedIndexPaths").clear();
+      this.focus();
+    },
 
-      if (this.get("isExpanded") === true) { this.focus(); }
+    onToggle() {
+      if (this.get("isExpanded") === true) {
+        this.collapse();
+      } else {
+        this.expand();
+      }
     },
 
     onCreateContent(input) {
       const content = this.createFunction(input)(this);
-      this.get("computedContent").pushObject(content);
-      this.send("onSelect", content.value);
+      this.get("formatedContent").pushObject(content);
+      this.send("onSelectRow", content.value);
     },
 
-    onFilterChange(filter) {
+    onFilter(filter) {
+      this.get("highlightedIndexPaths").clear();
       this.set("filter", filter);
     },
 
-    onHighlight(value, indexPath) {
-      this.set("highlightedValue", value);
-
-      this.get("highlightedIndexPaths").pushObject(indexPath);
+    onHighlightRow(indexPath) {
+      this.get("highlightedIndexPaths").clear().pushObject(indexPath);
     },
 
-    onClearSelection() {
-      this.send("onSelect", null);
-
-      // this.set("selectedIndexPaths", []);
+    onUnHighlightRow() {
+      this.get("highlightedIndexPaths").clear();
     },
 
-    onSelect(value) {
-      value = this.defaultOnSelect(value);
-      this.set("value", value);
-    },
-
-    onDeselect() {
-      this.defaultOnDeselect();
-      this.set("value", null);
-
-      // this.set("selectedIndexPaths", []);
+    onSelectRow(indexPath) {
+      this.get("selectedIndexPaths").clear().pushObject(indexPath);
+      this.defaultOnSelect();
+      // this.$rows().removeClass("is-selected");
+      // row.$().addClass("is-selected");
     }
   },
 
-  defaultOnSelect(value) {
-    const content = this.contentForValue(value);
-    if (content.originalContent.action) {
-      content.originalContent.action();
-      return;
-    }
+  defaultOnSelect() {
+    // const content = this.contentForValue(value);
+    // if (content.originalContent.action) {
+    //   content.originalContent.action();
+    //   return;
+    // }
 
-    if (value === "") { value = null; }
+    // if (value === "") { value = null; }
 
-    this.setProperties({
-      highlightedValue: null,
-      highlightedIndexPaths: Ember.A(),
-      isExpanded: false,
-      filter: ""
-    });
-
-    this.focus();
-
-    return value;
+    this.collapse();
   },
 
   defaultOnDeselect(value) {
-    const content = this.get("computedContent").findBy("value", value);
-    if (!isNone(content) && get(content, "meta.generated") === true) {
-      this.get("computedContent").removeObject(content);
+    const content = this.get("formatedContent").findBy("value", value);
+    if (!isNone(content) && get(content, "generated") === true) {
+      this.get("formatedContent").removeObject(content);
     }
-  },
-
-  _applyDirection() {
-    let options = { left: "auto", bottom: "auto", top: "auto" };
-
-    const dHeader = $(".d-header")[0];
-    const dHeaderBounds = dHeader ? dHeader.getBoundingClientRect() : {top: 0, height: 0};
-    const dHeaderHeight = dHeaderBounds.top + dHeaderBounds.height;
-    const headerHeight = this.$header().outerHeight(false);
-    const headerWidth = this.$header().outerWidth(false);
-    const bodyHeight = this.$body().outerHeight(false);
-    const windowWidth = $(window).width();
-    const windowHeight = $(window).height();
-    const boundingRect = this.get("element").getBoundingClientRect();
-    const offsetTop = boundingRect.top;
-    const offsetBottom = boundingRect.bottom;
-
-    if (this.get("fullWidthOnMobile") && windowWidth <= 420) {
-      const margin = 10;
-      const relativeLeft = this.$().offset().left - $(window).scrollLeft();
-      options.left = margin - relativeLeft;
-      options.width = windowWidth - margin * 2;
-      options.maxWidth = options.minWidth = "unset";
-    } else {
-      const bodyWidth = this.$body().outerWidth(false);
-
-      if ($("html").css("direction") === "rtl") {
-        const horizontalSpacing = boundingRect.right;
-        const hasHorizontalSpace = horizontalSpacing - (this.get("horizontalOffset") + bodyWidth) > 0;
-        if (hasHorizontalSpace) {
-          this.setProperties({ isLeftAligned: true, isRightAligned: false });
-          options.left = bodyWidth + this.get("horizontalOffset");
-        } else {
-          this.setProperties({ isLeftAligned: false, isRightAligned: true });
-          options.right = - (bodyWidth - headerWidth + this.get("horizontalOffset"));
-        }
-      } else {
-        const horizontalSpacing = boundingRect.left;
-        const hasHorizontalSpace = (windowWidth - (this.get("horizontalOffset") + horizontalSpacing + bodyWidth) > 0);
-        if (hasHorizontalSpace) {
-          this.setProperties({ isLeftAligned: true, isRightAligned: false });
-          options.left = this.get("horizontalOffset");
-        } else {
-          this.setProperties({ isLeftAligned: false, isRightAligned: true });
-          options.right = this.get("horizontalOffset");
-        }
-      }
-    }
-
-    const componentHeight = this.get("verticalOffset") + bodyHeight + headerHeight;
-    const hasBelowSpace = windowHeight - offsetBottom - componentHeight > 0;
-    const hasAboveSpace = offsetTop - componentHeight - dHeaderHeight > 0;
-    if (hasBelowSpace || (!hasBelowSpace && !hasAboveSpace)) {
-      this.setProperties({ isBelow: true, isAbove: false });
-      options.top = headerHeight + this.get("verticalOffset");
-    } else {
-      this.setProperties({ isBelow: false, isAbove: true });
-      options.bottom = headerHeight + this.get("verticalOffset");
-    }
-
-    this.$body().css(options);
-  },
-
-  _applyFixedPosition() {
-    const width = this.$().outerWidth(false);
-    const height = this.$header().outerHeight(false);
-
-    if (this.get("scrollableParent").length === 0) { return; }
-
-    const $placeholder = $(`<div class='select-box-kit-fixed-placeholder-${this.elementId}'></div>`);
-
-    this._previousScrollParentOverflow = this.get("scrollableParent").css("overflow");
-    this.get("scrollableParent").css({ overflow: "hidden" });
-
-    this._previousCSSContext = {
-      minWidth: this.$().css("min-width"),
-      maxWidth: this.$().css("max-width")
-    };
-
-    const componentStyles = {
-      position: "fixed",
-      "margin-top": -this.get("scrollableParent").scrollTop(),
-      width,
-      minWidth: "unset",
-      maxWidth: "unset"
-    };
-
-    if ($("html").css("direction") === "rtl") {
-      componentStyles.marginRight = -width;
-    } else {
-      componentStyles.marginLeft = -width;
-    }
-
-    $placeholder.css({ display: "inline-block", width, height, "vertical-align": "middle" });
-
-    this.$().before($placeholder).css(componentStyles);
-  },
-
-  _removeFixedPosition() {
-    if (this.get("scrollableParent").length === 0) {
-      return;
-    }
-
-    $(`.select-box-kit-fixed-placeholder-${this.elementId}`).remove();
-
-    const css = _.extend(
-      this._previousCSSContext,
-      {
-        top: "auto",
-        left: "auto",
-        "margin-left": "auto",
-        "margin-right": "auto",
-        "margin-top": "auto",
-        position: "relative"
-      }
-    );
-    this.$().css(css);
-
-    this.get("scrollableParent").css({
-      overflow: this._previousScrollParentOverflow
-    });
-  },
-
-  _positionWrapper() {
-    const headerHeight = this.$header().outerHeight(false);
-
-    this.$(".select-box-kit-wrapper").css({
-      width: this.$().width(),
-      height: headerHeight + this.$body().outerHeight(false)
-    });
   },
 
   @on("didReceiveAttrs")
   _mutateValue() {
-    if (this.get("allowValueMutation") !== true) {
-      return;
-    }
-
-    const none = isNone(this.get("none"));
-    const emptyValue = isEmpty(this.get("value"));
-    const notEmptyContent = !isEmpty(this.get("content"));
-
-    if (none && emptyValue && notEmptyContent) {
-      Ember.run.scheduleOnce("sync", () => {
-        const firstValue = this.get(`content.0.${this.get("valueAttribute")}`);
-        this.set("value", firstValue);
-
-        // this.set("selectedIndexPaths", [Ember.Object.create({ section: 0, row: 0 })]);
-      });
-    }
+    // if (this.get("allowValueMutation") !== true) {
+    //   return;
+    // }
+    //
+    // const none = isNone(this.get("none"));
+    // const emptyValue = isEmpty(this.get("value"));
+    // const notEmptyContent = !isEmpty(this.get("content"));
+    //
+    // if (none && emptyValue && notEmptyContent) {
+    //   Ember.run.scheduleOnce("sync", () => {
+    //     const firstValue = this.get(`content.0.${this.get("valueAttribute")}`);
+    //     this.set("value", Ember.copy(firstValue));
+    //   });
+    // }
   }
 });

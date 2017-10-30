@@ -12,14 +12,14 @@ export default ComboBoxComponent.extend({
   castInteger: true,
   allowUncategorized: null,
 
-  filterFunction(computedContent) {
+  filterFunction(formatedContent) {
     const _matchFunction = (filter, text) => {
       return text.toLowerCase().indexOf(filter) > -1;
     };
 
     return (selectBox) => {
       const filter = selectBox.get("filter").toLowerCase();
-      return _.filter(computedContent, c => {
+      return _.filter(formatedContent, c => {
         const category = Category.findById(get(c, "value"));
         const text = get(c, "name");
         if (category && category.get("parentCategory")) {
@@ -56,7 +56,7 @@ export default ComboBoxComponent.extend({
   },
 
   @computed("scopedCategoryId", "content.[]")
-  computedContent(scopedCategoryId, categories) {
+  formatedContent(scopedCategoryId, categories) {
     // Always scope to the parent of a category, if present
     if (scopedCategoryId) {
       const scopedCat = Category.findById(scopedCategoryId);

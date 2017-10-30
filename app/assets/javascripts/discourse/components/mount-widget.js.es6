@@ -1,5 +1,5 @@
 import { diff, patch } from 'virtual-dom';
-import { WidgetClickHook } from 'discourse/widgets/hooks';
+import { WidgetClickHook, WidgetMouseEnterHook } from 'discourse/widgets/hooks';
 import { queryRegistry } from 'discourse/widgets/widget';
 import { getRegister } from 'discourse-common/lib/get-owner';
 import DirtyKeys from 'discourse/lib/dirty-keys';
@@ -40,6 +40,7 @@ export default Ember.Component.extend({
 
   didInsertElement() {
     WidgetClickHook.setupDocumentCallback();
+    WidgetMouseEnterHook.setupDocumentCallback(this.element);
 
     this._rootNode = document.createElement('div');
     this.element.appendChild(this._rootNode);

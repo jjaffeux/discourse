@@ -161,6 +161,10 @@
       margin-right: 5px;
     }
 
+    &.is-hidden {
+      display: none;
+    }
+
     &.is-highlighted {
       background: $tertiary-low;
     }

@@ -13,10 +13,10 @@ export default Ember.Component.extend({
     return should;
   },
 
-  @computed("options.selectedName", "selectedContent.firstObject.name")
-  selectedName(optionsSelectedName, firstSelectedContentName) {
+  @computed("options.selectedName", "selectedContent.name")
+  selectedName(optionsSelectedName, name) {
     if (Ember.isNone(optionsSelectedName)) {
-      return firstSelectedContentName;
+      return name;
     }
     return optionsSelectedName;
   },

@@ -1,4 +1,5 @@
 import { WidgetClickHook,
+         WidgetMouseEnterHook,
          WidgetClickOutsideHook,
          WidgetKeyUpHook,
          WidgetKeyDownHook,
@@ -73,11 +74,17 @@ function drawWidget(builder, attrs, state) {
   if (this.clickOutside) {
     properties['widget-click-outside'] = new WidgetClickOutsideHook(this);
   }
+
   if (this.click) {
     properties['widget-click'] = new WidgetClickHook(this);
   }
+
   if (this.drag) {
     properties['widget-drag'] = new WidgetDragHook(this);
+  }
+
+  if (this.mouseEnter) {
+    properties['widget-mouse-enter'] = new WidgetMouseEnterHook(this);
   }
 
   const attributes = properties['attributes'] || {};

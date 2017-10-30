@@ -74,7 +74,7 @@ export default Ember.Mixin.create({
           case this.keys.UP:
           case this.keys.DOWN:
             if (this.get("isExpanded") === false) {
-              this.set("isExpanded", true);
+              this.expand();
             }
 
             Ember.run.schedule("actions", () => {
@@ -86,20 +86,20 @@ export default Ember.Mixin.create({
             return;
           case this.keys.ENTER:
             if (this.get("isExpanded") === false) {
-              this.set("isExpanded", true);
+              this.expand();
             } else {
-              this.send("onSelect", this.$highlightedRow().data("value"));
+              const row = this._rowComponentForRowDOM(this.$highlightedRow()[0]);
+              this.send("onSelectRow", row);
             }
-
             this._killEvent(event);
-
             return;
           case this.keys.TAB:
             if (this.get("isExpanded") === false) {
               return true;
             } else {
-              this.send("onSelect", this.$highlightedRow().data("value"));
-              return;
+              const row = this._rowComponentForRowDOM(this.$highlightedRow()[0]);
+              this.send("onSelectRow", row);
+              return false;
             }
           case this.keys.ESC:
             this.close();
@@ -121,7 +121,7 @@ export default Ember.Mixin.create({
       });
 
     this.$filterInput()
-      .on(`keydown.select-box-kit`, (event) => {
+      .on("keydown.select-box-kit", (event) => {
         const keyCode = event.keyCode || event.which;
 
         if ([
@@ -142,9 +142,7 @@ export default Ember.Mixin.create({
   },
 
   _handleArrowKey(keyCode) {
-    if (isEmpty(this.get("filteredContent"))) {
-      return;
-    }
+    if (this.$rows().length < 1) { return; }
 
     Ember.run.schedule("afterRender", () => {
       switch (keyCode) {
@@ -160,16 +158,15 @@ export default Ember.Mixin.create({
   _moveHighlight(direction) {
     const $rows = this.$rows();
     const currentIndex = $rows.index(this.$highlightedRow());
+    const nextIndex = currentIndex + direction;
 
-    let nextIndex = 0;
-
-    if (currentIndex < 0) {
-      nextIndex = 0;
-    } else if (currentIndex + direction < $rows.length) {
-      nextIndex = currentIndex + direction;
+    if (nextIndex < 0) {
+      return this._rowSelection($rows, $rows.length - 1);
+    } else if (nextIndex > $rows.length - 1) {
+      return this._rowSelection($rows, 0);
+    } else {
+      return this._rowSelection($rows, nextIndex);
     }
-
-    this._rowSelection($rows, nextIndex);
   },
 
   _handleDownArrow() { this._moveHighlight(1); },
@@ -177,24 +174,11 @@ export default Ember.Mixin.create({
   _handleUpArrow() { this._moveHighlight(-1); },
 
   _rowSelection($rows, nextIndex) {
-    const highlightableValue = $rows.eq(nextIndex).data("value");
-    const $highlightableRow = this.$findRowByValue(highlightableValue);
-    this.send("onHighlight", highlightableValue);
-
-    Ember.run.schedule("afterRender", () => {
-      const $collection = this.$collection();
-      const currentOffset = $collection.offset().top +
-                            $collection.outerHeight(false);
-      const nextBottom = $highlightableRow.offset().top +
-                         $highlightableRow.outerHeight(false);
-      const nextOffset = $collection.scrollTop() + nextBottom - currentOffset;
-
-      if (nextIndex === 0) {
-        $collection.scrollTop(0);
-      } else if (nextBottom > currentOffset) {
-        $collection.scrollTop(nextOffset);
-      }
-    });
+    const $highlightableRow = $rows.eq(nextIndex);
+    const row = this._rowComponentForRowDOM($highlightableRow[0]);
+    this.send("onHighlightRow", row);
+    $highlightableRow.trigger("focus");
+    this.$offscreenInput().focus();
   },
 
   _isSpecialKey(keyCode) {

@@ -15,16 +15,15 @@
   isFocused=isFocused
   isExpanded=isExpanded
   selectedContent=selectedContent
-  onDeselect=(action "onDeselect")
   onToggle=(action "onToggle")
-  onFilterChange=(action "onFilterChange")
+  onFilter=(action "onFilter")
   onClearSelection=(action "onClearSelection")
   options=headerComponentOptions
 }}
 
 <div class="select-box-kit-body">
   {{component filterComponent
-    onFilterChange=(action "onFilterChange")
+    onFilter=(action "onFilter")
     icon=filterIcon
     filter=filter
     filterable=computedFilterable
@@ -33,35 +32,25 @@
     tabindex=tabindex
   }}
 
-  {{#if renderBody}}
-    {{component collectionComponent
-      shouldDisplayCreateRow=shouldDisplayCreateRow
-      none=computedNone
-      createRowContent=createRowContent
-      selectedContent=selectedContent
-      filteredContent=filteredContent
-      rowComponent=rowComponent
-      noneRowComponent=noneRowComponent
-      createRowComponent=createRowComponent
-      iconForRow=iconForRow
-      templateForRow=templateForRow
-      templateForNoneRow=templateForNoneRow
-      templateForCreateRow=templateForCreateRow
-      shouldHighlightRow=shouldHighlightRow
-      shouldSelectRow=shouldSelectRow
-      titleForRow=titleForRow
-      onClearSelection=(action "onClearSelection")
-      onSelect=(action "onSelect")
-      onHighlight=(action "onHighlight")
-      onCreateContent=(action "onCreateContent")
-      noContentLabel=noContentLabel
-      highlightedValue=highlightedValue
-      computedValue=computedValue
-      rowComponentOptions=rowComponentOptions
-      selectedIndexPaths=selectedIndexPaths
-      highlightedIndexPaths=highlightedIndexPaths
-    }}
+  {{#if shouldRenderBody}}
+    {{#each sections as |section sectionIndex|}}
+      {{component collectionComponent
+        section=sectionIndex
+        rows=section
+        selectedIndexPaths=selectedIndexPaths
+        highlightedIndexPaths=highlightedIndexPaths
+        onUnHighlightRow=(action "onUnHighlightRow")
+        onHighlightRow=(action "onHighlightRow")
+        onSelectRow=(action "onSelectRow")
+        onClearSelection=(action "onClearSelection")
+      }}
+    {{/each}}
   {{/if}}
+
+  <p>srow: {{selectedIndexPaths.firstObject.row}}</p>
+  <p>ssection: {{selectedIndexPaths.firstObject.section}}</p>
+  <p>hrow: {{highlightedIndexPaths.firstObject.row}}</p>
+  <p>hsection: {{highlightedIndexPaths.firstObject.section}}</p>
 </div>
 
 <div class="select-box-kit-wrapper"></div>
