@@ -1,9 +1,13 @@
-{{#each rows as |row|}}
-  {{{row}}}
+{{#if section.rows}}
+  {{#each section.rows as |row|}}
+    {{{row}}}
+  {{else}}
+    {{#if section.noContentLabel}}
+      <li class="select-box-kit-row no-content">
+        {{i18n section.noContentLabel}}
+      </li>
+    {{/if}}
+  {{/each}}
 {{else}}
-  {{!-- {{#if noContentLabel}} --}}
-    <li class="select-box-kit-row no-content">
-      {{i18n noContentLabel}}
-    </li>
-  {{!-- {{/if}} --}}
-{{/each}}
+  {{component rowComponent onClearSelection=onClearSelection}}
+{{/if}}

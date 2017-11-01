@@ -26,8 +26,30 @@ export default Ember.Mixin.create({
     return this.$(this.collectionSelector);
   },
 
-  $rows() {
-    return this.$(`${this.rowSelector}:not(.is-hidden)`);
+  $firstVisibleRow() {
+    return this.$rows(true).eq(0);
+  },
+
+  firstVisibleRowIndex() {
+    return this.$firstVisibleRow().data("row");
+  },
+
+  hideNoneRow() {
+    const test = this.$rowAtIndexPath({section: this.get("noneSectionIndex"), row: 0});
+    console.log(test.html(), test.addClass("is-hidden"));
+    this.$rowAtIndexPath({section: this.get("noneSectionIndex"), row: 0}).addClass("is-hidden");
+  },
+
+  showNoneRow() {
+    // this.$rowAtIndexPath({section: this.get("noneSectionIndex"), row: 0}).removeClass("is-hidden");
+  },
+
+  $rows(visibleOnly) {
+    if (visibleOnly === true) {
+      return this.$(`${this.rowSelector}:not(.is-hidden)`);
+    } else {
+      return this.$(this.rowSelector);
+    }
   },
 
   $contentRows() {

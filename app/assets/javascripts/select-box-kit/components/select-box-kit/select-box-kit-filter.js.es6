@@ -4,20 +4,15 @@ export default Ember.Component.extend({
   classNameBindings: ["isFocused", "isHidden"],
   isHidden: false,
 
-  debouncedFilter(_filter) {
-    console.log("debounced", _filter)
-    this.get("onFilter")(_filter);
-  },
-
   actions: {
     onKeyPress(_filter) {
-
-      console.log("compare filters", this.get("_filter"), _filter)
-      Ember.run.debounce(this, this.debouncedFilter, _filter, 200);
+      Ember.run.debounce(this, this._debouncedFilter, _filter, 150);
 
       if (!Ember.isEmpty(_filter)) {
         this.set("isHidden", false);
       }
     }
-  }
+  },
+
+  _debouncedFilter(_filter) { this.get("onFilter")(_filter); },
 });

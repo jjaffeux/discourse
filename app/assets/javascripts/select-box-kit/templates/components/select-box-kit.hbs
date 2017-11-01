@@ -1,5 +1,3 @@
-{{computedFilter}}
-
 <input
   class="select-box-kit-offscreen"
   type="text"
@@ -13,12 +11,10 @@
 />
 
 {{component headerComponent
-  none=computedNone
   isFocused=isFocused
   isExpanded=isExpanded
   selectedContent=selectedContent
   onToggle=(action "onToggle")
-  onFilter=(action "onFilter")
   onClearSelection=(action "onClearSelection")
   options=headerComponentOptions
 }}
@@ -35,25 +31,18 @@
   }}
 
   {{#if shouldRenderBody}}
-    {{#each sections as |section sectionIndex|}}
-      {{component collectionComponent
-        section=sectionIndex
-        rows=section
-        rowComponent="select-box-kit/select-box-kit-row"
-        selectedIndexPaths=selectedIndexPaths
-        highlightedIndexPaths=highlightedIndexPaths
-        onUnHighlightRow=(action "onUnHighlightRow")
-        onHighlightRow=(action "onHighlightRow")
-        onSelectRow=(action "onSelectRow")
-        onClearSelection=(action "onClearSelection")
-      }}
-    {{/each}}
+    <div class="select-box-kit-collections">
+      {{#if shouldDisplayNoneRow}}
+        {{component collectionComponent
+          rowComponent="select-box-kit/select-box-kit-none-row"
+          onClearSelection=(action "onClearSelection")
+        }}
+      {{/if}}
+      {{#each sections as |section sectionIndex|}}
+        {{component collectionComponent section=section sectionIndex=sectionIndex}}
+      {{/each}}
+    </div>
   {{/if}}
-
-  {{!-- <p>srow: {{selectedIndexPaths.firstObject.row}}</p>
-  <p>ssection: {{selectedIndexPaths.firstObject.section}}</p>
-  <p>hrow: {{highlightedIndexPaths.firstObject.row}}</p>
-  <p>hsection: {{highlightedIndexPaths.firstObject.section}}</p> --}}
 </div>
 
 <div class="select-box-kit-wrapper"></div>

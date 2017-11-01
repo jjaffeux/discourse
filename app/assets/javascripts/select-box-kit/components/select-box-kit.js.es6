@@ -1,4 +1,3 @@
-import { findRawTemplate } from 'discourse/lib/raw-templates';
 const { get, isNone, isEmpty } = Ember;
 import { on } from "ember-addons/ember-computed-decorators";
 import computed from "ember-addons/ember-computed-decorators";
@@ -7,14 +6,6 @@ import DomHelpersMixin from "select-box-kit/mixins/dom-helpers";
 import KeyboardMixin from "select-box-kit/mixins/keyboard";
 
 export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin, {
-  shouldSelectRowInSection(row, section) {
-    const paths = this.get("selectedIndexPaths").find((x) => {
-      return x.row === row && x.section === section;
-    });
-
-    return !isEmpty(paths);
-  },
-
   layoutName: "select-box-kit/templates/components/select-box-kit",
   classNames: "select-box-kit",
   classNameBindings: [
@@ -59,8 +50,9 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   allowAny: false,
   allowValueMutation: true,
   autoSelectFirst: true,
-  selectedIndexPaths: [],
-  highlightedIndexPaths: [],
+  selectedIndexPaths: null,
+
+  noneSectionIndex: "none-section",
 
   init() {
     this._super();
@@ -71,6 +63,7 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
       this.setProperties({ filterable: false, autoFilterable: false });
     }
 
+    this.set("selectedIndexPaths", []);
     this._previousScrollParentOverflow = "auto";
     this._previousCSSContext = {};
   },
@@ -103,18 +96,11 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
 
   createFunction(input) {
     return (selectedBox) => {
-      const formatedContent = selectedBox.formatContentForRowInSection(input);
+      const formatedContent = selectedBox.formatContentAtIndexPath(input);
       formatedContent.generated = true;
       return formatedContent;
     };
   },
-
-  // filterFunction(content) {
-  //   return selectBox => {
-  //     const filter = selectBox.get("filter").toLowerCase();
-  //     return content.filter(c => c.name.toLowerCase().indexOf(filter) > -1);
-  //   };
-  // },
 
   nameForContent(content) {
     if (typeof content === "object") {
@@ -138,51 +124,46 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     return this.get("formatedContent").findBy("value", this._castInteger(value));
   },
 
-  formatContentForRowInSection(content, row) {
+  formatContentAtIndexPath(content, indexPath) {
     return {
       value: this.valueForContent(content),
       name: this.nameForContent(content),
-      isSelected: this.shouldSelectRowInSection(row, 0),
-      isHidden: false,
-      row,
-      generated: false
+      isSelected: this.shouldSelectRowAtIndexPath(indexPath),
+      indexPath
     };
   },
 
+  shouldSelectRowAtIndexPath(indexPath) {
+    const { row, section } = indexPath;
+    const paths = this.get("selectedIndexPaths").find(path => {
+      return path.row === row && path.section === section;
+    });
+    return !isEmpty(paths);
+  },
+
   @computed("content.[]")
-  computedContent() {
-    return this.formatedContentForSections();
+  computedContent(content) {
+    return content.map((c, row) => this.formatContentAtIndexPath(c, {section: 1, row: row}));
+  },
+
+  templateForRowWithContentInSection(content) { return content.name; },
+
+
+  @computed("none")
+  noneSection() {
+    return {
+      rows: this._rowsForContentInSection(this.formatedContentForNone(), this.get("noneSectionIndex"))
+    };
   },
 
   @computed("computedContent.[]")
   sections(computedContent) {
-    // this._mutateValue();
-    //
-    // return [
-    //   {
-    //     content: this.formatedContentForCreateRow(),
-    //     component: "select-box-kit/select-box-kit-create-row",
-    //   },
-    //   {
-    //     content: this.formatedContentForNoneRow(),
-    //     component: "select-box-kit/select-box-kit-none-row",
-    //   }
-    // ].concat(this.formatedContentForSections());
-
-    const rows = computedContent.map((content, rowIndex) => {
-      return `
-        <li class="select-box-kit-row"
-            data-row=${rowIndex}
-            tabIndex="-1"
-            data-section="0">
-          ${content.name}
-        </li>
-      `;
-    });
-
-    console.log("COMPUTING ROWS")
-
-    return [ rows ];
+    return [
+      {
+        noContentLabel: "jojo",
+        rows: this._rowsForContentInSection(computedContent, 1)
+      }
+    ];
   },
 
   @on("didRender")
@@ -190,44 +171,20 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     if (this.attachedRowsHandler === false && this.get("shouldRenderBody") === true) {
       this.attachedRowsHandler = true;
 
-      this.$(".select-box-kit-collection").on("mouseenter", ".select-box-kit-row", (event) => {
+      this.$collection().on("mouseenter mouseleave click", ".select-box-kit-row", (event) => {
         const $row = $(event.target);
-        this.send("onHighlightRow", {section: $row.data("section"), row: $row.data("row")});
-      });
+        const section = $row.parent(this.collectionSelector).data("section");
+        const row = $row.data("row");
 
-      this.$(".select-box-kit-collection").on("mouseleave", ".select-box-kit-row", (event) => {
-        const $row = $(event.target);
-        this.send("onUnHighlightRow", {section: $row.data("section"), row: $row.data("row")});
-      });
-
-      this.$(".select-box-kit-collection").on("click", ".select-box-kit-row", (event) => {
-        const $row = $(event.target);
-        this.send("onSelectRow", {section: $row.data("section"), row: $row.data("row")});
+        if (event.type === "mouseenter") {
+          this.send("onHighlightRow", {section, row});
+        } else if (event.type === "mouseleave") {
+          this.send("onUnHighlightRow");
+        } else if (event.type === "click") {
+          this.send("onSelectRow", {section, row});
+        }
       });
     }
-  },
-
-  formatedContentForSections() {
-    return  this.formatedContentForSection(2);
-  },
-
-  formatedContentForSection() {
-    let content = this.formatContents(this.getWithDefault("content", []));
-    // if (this.get("computedFilterable") === false) { return content; }
-    // content = this.filterFunction(content)(this);
-
-
-    // if (section === 2) {
-    //   if (!isEmpty(this.get("filter"))) {
-    //     let firstVisibleContent = filteredContent.findBy("isHidden", false);
-    //     if (firstVisibleContent) {
-    //       this.get("highlightedIndexPaths")
-    //           .pushObject({ section: 2, row: firstVisibleContent.row });
-    //     }
-    //   }
-    // }
-
-    return content;
   },
 
   formatedContentForCreateRow() {
@@ -235,45 +192,35 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
       let content = {};
       content[this.get("valueAttribute")] = this.get("filter");
       content[this.get("nameProperty")] = this.get("filter");
-      return [ this.formatContentForRowInSection(content) ];
+      return [ this.formatContentAtIndexPath(content) ];
     }
 
     return [];
   },
 
-  formatedContentForNoneRow() {
-    if (isNone(this.get("none")) || isEmpty(this.get("selectedIndexPaths"))) {
-      return [];
-    }
+  formatedContentForNone() {
+    if (isNone(this.get("none"))) { return []; }
 
     let content = {};
 
     switch (typeof this.get("none")) {
     case "string":
+    case "number":
       content[this.get("valueAttribute")] = null;
       content[this.get("nameProperty")] = I18n.t(this.get("none"));
-      content = this.formatContentForRowInSection(content);
+      content = this.formatContentAtIndexPath(content, {section: 0, row: 0});
       break;
     default:
-      content = this.formatContentForRowInSection(this.get("none"));
+      content = this.formatContentAtIndexPath(this.get("none"), { section: 0, row: 0 } );
     }
 
     return [ content ];
   },
 
-  formatContents(contents) {
-    return contents.map((content, row) => this.formatContentForRowInSection(content, row));
-  },
-
   @computed("filter", "filterable", "autoFilterable")
   computedFilterable(filter, filterable, autoFilterable) {
-    if (filterable === true) {
-      return true;
-    }
-
-    if (!isEmpty(filter) && autoFilterable === true) {
-      return true;
-    }
+    if (filterable === true) { return true; }
+    if (!isEmpty(filter) && autoFilterable === true) { return true; }
 
     return false;
   },
@@ -283,100 +230,44 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     return computedFilterable === true && filter.length > 0 && allow === true;
   },
 
-  formatedContentAtIndexPath(indexPath, formatedContent) {
-    formatedContent = formatedContent || this.get("formatedContent");
-
-    if (formatedContent && formatedContent[indexPath.row]) {
-      return formatedContent[indexPath.row];
-    }
-
-    return null;
+  @computed("none", "selectedIndexPaths.[]")
+  shouldDisplayNoneRow(none, selectedIndexPaths) {
+    return !isNone(none) && !isEmpty(selectedIndexPaths);
   },
 
-  @computed("selectedIndexPaths.firstObject.row", "computedContent.[]")
-  selectedContent(row, computedContent) {
-    // if (isNone(indexPath)) { return null; }
-    return computedContent.get(row);
+  @computed("none", "selectedIndexPaths.[]", "computedContent.[]")
+  selectedContent(none, selectedIndexPaths, computedContent) {
+    // if (isEmpty(selectedIndexPaths)) {
+    //   if (!isNone(none)) {
+    //     return this.formatedContentForNone();
+    //   }
+    // } else {
+      // return computedContent.get(selectedIndexPaths.get("firstObject.row"));
+    // }
   },
 
   @on("didRender")
   _configureSelectBoxDOM() {
     if (this.get("isExpanded") === true) {
       Ember.run.schedule("afterRender", () => {
-        this.$collection().css("max-height", this.get("collectionHeight"));
+        this.$(".select-box-kit-collections")
+            .css("max-height", this.get("collectionHeight"));
         this._applyDirection();
         this._positionWrapper();
       });
     }
-
-    // this.$(".select-box-kit-row").off("click.select-box-kit");
-    // this.$(".select-box-kit-row").on("click.select-box-kit", (event) => {
-    //   const $row = $(event.currentTarget);
-    //   this.send("onSelectRow", {section: 0, row: $row.data("row")});
-    //   return false;
-    // });
-    //
-    // this.$(".select-box-kit-row").off("mouseenter.select-box-kit");
-    // this.$(".select-box-kit-row").on("mouseenter.select-box-kit", (event) => {
-    //   console.log("enter")
-    //   this._killEvent(event);
-    //   const $row = $(event.currentTarget);
-    //
-    //   if (!$row.hasClass("is-highlighted")) {
-    //     console.log("onhigh")
-    //     this.send("onHighlightRow", {section: 0, row: $row.data("row")});
-    //   }
-    //   // return false;
-    // });
-    //
-    // this.$(".select-box-kit-row").off("mouseleave.select-box-kit");
-    // this.$(".select-box-kit-row").on("mouseleave.select-box-kit", (event) => {
-    //   if ($(this).hasClass("is-highlighted")) {
-    //     this.send("onUnHighlightRow");
-    //   }
-    //   this._killEvent(event);
-    // });
-
-    // if (isEmpty(this.get("highlightedIndexPaths")) && !isEmpty(this.get("filter"))) {
-    //   const $rows = this.$contentRows();
-    //   if (!isEmpty($rows)) {
-    //     $rows.eq(0).trigger("mouseover");
-    //   } else if (!isNone(this.get("none"))) {
-    //     this.$rows().eq(0).trigger("mouseover");
-    //   }
-    // }
   },
-
-  // @computed("sections.[]")
-  // firstVisibleIndexPath(sections) {
-  //   const contentSections = sections.filter((el, i) => [2].includes(i) );
-  //   const flattenedSections = Array.prototype.concat(...contentSections);
-  //
-  //   return flattenedSections.filter(el => return el.isHidden);
-  // },
 
   @on("willRender")
   _autoSelect() {
     if (!isEmpty(this.get("selectedIndexPaths"))) { return; }
-
-    if (this.get("autoSelectFirst") === true && isEmpty(this.get("none"))) {
-      this.set("selectedIndexPaths", [ { section: 2, row: 0 } ]);
-      return;
-    }
-
-    if (this.get("autoSelectFirst") === true && !isEmpty(this.get("none"))) {
-      this.set("selectedIndexPaths", [ { section: 1, row: 0 } ]);
-      return;
+    if (this.get("autoSelectFirst") === true) {
+      // this.send("onSelectRow", {section: 1, row: 0})
     }
   },
 
-  // @on("willRender")
-  // _autoHighlight() {
-  //   if (isEmpty(this.get("highlightedIndexPaths")) && !isEmpty(this.get("filter"))) {
-  //     this.set("highlightedIndexPaths", [ { section: 2, row: 0 } ]);
-  //     return;
-  //   }
-  // },
+  @on("willRender")
+  _autoHighlight() { this.send("onHighlightFirstRow"); },
 
   @on("willDestroyElement")
   _cleanHandlers() {
@@ -390,6 +281,10 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   },
 
   expand() {
+    if (this.get("isExpanded") === true) {
+      return;
+    }
+
     this.setProperties({ isExpanded: true, shouldRenderBody: true, isFocused: true });
     Ember.run.scheduleOnce("afterRender", () => {
       this._applyFixedPosition();
@@ -407,8 +302,25 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     return this.$().parents(scrollableParentSelector).first();
   },
 
+  filterFunction(content, filter) {
+    return content.name.toLowerCase().indexOf(filter.toLowerCase()) > -1;
+  },
+
   actions: {
+    onHighlightFirstRow() {
+      Ember.run.schedule("afterRender", () => {
+        if (isEmpty(this.get("selectedIndexPaths")) || !isEmpty(this.get("_filter"))) {
+          this.send("onHighlightRow", { section: 0, row: this.firstVisibleRowIndex() });
+          this.$firstVisibleRow().focus();
+          this.$filterInput().focus();
+        } else {
+          this.send("onHighlightRow", { section: 0, row: this.get("selectedIndexPaths.firstObject.row") });
+        }
+      });
+    },
+
     onClearSelection() {
+      this.$rows().removeClass("is-highlighted");
       this.$rows().removeClass("is-selected");
       this.get("selectedIndexPaths").clear();
       this.focus();
@@ -432,40 +344,43 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     },
 
     onFilter(_filter) {
-      this.set("filter", _filter);
+      this.send("onUnHighlightRow");
+      this.setProperties({ filter: _filter});
+      // this.expand();
 
       Ember.run.schedule("afterRender", () => {
         this.$rows().removeClass("is-hidden");
-        this.get("computedContent").forEach((c) => {
-          const matched = c.name.toLowerCase().indexOf(_filter) > -1;
-
-          console.log(_filter)
-          if (!matched) {
-            this.$rowAtIndexPath({section: 0, row: c.row}).addClass("is-hidden");
+        this.getWithDefault("computedContent", []).forEach(content => {
+          if (!this.filterFunction(content, _filter)) {
+            this.$rowAtIndexPath(content.indexPath).addClass("is-hidden");
           }
         });
-
-        // this.attachedRowsHandler = false;
-        // this._setHandlers();
       });
     },
 
     onHighlightRow(indexPath) {
-      this.$rows().removeClass("is-highlighted");
-      this.$rowAtIndexPath(indexPath).addClass("is-highlighted");
-      this.get("highlightedIndexPaths").clear().pushObject(indexPath);
+      Ember.run.schedule("afterRender", () => {
+        this.$rows().removeClass("is-highlighted");
+        this.$rowAtIndexPath(indexPath).addClass("is-highlighted");
+      });
     },
 
-    onUnHighlightRow(indexPath) {
-      this.$rowAtIndexPath(indexPath).removeClass("is-highlighted");
-      this.get("highlightedIndexPaths").clear();
+    onUnHighlightRow() {
+      this.$rows().removeClass("is-highlighted");
     },
 
     onSelectRow(indexPath) {
       this.defaultOnSelect();
-      this.get("selectedIndexPaths").clear().pushObject(indexPath);
       this.$rows().removeClass("is-selected");
-      this.$rowAtIndexPath(indexPath).addClass("is-selected");
+
+      if (indexPath.section === this.get("noneSectionIndex")) {
+        this.hideNoneRow();
+        this.get("selectedIndexPaths").clear();
+      } else {
+        this.showNoneRow();
+        this.get("selectedIndexPaths").clear().pushObject(indexPath);
+        this.$rowAtIndexPath(indexPath).addClass("is-selected");
+      }
     }
   },
 
@@ -477,7 +392,8 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     // }
 
     // if (value === "") { value = null; }
-
+    this.set("_filter", "");
+    this.send("onFilter", "");
     this.collapse();
   },
 
@@ -488,21 +404,39 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     }
   },
 
+  _aroundRowTemplate(content, innerTemplate) {
+    return `
+      <li class="select-box-kit-row"
+          data-row=${content.indexPath.row}
+          tabIndex="-1">
+        ${innerTemplate}
+      </li>
+    `;
+  },
+
+  _rowsForContentInSection(content, section) {
+    return content.map(c => {
+      const innerTemplate = this.templateForRowWithContentInSection(c, section);
+      return this._aroundRowTemplate(c, innerTemplate);
+    });
+  },
+
   @on("didReceiveAttrs")
   _mutateValue() {
-    // if (this.get("allowValueMutation") !== true) {
-    //   return;
-    // }
-    //
-    // const none = isNone(this.get("none"));
-    // const emptyValue = isEmpty(this.get("value"));
-    // const notEmptyContent = !isEmpty(this.get("content"));
-    //
-    // if (none && emptyValue && notEmptyContent) {
-    //   Ember.run.scheduleOnce("sync", () => {
-    //     const firstValue = this.get(`content.0.${this.get("valueAttribute")}`);
-    //     this.set("value", Ember.copy(firstValue));
-    //   });
-    // }
+    if (this.get("allowValueMutation") !== true) {
+      return;
+    }
+
+    const none = isNone(this.get("none"));
+    const emptyValue = isEmpty(this.get("value"));
+    const notEmptyContent = !isEmpty(this.get("content"));
+
+    if (none && emptyValue && notEmptyContent) {
+      Ember.run.scheduleOnce("sync", () => {
+        const firstValue = this.get(`content.0.${this.get("valueAttribute")}`);
+        this.set("value", firstValue);
+        this.set("selectedIndexPaths", [{section: 0, row: 0}]);
+      });
+    }
   }
 });
