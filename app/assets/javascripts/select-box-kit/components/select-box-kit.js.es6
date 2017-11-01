@@ -1,3 +1,4 @@
+import { findRawTemplate } from 'discourse/lib/raw-templates';
 const { get, isNone, isEmpty } = Ember;
 import { on } from "ember-addons/ember-computed-decorators";
 import computed from "ember-addons/ember-computed-decorators";
@@ -6,38 +7,6 @@ import DomHelpersMixin from "select-box-kit/mixins/dom-helpers";
 import KeyboardMixin from "select-box-kit/mixins/keyboard";
 
 export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin, {
-  baseRowTemplate(innerTemplate, content) {
-    const classNames = content.classNames || [];
-
-    classNames.push("select-box-kit-row");
-
-    if (this.shouldSelectRowInSection(content.row, 0)) {
-      classNames.push("is-selected");
-    }
-
-    if (this.shouldHighlightRowInSection(content.row, 0)) {
-      classNames.push("is-highlighted");
-    }
-
-    return `
-      <li title="${content.title || content.name}"
-          class="${classNames.join(" ")}"
-          data-value="${content.value}"
-          data-name="${content.name}"
-          data-row="${content.row}">
-        ${innerTemplate}
-      </li>
-    `;
-  },
-
-  shouldHighlightRowInSection(row, section) {
-    const paths = this.get("highlightedIndexPaths").find((x) => {
-      return x.row === row && x.section === section;
-    });
-
-    return !isEmpty(paths);
-  },
-
   shouldSelectRowInSection(row, section) {
     const paths = this.get("selectedIndexPaths").find((x) => {
       return x.row === row && x.section === section;
@@ -74,6 +43,7 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   autoFilterable: false,
   filterable: false,
   filter: "",
+  _filter: "",
   filterPlaceholder: "select_box.filter_placeholder",
   filterIcon: "search",
   rowComponentOptions: null,
@@ -94,6 +64,8 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
 
   init() {
     this._super();
+
+    this.attachedRowsHandler = false;
 
     if ($(window).outerWidth(false) <= 420) {
       this.setProperties({ filterable: false, autoFilterable: false });
@@ -137,14 +109,12 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     };
   },
 
-  filterFunction(content) {
-    return selectBox => {
-      const filter = selectBox.get("filter").toLowerCase();
-      return content.filter(c => {
-        return c.name.toLowerCase().indexOf(filter) > -1;
-      });
-    };
-  },
+  // filterFunction(content) {
+  //   return selectBox => {
+  //     const filter = selectBox.get("filter").toLowerCase();
+  //     return content.filter(c => c.name.toLowerCase().indexOf(filter) > -1);
+  //   };
+  // },
 
   nameForContent(content) {
     if (typeof content === "object") {
@@ -172,13 +142,20 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     return {
       value: this.valueForContent(content),
       name: this.nameForContent(content),
+      isSelected: this.shouldSelectRowInSection(row, 0),
+      isHidden: false,
       row,
       generated: false
     };
   },
 
-  @computed("computedFilterable", "none", "content.[]", "selectedIndexPaths.[]", "highlightedIndexPaths.[]")
-  sections() {
+  @computed("content.[]")
+  computedContent() {
+    return this.formatedContentForSections();
+  },
+
+  @computed("computedContent.[]")
+  sections(computedContent) {
     // this._mutateValue();
     //
     // return [
@@ -191,19 +168,54 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     //     component: "select-box-kit/select-box-kit-none-row",
     //   }
     // ].concat(this.formatedContentForSections());
-    return this.formatedContentForSections();
+
+    const rows = computedContent.map((content, rowIndex) => {
+      return `
+        <li class="select-box-kit-row"
+            data-row=${rowIndex}
+            tabIndex="-1"
+            data-section="0">
+          ${content.name}
+        </li>
+      `;
+    });
+
+    console.log("COMPUTING ROWS")
+
+    return [ rows ];
+  },
+
+  @on("didRender")
+  _setHandlers() {
+    if (this.attachedRowsHandler === false && this.get("shouldRenderBody") === true) {
+      this.attachedRowsHandler = true;
+
+      this.$(".select-box-kit-collection").on("mouseenter", ".select-box-kit-row", (event) => {
+        const $row = $(event.target);
+        this.send("onHighlightRow", {section: $row.data("section"), row: $row.data("row")});
+      });
+
+      this.$(".select-box-kit-collection").on("mouseleave", ".select-box-kit-row", (event) => {
+        const $row = $(event.target);
+        this.send("onUnHighlightRow", {section: $row.data("section"), row: $row.data("row")});
+      });
+
+      this.$(".select-box-kit-collection").on("click", ".select-box-kit-row", (event) => {
+        const $row = $(event.target);
+        this.send("onSelectRow", {section: $row.data("section"), row: $row.data("row")});
+      });
+    }
   },
 
   formatedContentForSections() {
-    return [
-      this.formatedContentForSection(2)
-    ];
+    return  this.formatedContentForSection(2);
   },
 
   formatedContentForSection() {
     let content = this.formatContents(this.getWithDefault("content", []));
-    if (this.get("computedFilterable") === false) { return content; }
-    content = this.filterFunction(content)(this);
+    // if (this.get("computedFilterable") === false) { return content; }
+    // content = this.filterFunction(content)(this);
+
 
     // if (section === 2) {
     //   if (!isEmpty(this.get("filter"))) {
@@ -259,7 +271,7 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
       return true;
     }
 
-    if (filter.length > 0 && autoFilterable === true) {
+    if (!isEmpty(filter) && autoFilterable === true) {
       return true;
     }
 
@@ -281,10 +293,10 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     return null;
   },
 
-  @computed("selectedIndexPaths.firstObject", "sections.[]")
-  selectedContent() {
+  @computed("selectedIndexPaths.firstObject.row", "computedContent.[]")
+  selectedContent(row, computedContent) {
     // if (isNone(indexPath)) { return null; }
-    // return sections[indexPath.section].formatedContent[indexPath.row];
+    return computedContent.get(row);
   },
 
   @on("didRender")
@@ -386,7 +398,7 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   },
 
   collapse() {
-    this.setProperties({ isExpanded: false, filter: "" });
+    this.setProperties({ isExpanded: false });
     Ember.run.scheduleOnce("afterRender", this, "_removeFixedPosition");
   },
 
@@ -397,8 +409,12 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
 
   actions: {
     onClearSelection() {
+      this.$rows().removeClass("is-selected");
       this.get("selectedIndexPaths").clear();
       this.focus();
+
+      this.set("_filter", "");
+      this.send("onFilter", "");
     },
 
     onToggle() {
@@ -415,24 +431,41 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
       this.send("onSelectRow", content.value);
     },
 
-    onFilter(filter) {
-      this.get("highlightedIndexPaths").clear();
-      this.set("filter", filter);
+    onFilter(_filter) {
+      this.set("filter", _filter);
+
+      Ember.run.schedule("afterRender", () => {
+        this.$rows().removeClass("is-hidden");
+        this.get("computedContent").forEach((c) => {
+          const matched = c.name.toLowerCase().indexOf(_filter) > -1;
+
+          console.log(_filter)
+          if (!matched) {
+            this.$rowAtIndexPath({section: 0, row: c.row}).addClass("is-hidden");
+          }
+        });
+
+        // this.attachedRowsHandler = false;
+        // this._setHandlers();
+      });
     },
 
     onHighlightRow(indexPath) {
+      this.$rows().removeClass("is-highlighted");
+      this.$rowAtIndexPath(indexPath).addClass("is-highlighted");
       this.get("highlightedIndexPaths").clear().pushObject(indexPath);
     },
 
-    onUnHighlightRow() {
+    onUnHighlightRow(indexPath) {
+      this.$rowAtIndexPath(indexPath).removeClass("is-highlighted");
       this.get("highlightedIndexPaths").clear();
     },
 
     onSelectRow(indexPath) {
-      this.get("selectedIndexPaths").clear().pushObject(indexPath);
       this.defaultOnSelect();
-      // this.$rows().removeClass("is-selected");
-      // row.$().addClass("is-selected");
+      this.get("selectedIndexPaths").clear().pushObject(indexPath);
+      this.$rows().removeClass("is-selected");
+      this.$rowAtIndexPath(indexPath).addClass("is-selected");
     }
   },
 

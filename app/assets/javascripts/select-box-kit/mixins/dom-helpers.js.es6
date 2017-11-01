@@ -10,6 +10,10 @@ export default Ember.Mixin.create({
     this.bodySelector = ".select-box-kit-body";
   },
 
+  $rowAtIndexPath(indexPath) {
+    return this.$(`.select-box-kit-collection[data-section="${indexPath.section}"] .select-box-kit-row[data-row="${indexPath.row}"]`);
+  },
+
   $header() {
     return this.$(this.headerSelector);
   },

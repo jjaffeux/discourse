@@ -14,29 +14,37 @@ export default Ember.Component.extend({
     "content.value:data-value",
     "name:data-name"
   ],
-  classNameBindings: [ "customClassNamesBindings" ],
+  isHighlighted: false,
+  isHidden: false,
+  classNameBindings: [
+    "customClassNamesBindings",
+    "isHighlighted",
+    "content.isSelected:is-selected",
+    "content.isHidden:is-hidden",
+  ],
 
   customClassNamesBindings: Ember.computed.alias("content.classNames"),
 
-  // @computed("content.icons")
-  // icons(icons) {
-  //   return makeArray(icons).map(icon => {
-  //     const name = icon.name;
-  //     delete icon.name;
-  //     return iconHTML(name, icon);
-  //   }).join("");
-  // },
+  @computed("content.icons")
+  icons(icons) {
+    return makeArray(icons).map(icon => {
+      const name = icon.name;
+      delete icon.name;
+      return iconHTML(name, icon);
+    }).join("");
+  },
 
-  // @computed("content.name", "content.title")
-  // title(name, title) { return title || name; },
+  @computed("content.name", "content.title")
+  title(name, title) { return title || name; },
 
-  // @computed("row", "section")
-  // indexPath(row, section) { return { row, section }; },
+  @computed("row", "section")
+  indexPath(row, section) { return { row, section }; },
 
   mouseLeave() {
     // this.set("isHighlighted", false);
     // this.$rows().removeClass("is-highlighted");
-    this.sendAction("onUnHighlightRow", this);
+    // this.sendAction("onUnHighlightRow", this);
+    this.set("isHighlighted", false);
   },
 
   mouseEnter() {
@@ -46,13 +54,14 @@ export default Ember.Component.extend({
     // this.set("isHighlighted", true);
     // this.$rows().removeClass("is-highlighted");
     // this.$().addClass("is-highlighted");
-    this.sendAction("onHighlightRow", this);
+    // this.sendAction("onHighlightRow", this);
+    this.set("isHighlighted", true);
   },
 
   click() {
     // this.$rows().removeClass("is-selected");
     // this.$().addClass("is-selected");
-    this.sendAction("onSelectRow", this);
+    this.sendAction("onSelectRow", {section: 0, row: this.get("row") });
     // if (this.get("content.isSelected") !== true) {
     //   this.sendAction("onSelectRow", this.get("indexPath"));
     // }

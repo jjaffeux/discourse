@@ -1,25 +1,9 @@
 {{#each rows as |row|}}
-  {{!-- {{component rowComponent
-    content=c
-    section=section
-    row=row
-    templateForRow=templateForRow
-    options=rowComponentOptions
-    onUnHighlightRow=onUnHighlightRow
-    onHighlightRow=onHighlightRow
-    onSelectRow=onSelectRow
-    onClearSelection=onClearSelection
-    selectedIndexPaths=selectedIndexPaths
-    highlightedIndexPaths=highlightedIndexPaths
-  }} --}}
-  {{!-- {{{row}}} --}}
-
-  {{!-- {{fast-row onHighlightRow=onHighlightRow}} --}}
-  {{mount-widget widget="select-box-kit-row" onHighlightRow=onHighlightRow}}
+  {{{row}}}
 {{else}}
-  {{#if noContentLabel}}
+  {{!-- {{#if noContentLabel}} --}}
     <li class="select-box-kit-row no-content">
       {{i18n noContentLabel}}
     </li>
-  {{/if}}
+  {{!-- {{/if}} --}}
 {{/each}}

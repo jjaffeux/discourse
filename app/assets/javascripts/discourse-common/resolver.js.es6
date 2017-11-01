@@ -82,6 +82,7 @@ export function buildResolver(baseName) {
         module = requirejs(moduleName, null, null, true /* force sync */);
         if (module && module['default']) { module = module['default']; }
       }
+
       return module;
     },
 

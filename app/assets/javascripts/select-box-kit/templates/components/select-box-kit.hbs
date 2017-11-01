@@ -1,3 +1,5 @@
+{{computedFilter}}
+
 <input
   class="select-box-kit-offscreen"
   type="text"
@@ -25,11 +27,11 @@
   {{component filterComponent
     onFilter=(action "onFilter")
     icon=filterIcon
-    filter=filter
     filterable=computedFilterable
     isFocused=isFocused
     placeholder=(i18n filterPlaceholder)
     tabindex=tabindex
+    _filter=_filter
   }}
 
   {{#if shouldRenderBody}}
@@ -37,6 +39,7 @@
       {{component collectionComponent
         section=sectionIndex
         rows=section
+        rowComponent="select-box-kit/select-box-kit-row"
         selectedIndexPaths=selectedIndexPaths
         highlightedIndexPaths=highlightedIndexPaths
         onUnHighlightRow=(action "onUnHighlightRow")
@@ -47,10 +50,10 @@
     {{/each}}
   {{/if}}
 
-  <p>srow: {{selectedIndexPaths.firstObject.row}}</p>
+  {{!-- <p>srow: {{selectedIndexPaths.firstObject.row}}</p>
   <p>ssection: {{selectedIndexPaths.firstObject.section}}</p>
   <p>hrow: {{highlightedIndexPaths.firstObject.row}}</p>
-  <p>hsection: {{highlightedIndexPaths.firstObject.section}}</p>
+  <p>hsection: {{highlightedIndexPaths.firstObject.section}}</p> --}}
 </div>
 
 <div class="select-box-kit-wrapper"></div>

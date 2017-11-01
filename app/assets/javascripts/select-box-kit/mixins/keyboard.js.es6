@@ -43,102 +43,101 @@ export default Ember.Mixin.create({
   didInsertElement() {
     this._super();
 
-    $(document)
-      .on("mousedown.select-box-kit, touchstart.select-box-kit", event => {
-        if (Ember.isNone(this.get("element"))) {
-          return;
-        }
+    // $(document)
+    //   .on("mousedown.select-box-kit, touchstart.select-box-kit", event => {
+    //     if (Ember.isNone(this.get("element"))) {
+    //       return;
+    //     }
+    //
+    //     if (this.get("element").contains(event.target)) { return; }
+    //     this.clickOutside(event);
+    // });
+    //
+    // this.$offscreenInput()
+    //   .on("blur.select-box-kit", () => {
+    //     if (this.get("isExpanded") === false && this.get("isFocused") === true) {
+    //       this.close();
+    //     }
+    //   })
+    //   .on("focus.select-box-kit", (event) => {
+    //     this.set("isFocused", true);
+    //     this.$filterInput().focus();
+    //     this._killEvent(event);
+    //   })
+    //   .on("focusin.select-box-kit", (event) => {
+    //     this.set("isFocused", true);
+    //     this._killEvent(event);
+    //   })
+    //   .on("keydown.select-box-kit", (event) => {
+    //     const keyCode = event.keyCode || event.which;
+    //
+    //     switch (keyCode) {
+    //       case this.keys.UP:
+    //       case this.keys.DOWN:
+    //         if (this.get("isExpanded") === false) {
+    //           this.expand();
+    //         }
+    //
+    //         Ember.run.schedule("actions", () => {
+    //           this._handleArrowKey(keyCode);
+    //         });
+    //
+    //         this._killEvent(event);
+    //
+    //         return;
+    //       case this.keys.ENTER:
+    //         if (this.get("isExpanded") === false) {
+    //           this.expand();
+    //         } else {
+    //           this.send("onSelectRow", {section: 0, row: this.$highlightedRow().data("row")});
+    //         }
+    //         this._killEvent(event);
+    //         return;
+    //       case this.keys.TAB:
+    //         if (this.get("isExpanded") === false) {
+    //           return true;
+    //         } else {
+    //           this.send("onSelectRow", {section: 0, row: this.$highlightedRow().data("row")});
+    //           return false;
+    //         }
+    //       case this.keys.ESC:
+    //         this.close();
+    //         this._killEvent(event);
+    //         return;
+    //       case this.keys.BACKSPACE:
+    //         this._killEvent(event);
+    //         return;
+    //     }
 
-        if (this.get("element").contains(event.target)) { return; }
-        this.clickOutside(event);
-    });
+        // if (this._isSpecialKey(keyCode) === false && event.metaKey === false) {
+        //   this.setProperties({
+        //     _filter: String.fromCharCode(keyCode),
+        //     isExpanded: true
+        //   });
+        //
+        //   Ember.run.schedule("afterRender", () => this.$filterInput().focus() );
+        // }
+      // });
 
-    this.$offscreenInput()
-      .on("blur.select-box-kit", () => {
-        if (this.get("isExpanded") === false && this.get("isFocused") === true) {
-          this.close();
-        }
-      })
-      .on("focus.select-box-kit", (event) => {
-        this.set("isFocused", true);
-        this._killEvent(event);
-      })
-      .on("focusin.select-box-kit", (event) => {
-        this.set("isFocused", true);
-        this._killEvent(event);
-      })
-      .on("keydown.select-box-kit", (event) => {
-        const keyCode = event.keyCode || event.which;
-
-        switch (keyCode) {
-          case this.keys.UP:
-          case this.keys.DOWN:
-            if (this.get("isExpanded") === false) {
-              this.expand();
-            }
-
-            Ember.run.schedule("actions", () => {
-              this._handleArrowKey(keyCode);
-            });
-
-            this._killEvent(event);
-
-            return;
-          case this.keys.ENTER:
-            if (this.get("isExpanded") === false) {
-              this.expand();
-            } else {
-              const row = this._rowComponentForRowDOM(this.$highlightedRow()[0]);
-              this.send("onSelectRow", row);
-            }
-            this._killEvent(event);
-            return;
-          case this.keys.TAB:
-            if (this.get("isExpanded") === false) {
-              return true;
-            } else {
-              const row = this._rowComponentForRowDOM(this.$highlightedRow()[0]);
-              this.send("onSelectRow", row);
-              return false;
-            }
-          case this.keys.ESC:
-            this.close();
-            this._killEvent(event);
-            return;
-          case this.keys.BACKSPACE:
-            this._killEvent(event);
-            return;
-        }
-
-        if (this._isSpecialKey(keyCode) === false && event.metaKey === false) {
-          this.setProperties({
-            isExpanded: true,
-            filter: String.fromCharCode(keyCode)
-          });
-
-          Ember.run.schedule("afterRender", () => this.$filterInput().focus() );
-        }
-      });
-
-    this.$filterInput()
-      .on("keydown.select-box-kit", (event) => {
-        const keyCode = event.keyCode || event.which;
-
-        if ([
-            this.keys.RIGHT,
-            this.keys.LEFT,
-            this.keys.BACKSPACE,
-            this.keys.SPACE,
-          ].includes(keyCode) || event.metaKey === true) {
-          return true;
-        }
-
-        if (this._isSpecialKey(keyCode) === true) {
-          this.$offscreenInput().focus().trigger(event);
-        }
-
-        return true;
-      });
+    // this.$filterInput()
+    //   .on("keydown.select-box-kit", (event) => {
+    //     const keyCode = event.keyCode || event.which;
+    //
+    //     if ([
+    //         this.keys.RIGHT,
+    //         this.keys.LEFT,
+    //         this.keys.BACKSPACE,
+    //         this.keys.SPACE,
+    //       ].includes(keyCode) || event.metaKey === true) {
+    //       return true;
+    //     }
+    //
+    //     if (this._isSpecialKey(keyCode) === true) {
+    //       this.$offscreenInput().focus().trigger(event);
+    //     }
+    //
+    //     return true;
+    //   });
   },
 
   _handleArrowKey(keyCode) {
@@ -175,8 +174,7 @@ export default Ember.Mixin.create({
 
   _rowSelection($rows, nextIndex) {
     const $highlightableRow = $rows.eq(nextIndex);
-    const row = this._rowComponentForRowDOM($highlightableRow[0]);
-    this.send("onHighlightRow", row);
+    this.send("onHighlightRow", {section: 0, row: nextIndex})
     $highlightableRow.trigger("focus");
     this.$offscreenInput().focus();
   },
