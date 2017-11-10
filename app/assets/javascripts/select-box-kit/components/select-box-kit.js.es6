@@ -4,8 +4,14 @@ import computed from "ember-addons/ember-computed-decorators";
 import UtilsMixin from "select-box-kit/mixins/utils";
 import DomHelpersMixin from "select-box-kit/mixins/dom-helpers";
 import KeyboardMixin from "select-box-kit/mixins/keyboard";
+import PluginApiMixin from "select-box-kit/mixins/plugin-api";
+import {
+  _addContentCallbacks,
+  _prependContentCallbacks
+} from "select-box-kit/mixins/plugin-api";
 
-export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin, {
+export default Ember.Component.extend(UtilsMixin, PluginApiMixin, DomHelpersMixin, KeyboardMixin, {
+  pluginApiIdentifiers: ["select-box-kit"],
   layoutName: "select-box-kit/templates/components/select-box-kit",
   classNames: "select-box-kit",
   classNameBindings: [
@@ -69,16 +75,13 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
       this.setProperties({ filterable: false, autoFilterable: false });
     }
 
-    if (isNone(this.get("content"))) { this.set("content", []); }
     this.set("value", this._castInteger(this.get("value")));
-
-    this.setInitialValues();
+    this.send("onLoadContent");
   },
 
-  setInitialValues() {
-    this.set("_initialValues", this.getWithDefault("content", []).map((c) => {
-      return this._valueForContent(c);
-    }));
+  didUpdateAttrs() {
+    this._super();
+    this.send("onLoadContent");
   },
 
   @computed("computedContent.[]", "computedValue.[]", "filter")
@@ -216,6 +219,19 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     return this.$().parents(scrollableParentSelector).first();
   },
 
+  willLoadContent() {},
+  loadContentFunction() {
+    const content = this.get("content");
+    if (isNone(content)) { this.set("content", []); }
+
+    this._prependContentCallbacks()
+  },
+  didLoadContent() {
+    this.set("_initialValues", this.getWithDefault("content", []).map((c) => {
+      return this._valueForContent(c);
+    }));
+  },
+
   willFilterContent() {
     this.expand();
     this.set("highlightedValue", null);
@@ -264,6 +280,12 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   },
 
   actions: {
+    onLoadContent() {
+      this.willLoadContent();
+      this.loadContentFunction();
+      this.didLoadContent();
+    },
+
     onToggle() {
       this.get("isExpanded") === true ? this.collapse() : this.expand();
     },
