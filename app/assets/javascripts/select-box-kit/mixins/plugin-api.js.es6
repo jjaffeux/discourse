@@ -16,6 +16,15 @@ function prependContent(pluginApiIdentifiers, contentFunction) {
   _prependContentCallbacks[pluginApiIdentifiers].push(contentFunction);
 }
 
+export const _modifyContentCallbacks = {};
+function modifyContent(pluginApiIdentifiers, contentFunction) {
+  if (Ember.isNone(_modifyContentCallbacks[pluginApiIdentifiers])) {
+    _modifyContentCallbacks[pluginApiIdentifiers] = [];
+  }
+
+  _modifyContentCallbacks[pluginApiIdentifiers].push(contentFunction);
+}
+
 export function selectBoxKit(pluginApiIdentifiers) {
   return {
     appendContent: (callback) => {
@@ -24,6 +33,10 @@ export function selectBoxKit(pluginApiIdentifiers) {
     },
     prependContent: (callback) => {
       prependContent(pluginApiIdentifiers, callback);
+      return selectBoxKit(pluginApiIdentifiers);
+    },
+    modifyContent: (callback) => {
+      modifyContent(pluginApiIdentifiers, callback);
       return selectBoxKit(pluginApiIdentifiers);
     }
   };

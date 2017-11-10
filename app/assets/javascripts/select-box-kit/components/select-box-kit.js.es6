@@ -7,7 +7,8 @@ import KeyboardMixin from "select-box-kit/mixins/keyboard";
 import PluginApiMixin from "select-box-kit/mixins/plugin-api";
 import {
   _addContentCallbacks,
-  _prependContentCallbacks
+  _prependContentCallbacks,
+  _modifyContentCallbacks
 } from "select-box-kit/mixins/plugin-api";
 
 export default Ember.Component.extend(UtilsMixin, PluginApiMixin, DomHelpersMixin, KeyboardMixin, {
@@ -219,17 +220,28 @@ export default Ember.Component.extend(UtilsMixin, PluginApiMixin, DomHelpersMixi
     return this.$().parents(scrollableParentSelector).first();
   },
 
-  willLoadContent() {},
-  loadContentFunction() {
-    const content = this.get("content");
-    if (isNone(content)) { this.set("content", []); }
-
-    this._prependContentCallbacks()
+  willLoadContent() {
+    if (isNone(this.get("content"))) {
+      this.set("content", []);
+    }
   },
+  loadContentFunction() {},
   didLoadContent() {
-    this.set("_initialValues", this.getWithDefault("content", []).map((c) => {
-      return this._valueForContent(c);
-    }));
+    let content = this.get("content");
+
+    this.get("pluginApiIdentifiers").forEach((key) => {
+      (_addContentCallbacks[key] || []).forEach((c) => {
+        content = content.concat(c(this));
+      });
+      (_prependContentCallbacks[key] || []).forEach((c) => {
+        content = c(this).concat(content);
+      });
+      (_modifyContentCallbacks[key] || []).forEach((c) => {
+        content = c(this).concat(content);
+      });
+    });
+
+    this.set("_initialValues", this.get("content").map(c => this._valueForContent(c) ));
   },
 
   willFilterContent() {
