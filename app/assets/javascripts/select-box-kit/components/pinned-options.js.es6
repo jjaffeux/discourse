@@ -1,5 +1,4 @@
 import DropdownSelectBoxComponent from "select-box-kit/components/dropdown-select-box";
-import computed from "ember-addons/ember-computed-decorators";
 import { observes } from "ember-addons/ember-computed-decorators";
 import { on } from "ember-addons/ember-computed-decorators";
 
@@ -16,20 +15,18 @@ export default DropdownSelectBoxComponent.extend({
     }));
   },
 
-  @computed("topic.pinned")
-  value(pinned) {
-    return pinned ? "pinned" : "unpinned";
+  loadValueFunction() {
+    return this.get("topic.pinned") ? "pinned" : "unpinned";
   },
 
   @observes("topic.pinned")
   _pinStateChanged() {
-    this.set("value", this.get("topic.pinned") ? "pinned" : "unpinned");
+    this.send("onSelect", this.get("topic.pinned") ? "pinned" : "unpinned");
     this._setComponentOptions();
   },
 
-  @computed("topic.pinned_globally")
-  content(pinnedGlobally) {
-    const globally = pinnedGlobally ? "_globally" : "";
+  loadContentFunction() {
+    const globally = this.get("topic.pinned_globally") ? "_globally" : "";
 
     return [
       {
@@ -56,5 +53,7 @@ export default DropdownSelectBoxComponent.extend({
     } else {
       topic.rePin();
     }
+
+    this.send("onReceiveValue", value);
   }
 });

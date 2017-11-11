@@ -9,7 +9,6 @@ export default DropdownSelectBoxComponent.extend({
   fullWidthOnMobile: true,
   content: allLevels,
   collectionHeight: "auto",
-  value: Ember.computed.alias("notificationLevel"),
   castInteger: true,
   autofilterable: false,
   filterable: false,
@@ -19,6 +18,10 @@ export default DropdownSelectBoxComponent.extend({
   i18nPrefix: "",
   i18nPostfix: "",
   showFullTitle: true,
+
+  loadValueFunction() {
+    return this.get("notificationLevel");
+  },
 
   @on("didReceiveAttrs", "didUpdateAttrs")
   _setComponentOptions() {

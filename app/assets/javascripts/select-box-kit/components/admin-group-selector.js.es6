@@ -1,4 +1,5 @@
 import MultiComboBoxComponent from "select-box-kit/components/multi-combo-box";
+const { makeArray } = Ember;
 
 export default MultiComboBoxComponent.extend({
   classNames: "admin-group-selector",
@@ -6,12 +7,11 @@ export default MultiComboBoxComponent.extend({
   available: null,
   allowAny: false,
 
-  didReceiveAttrs() {
-    this._super();
-
-    this.set("value", this.get("selected").map(s => this._valueForContent(s)));
-    this.set("content", this.get("available"));
+  loadValuesFunction() {
+    return makeArray(this.get("selected")).map(s => this._valueForContent(s));
   },
+
+  loadContentFunction() { return makeArray(this.get("available")); },
 
   formatRowContent(content) {
     let formatedContent = this._super(content);
@@ -19,14 +19,14 @@ export default MultiComboBoxComponent.extend({
     return formatedContent;
   },
 
-  didUpdateAttrs() {
-    this._super();
-
-    this.set("highlightedValue", null);
-    Ember.run.schedule("afterRender", () => {
-      this.autoHighlightFunction();
-    });
-  },
+  // didUpdateAttrs() {
+  //   this._super();
+  //
+  //   this.set("highlightedValue", null);
+  //   Ember.run.schedule("afterRender", () => {
+  //     this.autoHighlightFunction();
+  //   });
+  // },
 
   selectValuesFunction(values) {
     values.forEach(value => {
