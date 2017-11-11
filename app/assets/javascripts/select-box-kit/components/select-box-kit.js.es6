@@ -4,8 +4,11 @@ import computed from "ember-addons/ember-computed-decorators";
 import UtilsMixin from "select-box-kit/mixins/utils";
 import DomHelpersMixin from "select-box-kit/mixins/dom-helpers";
 import KeyboardMixin from "select-box-kit/mixins/keyboard";
+import PluginApiMixin from "select-box-kit/mixins/plugin-api";
+import { applyContentPluginApiCallbacks } from "select-box-kit/mixins/plugin-api";
 
-export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin, {
+export default Ember.Component.extend(UtilsMixin, PluginApiMixin, DomHelpersMixin, KeyboardMixin, {
+  pluginApiIdentifiers: ["select-box-kit"],
   layoutName: "select-box-kit/templates/components/select-box-kit",
   classNames: "select-box-kit",
   classNameBindings: [
@@ -54,6 +57,8 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   allowValueMutation: true,
   autoSelectFirst: true,
   content: null,
+  computedValue: null,
+  computedContent: null,
   _initialValues: null,
 
   init() {
@@ -64,21 +69,21 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     this._previousCSSContext = {};
     this.set("headerComponentOptions", Ember.Object.create());
     this.set("rowComponentOptions", Ember.Object.create());
+    this.set("computedContent", []);
 
     if ($(window).outerWidth(false) <= 420) {
       this.setProperties({ filterable: false, autoFilterable: false });
     }
-
-    if (isNone(this.get("content"))) { this.set("content", []); }
-    this.set("value", this._castInteger(this.get("value")));
-
-    this.setInitialValues();
   },
 
-  setInitialValues() {
-    this.set("_initialValues", this.getWithDefault("content", []).map((c) => {
-      return this._valueForContent(c);
-    }));
+  @on("didReceiveAttrs")
+  _compute() {
+    Ember.run.scheduleOnce("afterRender", () => this.computeInputs());
+  },
+
+  computeInputs() {
+    this.send("onReceiveContent", Ember.makeArray(this.get("content")));
+    this.send("onReceiveValue", this.get("value"));
   },
 
   @computed("computedContent.[]", "computedValue.[]", "filter")
@@ -96,6 +101,7 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   },
 
   formatRowContent(content) {
+    console.log("formatRowContent", content)
     let originalContent;
 
     if (typeof content === "string" || typeof content === "number") {
@@ -105,6 +111,16 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     } else {
       originalContent = content;
     }
+
+
+    console.log(
+      {
+        value: this._castInteger(this._valueForContent(content)),
+        name: this._nameForContent(content),
+        locked: false,
+        originalContent
+      }
+    )
 
     return {
       value: this._castInteger(this._valueForContent(content)),
@@ -120,7 +136,7 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
 
   @computed("filter", "filterable", "autoFilterable", "renderedFilterOnce")
   shouldDisplayFilter(filter, filterable, autoFilterable, renderedFilterOnce) {
-    if (renderedFilterOnce === true || filterable === true) { return true; }
+    if ((renderedFilterOnce === true || filterable === true) && filter.length > 0) { return true; }
     if (filter.length > 0 && autoFilterable === true) { return true; }
     return false;
   },
@@ -133,24 +149,9 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
 
   @computed("filter", "shouldDisplayCreateRow")
   createRowContent(filter, shouldDisplayCreateRow) {
-    if (shouldDisplayCreateRow === true && !this.get("value").includes(filter)) {
+    if (shouldDisplayCreateRow === true && !this.get("computedValue").includes(filter)) {
       return Ember.Object.create({ value: filter, name: filter });
     }
-  },
-
-  @computed("content.[]", "value.[]")
-  computedContent(content) {
-    this._mutateValue();
-    return this.formatContents(content || []);
-  },
-
-  @computed("value", "none", "computedContent.firstObject.value")
-  computedValue(value, none, firstContentValue) {
-    if (isNone(value) && isNone(none) && this.get("autoSelectFirst") === true) {
-      return firstContentValue;
-    }
-
-    return value;
   },
 
   @computed
@@ -176,7 +177,7 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
 
   @computed("computedValue", "computedContent.[]")
   selectedContent(computedValue, computedContent) {
-    if (isNone(computedValue)) { return []; }
+    if (isNone(computedValue) || isNone(computedContent)) { return []; }
     return [ computedContent.findBy("value", computedValue) ];
   },
 
@@ -184,7 +185,6 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
   _setupResizeListener() {
     $(window).on("resize.select-box-kit", () => this.collapse() );
   },
-
 
   autoHighlightFunction() {
     Ember.run.schedule("afterRender", () => {
@@ -211,6 +211,58 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     });
   },
 
+  @computed("scrollableParentSelector")
+  scrollableParent(scrollableParentSelector) {
+    return this.$().parents(scrollableParentSelector).first();
+  },
+
+  // _beforeWillLoadValue(value) {
+  //   value = this._castInteger(value === "" ? null : value);
+  //
+  //   if (this.get("allowValueMutation") === true) {
+  //     const none = isNone(this.get("none"));
+  //     const emptyValue = isEmpty(value);
+  //
+  //     if (none && emptyValue) {
+  //       if (!isEmpty(this.get("content"))) {
+  //         value = this._valueForContent(this.get("content.firstObject"));
+  //         Ember.run.next(() => this.set("value", value));
+  //       }
+  //     }
+  //   }
+  //
+  //   return value;
+  // },
+  // willLoadValue(value) { return value; },
+  // loadValueFunction(value) { return value; },
+  // _beforeDidLoadValue(value) {
+  //   if (!isEmpty(this.get("content")) && isNone(value) && isNone(this.get("none")) && this.get("autoSelectFirst") === true) {
+  //     return this._valueForContent(get(this.get("content"), "firstObject"));
+  //   }
+  //
+  //   this.setProperties({ computedValue: value });
+  // },
+  // didLoadValue(value) { return value; },
+
+  setValueFunction(value) {
+    this.set("value", value);
+    this.computeInputs();
+  },
+
+  _beforeWillLoadContent(content) { return content; },
+  willLoadContent(content) { return content; },
+  loadContentFunction(content) { return content; },
+  _beforeDidLoadContent(content) {
+    console.log("before did load", content, this.formatContents(content))
+    content = applyContentPluginApiCallbacks(this.get("pluginApiIdentifiers"), content);
+    this.setProperties({
+      computedContent: this.formatContents(content),
+      _initialValues: this.get("_initialValues") || content.map(c => this._valueForContent(c) )
+    });
+    return content;
+  },
+  didLoadContent(content) { return content; },
+
   willFilterContent() {
     this.expand();
     this.set("highlightedValue", null);
@@ -220,45 +272,55 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     this.autoHighlightFunction();
   },
 
-  willCreateContent() { },
-  createContentFunction(input) {
-    this.get("content").pushObject(input);
-    this.send("onSelect", input);
-  },
-  didCreateContent() {
-    this.clearFilter();
-    this.autoHighlightFunction();
-  },
+  // willCreateContent() {},
+  // createContentFunction(input) {
+  //   this.set("content", this.get("content").concat(input));
+  //   this.setValueFunction(input);
+  //   this.computeInputs();
+  // },
+  // didCreateContent() {
+  //   this.clearFilter();
+  //   this.autoHighlightFunction();
+  // },
 
-  willHighlightValue() {},
-  highlightValueFunction(value) {
-    this.set("highlightedValue", value);
-  },
-  didHighlightValue() {},
+  // willHighlightValue() {},
+  // highlightValueFunction(value) {
+  //   this.set("highlightedValue", value);
+  // },
+  // didHighlightValue() {},
 
-  willSelectValue() {
-    this.clearFilter();
-    this.set("highlightedValue", null);
-  },
-  selectValueFunction(value) {
-    this.set("value", value);
-  },
-  didSelectValue() {
-    this.collapse();
-    this.focus();
-  },
+  // willSelectValue() {
+  //   this.clearFilter();
+  //   this.set("highlightedValue", null);
+  // },
+  // selectValueFunction(value) {
+  //   this.setValueFunction(value);
+  // },
+  // didSelectValue() {
+  //   this.collapse();
+  //   this.focus();
+  // },
 
-  willDeselectValue() {
-    this.set("highlightedValue", null);
-  },
-  unsetValueFunction() {
-    this.set("value", null);
-  },
-  didDeselectValue() {
-    this.focus();
-  },
+  // willDeselectValue() { this.set("highlightedValue", null); },
+  // didDeselectValue() { this.focus(); },
 
   actions: {
+    onReceiveValue(value) {
+      value = this._beforeWillLoadValue(value);
+      value = this.willLoadValue(value);
+      value = this.loadValueFunction(value);
+      value = this._beforeDidLoadValue(value);
+      this.didLoadValue(value);
+    },
+
+    onReceiveContent(content) {
+      content = this._beforeWillLoadContent(content);
+      content = this.willLoadContent(content);
+      content = this.loadContentFunction(content);
+      content = this._beforeDidLoadContent(content);
+      this.didLoadContent(content);
+    },
+
     onToggle() {
       this.get("isExpanded") === true ? this.collapse() : this.expand();
     },
@@ -291,14 +353,14 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     onDeselect(value) {
       value = this._originalValueForValue(value);
       this.willDeselectValue(value);
-      this.unsetValueFunction(value);
+      this.setValueFunction(null);
       this.didSelectValue(value);
     },
 
-    onFilterChange(_filter) {
-      this.willFilterContent(_filter);
-      this.set("filter", _filter);
-      this.didFilterContent(_filter);
+    onFilterChange(filter) {
+      this.willFilterContent(filter);
+      this.set("filter", filter);
+      this.didFilterContent(filter);
     },
   },
 
@@ -306,23 +368,4 @@ export default Ember.Component.extend(UtilsMixin, DomHelpersMixin, KeyboardMixin
     this.$filterInput().val("");
     this.setProperties({ filter: "" });
   },
-
-  @on("didReceiveAttrs")
-  _mutateValue() {
-    if (this.get("allowValueMutation") !== true) {
-      return;
-    }
-
-    const none = isNone(this.get("none"));
-    const emptyValue = isEmpty(this.get("value"));
-
-    if (none && emptyValue) {
-      Ember.run.scheduleOnce("sync", () => {
-        if (!isEmpty(this.get("computedContent"))) {
-          const firstValue = this.get("computedContent.firstObject.value");
-          this.set("value", firstValue);
-        }
-      });
-    }
-  }
 });

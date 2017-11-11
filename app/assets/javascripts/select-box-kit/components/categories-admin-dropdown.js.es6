@@ -1,6 +1,5 @@
 import DropdownSelectBoxComponent from "select-box-kit/components/dropdown-select-box";
 import { iconHTML } from "discourse-common/lib/icon-library";
-import computed from "ember-addons/ember-computed-decorators";
 import { on } from "ember-addons/ember-computed-decorators";
 
 export default DropdownSelectBoxComponent.extend({
@@ -14,8 +13,7 @@ export default DropdownSelectBoxComponent.extend({
     });
   },
 
-  @computed
-  content() {
+  loadContentFunction() {
     const items = [
       {
         id: "create",
@@ -40,6 +38,6 @@ export default DropdownSelectBoxComponent.extend({
 
   selectValueFunction(value) {
     this.get(value)();
-    this.set("value", null);
+    this.send("onReceiveValue", null);
   }
 });

@@ -16,7 +16,6 @@ export default Ember.Component.extend(UtilsMixin, {
     "content.name:data-name"
   ],
   classNameBindings: ["isHighlighted", "isSelected"],
-  clicked: false,
 
   @computed("content.originalContent.title", "content.name")
   title(title, name) {
@@ -54,14 +53,8 @@ export default Ember.Component.extend(UtilsMixin, {
   },
 
   click() {
-    this._sendOnSelectAction();
-  },
-
-  _sendOnSelectAction() {
-    if (this.get("clicked") === false) {
-      this.set("clicked", true);
-      this.sendAction("onSelect", this.get("content.value"));
-    }
+    console.log("CLICK", this.get("content"))
+    this.sendAction("onSelect", this.get("content.value"));
   },
 
   _sendOnHighlightAction() {

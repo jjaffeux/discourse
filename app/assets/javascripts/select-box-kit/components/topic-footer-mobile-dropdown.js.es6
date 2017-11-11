@@ -1,4 +1,3 @@
-import computed from "ember-addons/ember-computed-decorators";
 import ComboBoxComponent from "select-box-kit/components/combo-box";
 import { on } from "ember-addons/ember-computed-decorators";
 
@@ -16,9 +15,9 @@ export default ComboBoxComponent.extend({
         .set("selectedName", I18n.t(this.get("headerText")));
   },
 
-  @computed("topic", "topic.details", "value")
-  content(topic, details) {
-    const content = [];
+  loadContentFunction(content) {
+    const topic = this.get("topic");
+    const details = topic.get("details");
 
     if (details.get("can_invite_to")) {
       content.push({ id: "invite", icon: "users", name: I18n.t("topic.invite_reply.title") });
@@ -47,7 +46,7 @@ export default ComboBoxComponent.extend({
       return;
     }
 
-    this.set("value", value);
+    this.send("onReceiveValue", value);
 
     const refresh = () => this.send("onDeselect", value);
 
