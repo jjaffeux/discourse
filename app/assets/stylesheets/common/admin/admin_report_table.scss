@@ -61,6 +61,12 @@
     &.user .username {
       margin-left: 0.25em;
     }
+
+    &.text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   .total-row {
