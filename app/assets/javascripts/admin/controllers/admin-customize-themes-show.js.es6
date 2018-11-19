@@ -18,9 +18,10 @@ export default Ember.Controller.extend({
     if (!model.get("component")) {
       return null;
     }
-    const parents = allThemes.filter(theme =>
-      _.contains(theme.get("childThemes"), model)
-    );
+    const parents = allThemes.filter(theme => {
+      const childThemes = theme.get("childThemes");
+      return childThemes && childThemes.includes(model);
+    });
     return parents.length === 0 ? null : parents;
   },
 
