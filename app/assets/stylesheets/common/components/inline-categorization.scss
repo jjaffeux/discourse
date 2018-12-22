@@ -1,0 +1,10 @@
+.inline-categorization {
+  background: $primary-very-low;
+  display: inline-flex;
+  align-items: center;
+
+  // TODO: remove all these custom things
+  .badge-wrapper.bullet {
+    margin-right: 0;
+  }
+}
