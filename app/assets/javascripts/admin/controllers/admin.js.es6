@@ -22,14 +22,15 @@ export default Ember.Controller.extend({
           segment !== "index" &&
           segment !== "loading" &&
           segment !== "show" &&
-          segment !== "admin"
+          segment !== "admin" &&
+          segment !== "dashboard"
         );
       })
       .map(Ember.String.dasherize)
       .join(" ");
 
     // this is done to avoid breaking css customizations
-    if (cssClasses.includes("dashboard-reports")) {
+    if (currentPath.indexOf("admin.dashboard") > -1) {
       cssClasses = `${cssClasses} dashboard dashboard-next`;
     }
 
