@@ -29,8 +29,8 @@ export default Ember.Controller.extend({
       .join(" ");
 
     // this is done to avoid breaking css customizations
-    if (cssClasses.includes("dashboard")) {
-      cssClasses = `${cssClasses} dashboard-next`;
+    if (cssClasses.includes("dashboard-reports")) {
+      cssClasses = `${cssClasses} dashboard dashboard-next`;
     }
 
     return cssClasses;
