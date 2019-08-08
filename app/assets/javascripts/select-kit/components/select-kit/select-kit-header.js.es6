@@ -50,7 +50,18 @@ export default Ember.Component.extend({
       .filter(i => !isEmpty(i));
   },
 
-  click() {
-    this.onToggle();
-  }
+
+  // mouseDown(event) {
+  //   console.log("click sk-header")
+  //   return this._onHeaderClick(event);
+  // },
+  //
+  // focusIn(event) {
+  //   console.log("focusIn sk-header")
+  //   // return false;
+  // },
+  //
+  // focusOut(event) {
+  //   console.log("focusOut sk-header")
+  // }
 });

@@ -18,8 +18,12 @@
     {{notification-consent-banner}}
     {{global-notice}}
     {{create-topics-notice}}
+
     {{plugin-outlet name="top-notices" args=(hash currentPath=router._router.currentPath)}}
   </div>
+
+  {{combo-box content=(array "blue" "red" "green") filterable=true}}
+
   {{outlet}}
   {{outlet "user-card"}}
 </div>

@@ -1,0 +1,19 @@
+{{#let (element "div") as |Element|}}
+  <Element
+    class="ember-basic-dropdown-trigger{{if @renderInPlace " ember-basic-dropdown-trigger--in-place"}}{{if @hPosition (concat " ember-basic-dropdown-trigger--" @hPosition)}}{{if @vPosition (concat " ember-basic-dropdown-trigger--" @vPosition)}} {{@defaultClass}}"
+    role="button"
+    tabindex={{unless @dropdown.disabled "0"}}
+    data-ebd-id="{{@dropdown.uniqueId}}-trigger"
+    aria-owns="ember-basic-dropdown-content-{{@dropdown.uniqueId}}"
+    aria-expanded={{if @dropdown.isOpen "true"}}
+    aria-disabled={{if @dropdown.disabled "true"}}
+    ...attributes
+    onmousedown={{action "handleMouseDown"}}
+    onclick={{action "handleClick"}}
+    onkeydown={{action "handleKeyDown"}}
+    ontouchstart={{action "handleTouchStart"}}
+    ontouchend={{action "handleTouchEnd"}}
+  >
+    {{yield}}
+  </Element>
+{{/let}}

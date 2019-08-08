@@ -41,19 +41,19 @@ export default Ember.Mixin.create({
 
   @on("didInsertElement")
   _setupEvents() {
-    $(document).on("mousedown.select-kit", this._boundMouseDownHandler);
-
-    this.$header()
-      .on("blur.select-kit", this._boundBlurHeaderHandler)
-      .on("focus.select-kit", this._boundFocusHeaderHandler)
-      .on("keydown.select-kit", this._boundKeydownHeaderHandler)
-      .on("keypress.select-kit", this._boundKeypressHeaderHandler);
-
-    this.$filterInput()
-      .on("change.select-kit", this._boundChangeFilterInputHandler)
-      .on("keypress.select-kit", this._boundKeypressFilterInputHandler)
-      .on("focusout.select-kit", this._boundFocusoutFilterInputHandler)
-      .on("keydown.select-kit", this._boundKeydownFilterInputHandler);
+    // $(document).on("mousedown.select-kit", this._boundMouseDownHandler);
+    //
+    // this.$header()
+    //   .on("blur.select-kit", this._boundBlurHeaderHandler)
+    //   .on("focus.select-kit", this._boundFocusHeaderHandler)
+    //   .on("keydown.select-kit", this._boundKeydownHeaderHandler)
+    //   .on("keypress.select-kit", this._boundKeypressHeaderHandler);
+    //
+    // this.$filterInput()
+    //   .on("change.select-kit", this._boundChangeFilterInputHandler)
+    //   .on("keypress.select-kit", this._boundKeypressFilterInputHandler)
+    //   .on("focusout.select-kit", this._boundFocusoutFilterInputHandler)
+    //   .on("keydown.select-kit", this._boundKeydownFilterInputHandler);
   },
 
   @on("willDestroyElement")
@@ -98,8 +98,8 @@ export default Ember.Mixin.create({
   },
 
   _focusHeaderHandler(event) {
-    this.set("isFocused", true);
-    this._destroyEvent(event);
+    // this.set("isFocused", true);
+    // this._destroyEvent(event);
   },
 
   _keydownHeaderHandler(event) {
@@ -220,20 +220,16 @@ export default Ember.Mixin.create({
     this.deselect(computedContentItem);
   },
 
-  didClickRow(computedContentItem) {
-    this.close();
-    this.focus();
-    this.select(computedContentItem);
-  },
+
 
   didPressEscape(event) {
-    this._destroyEvent(event);
-
-    if (this.highlightedSelection.length && this.isExpanded) {
-      this.clearHighlightSelection();
-    } else {
-      this.unfocus(event);
-    }
+    // this._destroyEvent(event);
+    //
+    // if (this.highlightedSelection.length && this.isExpanded) {
+    //   this.clearHighlightSelection();
+    // } else {
+    //   this.unfocus(event);
+    // }
   },
 
   didPressUpAndDownArrows(event) {

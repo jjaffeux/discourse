@@ -205,7 +205,7 @@ export default SelectKitComponent.extend({
     });
   },
 
-  select(computedContentItem) {
+  select(computedContentItem, event) {
     if (computedContentItem.__sk_row_type === "noopRow") {
       applyOnSelectPluginApiCallbacks(
         this.pluginApiIdentifiers,
@@ -215,6 +215,8 @@ export default SelectKitComponent.extend({
 
       this._boundaryActionHandler("onSelect", computedContentItem.value);
       this._boundaryActionHandler("onSelectAny", computedContentItem);
+      this.onChangeHandler(Ember.makeArray(computedContentItem));
+      this.close(event);
       return;
     }
 
@@ -230,6 +232,8 @@ export default SelectKitComponent.extend({
       this._boundaryActionHandler("onSelectNone");
       this._boundaryActionHandler("onSelectAny", computedContentItem);
       this.clearSelection();
+      this.onChangeHandler(Ember.makeArray(computedContentItem));
+      this.close(event);
       return;
     }
 
@@ -282,8 +286,8 @@ export default SelectKitComponent.extend({
 
         this._boundaryActionHandler("onSelect", computedContentItem.value);
         this._boundaryActionHandler("onSelectAny", computedContentItem);
-
-        this.autoHighlight();
+        this.onChangeHandler(Ember.makeArray(computedContentItem));
+        this.close(event);
       });
     } else {
       this._boundaryActionHandler("onSelectFailure");

@@ -1,48 +1,57 @@
-{{component headerComponent
-  caretIcon=caretIcon
-  tabindex=tabindex
-  isFocused=isFocused
-  isExpanded=isExpanded
-  computedContent=headerComputedContent
-  onToggle=(action "onToggle")
-  onClearSelection=(action "onClearSelection")
-  options=headerComponentOptions
-}}
-
-<div class="select-kit-body">
-  {{component filterComponent
-    filter=filter
-    isLoading=isLoading
-    icon=filterIcon
-    hasSelection=hasSelection
-    shouldDisplayFilter=shouldDisplayFilter
-    placeholder=filterPlaceholder
-    isFocused=isFocused
-    onFilterComputedContent=(action "onFilterComputedContent")
-  }}
-
-  {{#if renderedBodyOnce}}
-    {{component collectionComponent
-      collectionHeaderComputedContent=collectionHeaderComputedContent
-      hasSelection=hasSelection
-      noneRowComputedContent=noneRowComputedContent
-      createRowComputedContent=createRowComputedContent
-      collectionComputedContent=collectionComputedContent
-      rowComponent=rowComponent
-      noneRowComponent=noneRowComponent
-      createRowComponent=createRowComponent
-      templateForRow=templateForRow
-      templateForNoneRow=templateForNoneRow
-      templateForCreateRow=templateForCreateRow
-      onClickRow=(action "onClickRow")
-      onMouseoverRow=(action "onMouseoverRow")
-      highlighted=highlighted
-      computedValue=computedValue
-      rowComponentOptions=rowComponentOptions
-      noContentRow=noContentRow
-      validationMessage=validationMessage
+<BasicDropdown as |dd|>
+  <dd.Trigger>
+    {{component headerComponent
+      caretIcon=caretIcon
+      tabindex=tabindex
+      isFocused=isFocused
+      isExpanded=isExpanded
+      computedContent=headerComputedContent
+      onClearSelection=(action "onClearSelection")
+      _onHeaderClick=(action "_onHeaderClick")
+      options=headerComponentOptions
     }}
-  {{/if}}
-</div>
+  </dd.Trigger>
+  <dd.Content>
+    <div class="select-kit-body">
+      {{component filterComponent
+        filter=filter
+        isLoading=isLoading
+        icon=filterIcon
+        hasSelection=hasSelection
+        shouldDisplayFilter=shouldDisplayFilter
+        placeholder=filterPlaceholder
+        isFocused=isFocused
+        onKeyDown=(action "_onKeyDown")
+        onInput=(action "_onInput")
+        onFocus=(action "_onFocus")
+        onBlur=(action "_onBlur")
+      }}
 
-<div class="select-kit-wrapper"></div>
+      {{#if renderedBodyOnce}}
+        {{component collectionComponent
+          collectionHeaderComputedContent=collectionHeaderComputedContent
+          hasSelection=hasSelection
+          noneRowComputedContent=noneRowComputedContent
+          createRowComputedContent=createRowComputedContent
+          collectionComputedContent=collectionComputedContent
+          searchComputedContent=searchComputedContent
+          rowComponent=rowComponent
+          noneRowComponent=noneRowComponent
+          createRowComponent=createRowComponent
+          templateForRow=templateForRow
+          templateForNoneRow=templateForNoneRow
+          templateForCreateRow=templateForCreateRow
+          onClickRow=(action "onClickRow")
+          onMouseoverRow=(action "onMouseoverRow")
+          highlighted=highlighted
+          computedValue=computedValue
+          rowComponentOptions=rowComponentOptions
+          noContentRow=noContentRow
+          validationMessage=validationMessage
+        }}
+      {{/if}}
+    </div>
+
+    <div class="select-kit-wrapper"></div>
+  </dd.Content>
+</BasicDropdown>
