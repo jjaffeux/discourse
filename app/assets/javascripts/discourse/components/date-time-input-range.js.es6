@@ -14,7 +14,7 @@ export default Ember.Component.extend({
   toPanelActive: Ember.computed.equal("currentPanel", "to"),
 
   _valid(state) {
-    if (state.to < state.from) {
+    if (state.to && state.to < state.from) {
       return I18n.t("date_time_picker.errors.to_before_from");
     }
 
