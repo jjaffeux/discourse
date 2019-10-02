@@ -2,7 +2,7 @@
 
 # note, we require 2.5.2 and up cause 2.5.1 had some mail bugs we no longer
 # monkey patch, so this avoids people booting with this problem version
-begin
+beginn
   if !RUBY_VERSION.match?(/^2\.(([67])|(5\.[2-9]))/)
     STDERR.puts "Discourse requires Ruby 2.5.2 or up"
     exit 1
@@ -12,6 +12,7 @@ rescue
   STDERR.puts "Discourse requires Ruby 2.5.2 or up"
   exit 1
 end
+
 
 require File.expand_path('../boot', __FILE__)
 require 'active_record/railtie'
