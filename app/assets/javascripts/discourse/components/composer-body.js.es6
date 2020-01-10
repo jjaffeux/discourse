@@ -11,15 +11,12 @@ import {
 import Composer from "discourse/models/composer";
 import afterTransition from "discourse/lib/after-transition";
 import positioningWorkaround from "discourse/lib/safari-hacks";
-import { headerHeight } from "discourse/components/site-header";
 import KeyEnterEscape from "discourse/mixins/key-enter-escape";
 import { iOSWithVisualViewport } from "discourse/lib/utilities";
 
 const START_EVENTS = "touchstart mousedown";
 const DRAG_EVENTS = "touchmove mousemove";
 const END_EVENTS = "touchend mouseup";
-
-const MIN_COMPOSER_SIZE = 240;
 const THROTTLE_RATE = 20;
 
 function mouseYPos(e) {
@@ -52,9 +49,7 @@ export default Component.extend(KeyEnterEscape, {
     return composeState || Composer.CLOSED;
   },
 
-  movePanels(size) {
-    $("#main-outlet").css("padding-bottom", size ? size : "");
-
+  movePanels() {
     // signal the progress bar it should move!
     this.appEvents.trigger("composer:resized");
   },
@@ -70,8 +65,7 @@ export default Component.extend(KeyEnterEscape, {
         return;
       }
 
-      const h = $("#reply-control").height() || 0;
-      this.movePanels(h);
+      this.movePanels();
     });
   },
 
@@ -109,13 +103,11 @@ export default Component.extend(KeyEnterEscape, {
     const performDrag = event => {
       $composer.trigger("div-resizing");
       $composer.addClass("clear-transitions");
+
+      this.movePanels();
+
       const currentMousePos = mouseYPos(event);
       let size = origComposerSize + (lastMousePos - currentMousePos);
-
-      const winHeight = $(window).height();
-      size = Math.min(size, winHeight - headerHeight());
-      size = Math.max(size, MIN_COMPOSER_SIZE);
-      this.movePanels(size);
       $composer.height(size);
     };
 
