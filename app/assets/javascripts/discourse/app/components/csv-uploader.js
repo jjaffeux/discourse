@@ -27,7 +27,9 @@ export default Component.extend(UploadMixin, {
   },
 
   uploadDone() {
-    bootbox.alert(I18n.t("user.invited.bulk_invite.success"));
+    bootbox.alert(I18n.t("user.invited.bulk_invite.success"), () => {
+      this.onUploadDone && this.onUploadDone();
+    });
   },
 
   uploadOptions() {
