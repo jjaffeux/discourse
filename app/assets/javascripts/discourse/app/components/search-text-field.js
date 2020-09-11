@@ -6,6 +6,7 @@ import { applySearchAutocomplete } from "discourse/lib/search";
 
 export default TextField.extend({
   autocomplete: "discourse",
+  autocapitalize: "none",
 
   @discourseComputed("searchService.searchContextEnabled")
   placeholder(searchContextEnabled) {
