@@ -1,8 +1,23 @@
+function generateGetBoundingClientRect(x = 0, y = 0) {
+  return () => ({
+    width: 0,
+    height: 32,
+    top: y,
+    right: x,
+    bottom: y,
+    left: x,
+  });
+}
+
+import { createPopper } from "@popperjs/core";
 import { INPUT_DELAY } from "discourse-common/config/environment";
 import { debounce, cancel, later } from "@ember/runloop";
 import { iconHTML } from "discourse-common/lib/icon-library";
-import { setCaretPosition, caretPosition } from "discourse/lib/utilities";
-import Site from "discourse/models/site";
+import {
+  setCaretPosition,
+  caretPosition,
+  getCaretCoordinates,
+} from "discourse/lib/utilities";
 
 /**
   This is a jQuery plugin to support autocompleting values in our text fields.
@@ -107,7 +122,7 @@ export default function (options) {
   }
 
   function addInputSelectedItem(item, triggerChangeCallback) {
-    var transformed,
+    let transformed,
       transformedItem = item;
 
     if (options.transformComplete) {
@@ -163,7 +178,7 @@ export default function (options) {
       });
   }
 
-  var completeTerm = function (term) {
+  let completeTerm = function (term) {
     if (term) {
       if (isInput) {
         me.val("");
@@ -177,7 +192,7 @@ export default function (options) {
         }
 
         if (term) {
-          var text = me.val();
+          let text = me.val();
           text =
             text.substring(0, completeStart) +
             (options.key || "") +
@@ -224,7 +239,7 @@ export default function (options) {
       options.updateData ? this.attr("name") : this.attr("name") + "-renamed"
     );
 
-    var vals = this.val().split(",");
+    let vals = this.val().split(",");
     vals.forEach((x) => {
       if (x !== "") {
         if (options.reverseTransform) {
@@ -260,9 +275,6 @@ export default function (options) {
     return $(links[selectedOption]).addClass("selected");
   }
 
-  // a sane spot below cursor
-  const BELOW = -32;
-
   function renderAutocomplete() {
     if (div) {
       div.hide().remove();
@@ -273,7 +285,7 @@ export default function (options) {
 
     div = $(options.template({ options: autocompleteOptions }));
 
-    var ul = div.find("ul");
+    let ul = div.find("ul");
     selectedOption = 0;
     markSelected();
     ul.find("li").click(function () {
@@ -284,31 +296,6 @@ export default function (options) {
       }
       return false;
     });
-    var pos = null;
-    var vOffset = 0;
-    var hOffset = 0;
-
-    if (isInput) {
-      pos = {
-        left: 0,
-        top: 0,
-      };
-      vOffset = BELOW;
-      hOffset = 0;
-    } else {
-      pos = me.caretPosition({
-        pos: completeStart + 1,
-      });
-
-      hOffset = 10;
-      if (options.treatAsTextarea) {
-        vOffset = -32;
-      }
-    }
-
-    div.css({
-      left: "-1000px",
-    });
 
     if (options.appendSelector) {
       me.parents(options.appendSelector).append(div);
@@ -316,47 +303,35 @@ export default function (options) {
       me.parent().append(div);
     }
 
+    const coordinates = getCaretCoordinates(me[0], me[0].selectionStart);
+
     if (!isInput && !options.treatAsTextarea) {
-      vOffset = div.height();
+      const virtualInput = {
+        getBoundingClientRect: generateGetBoundingClientRect(
+          me[0].getBoundingClientRect().left + coordinates.left,
+          me[0].getBoundingClientRect().top + coordinates.top
+        ),
+        contextElement: me[0],
+      };
 
-      const spaceOutside =
-        window.innerHeight -
-        me.outerHeight() -
-        $("header.d-header").innerHeight();
-
-      if (spaceOutside < vOffset && vOffset > pos.top) {
-        vOffset = BELOW;
-      }
-
-      if (Site.currentProp("mobileView")) {
-        if (me.height() / 2 >= pos.top) {
-          vOffset = BELOW;
-        }
-        if (me.width() / 2 <= pos.left) {
-          hOffset = -div.width();
-        }
-      }
+      createPopper(virtualInput, div[0], {
+        modifiers: [
+          {
+            name: "offset",
+            options: {
+              offset: [0, 0],
+            },
+          },
+        ],
+        placement: "top-start",
+        strategy: "absolute",
+      });
+    } else {
+      createPopper(me[0], div[0], {
+        placement: "auto-start",
+        strategy: "fixed",
+      });
     }
-
-    var mePos = me.position();
-
-    var borderTop = parseInt(me.css("border-top-width"), 10) || 0;
-
-    let left = mePos.left + pos.left + hOffset;
-    if (left < 0) {
-      left = 0;
-    }
-
-    const offsetTop = me.offset().top;
-    if (mePos.top + pos.top + borderTop - vOffset + offsetTop < 30) {
-      vOffset = BELOW;
-    }
-
-    div.css({
-      position: "absolute",
-      top: mePos.top + pos.top - vOffset + borderTop + "px",
-      left: left + "px",
-    });
   }
 
   function dataSource(term, opts) {
@@ -450,7 +425,7 @@ export default function (options) {
 
     if (completeStart === null && cp > 0) {
       if (key === options.key) {
-        var prevChar = me.val().charAt(cp - 2);
+        let prevChar = me.val().charAt(cp - 2);
         if (
           checkTriggerRule() &&
           (!prevChar || allowedLettersRegex.test(prevChar))
@@ -466,7 +441,7 @@ export default function (options) {
   }
 
   $(this).on("keydown.autocomplete", function (e) {
-    var c, i, initial, prev, prevIsGood, stopFound, term, total, userToComplete;
+    let c, i, initial, prev, prevIsGood, stopFound, term, total, userToComplete;
     let cp;
 
     if (e.ctrlKey || e.altKey || e.metaKey) {
