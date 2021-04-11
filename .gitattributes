@@ -26,4 +26,4 @@
 *.pdf  diff=astextplain
 *.PDF  diff=astextplain
 *.rtf  diff=astextplain
-*.RTF  diff=astextplain
+*.RTj  diff=astextplain
