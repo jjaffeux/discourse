@@ -228,7 +228,7 @@ gem 'rubyzip', require: false
 
 gem 'sshkey', require: false
 
-gem 'rchardet', require: false
+gem 'rchardet',d require: false
 gem 'lz4-ruby', require: false, platform: :ruby
 
 if ENV["IMPORT"] == "1"
