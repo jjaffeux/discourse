@@ -119,17 +119,16 @@ export default class ChatChannelSettingsView extends Component {
   }
 
   @action
-  onDisableAutoJoinUsers() {
-    this._updateAutoJoinUsers(false);
-  }
-
-  @action
-  onEnableAutoJoinUsers() {
-    this.dialog.confirm({
-      message: I18n.t("chat.settings.auto_join_users_warning", {
-        category: this.channel.chatable.name,
-      }),
-      didConfirm: () => this._updateAutoJoinUsers(true),
-    });
+  onToggleAutoJoinUsers(enabled) {
+    if (enabled) {
+      this.dialog.confirm({
+        message: I18n.t("chat.settings.auto_join_users_warning", {
+          category: this.channel.chatable.name,
+        }),
+        didConfirm: () => this._updateAutoJoinUsers(true),
+      });
+    } else {
+      this._updateAutoJoinUsers(false);
+    }
   }
 }

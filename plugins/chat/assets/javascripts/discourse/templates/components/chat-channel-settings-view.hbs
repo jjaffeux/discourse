@@ -44,18 +44,36 @@
   {{/unless}}
 </div>
 
-{{#if (chat-guardian "can-edit-chat-channel")}}
-  {{#if this.autoJoinAvailable}}
-    <div class="chat-form__section">
-      <div class="chat-form__field">
-        {{#if this.channel.auto_join_users}}
-          <DButton @action={{action "onDisableAutoJoinUsers"}} @label="chat.settings.disable_auto_join_users" @class="archive-btn chat-form__btn btn-flat" @icon="minus-circle" />
-        {{else}}
-          <DButton @action={{action "onEnableAutoJoinUsers"}} @label="chat.settings.enable_auto_join_users" @class="archive-btn chat-form__btn btn-flat" @icon="user-plus" />
+<div class="chat-form__section">
+  <div class="chat-form__field">
+    <label class="chat-form__label">
+      <span>
+        <Input @type="checkbox" class="in-likes" @checked={{true}} {{on "click" (action (fn this.saveNotificationSettings "mobile_notification_level") value="target.checked")}} />
+        <span>{{i18n "chat.settings.channel_wide_mentions.title"}}</span>
+        {{#if this.savedMuted}}
+          <span class="channel-settings-view__saved" role="status" aria-label={{i18n "chat.channel_settings.save_label.mute_channel"}}>
+            {{d-icon "check"}} {{i18n "saved"}}
+          </span>
         {{/if}}
-      </div>
+      </span>
+    </label>
+    <div class="chat-form__control">
+      <p>{{html-safe (i18n "chat.settings.channel_wide_mentions.description")}}</p>
     </div>
-  {{/if}}
+  </div>
+</div>
+
+{{#if (and (chat-guardian "can-edit-chat-channel") this.autoJoinAvailable)}}
+  <div class="chat-form__section">
+    <div class="chat-form__field">
+      <label class="chat-form__label">
+        <span>
+          <Input @type="checkbox" class="in-likes" @checked={{this.channel.auto_join_users}} {{on "click" (action this.onToggleAutoJoinUsers value="target.checked")}} />
+          <span>{{i18n "chat.settings.auto_join_users"}}</span>
+        </span>
+      </label>
+    </div>
+  </div>
 {{/if}}
 
 {{#unless this.channel.isDirectMessageChannel}}

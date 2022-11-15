@@ -289,8 +289,7 @@ en:
         always: "For all activity"
 
       settings:
-        enable_auto_join_users: "Automatically add all recently active users"
-        disable_auto_join_users: "Stop automatically adding users"
+        auto_join_users: "Automatically add all recently active users"
         auto_join_users_warning: "Every user who isn't a member of this channel and has access to the %{category} category will join. Are you sure?"
         desktop_notification_level: "Desktop notifications"
         follow: "Join"
@@ -304,6 +303,9 @@ en:
         save: "Save"
         saved: "Saved"
         unfollow: "Leave"
+        channel_wide_mentions:
+          title: "Allow @all and @here mentions"
+          description: "<b>@all</b> notifies all members of a channel, and <b>@here</b> notifies members of a channel who are active at the moment."
 
       admin:
         title: "Chat"
