@@ -1,0 +1,43 @@
+.chat-message-separator__date {
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  transition: top 0.2s linear;
+  will-change: top;
+  pointer-events: none;
+
+  .chat-message-separator__date-text-container {
+    padding-top: 7px;
+    position: sticky;
+    top: -1px;
+
+    &.is-pinned {
+      .chat-message-separator__date-text {
+        border: 1px solid var(--secondary-high);
+        border-radius: 3px;
+      }
+    }
+  }
+
+  .chat-message-separator__date-text {
+    @include unselectable;
+    background-color: var(--secondary);
+    border: 1px solid transparent;
+    color: var(--secondary-low);
+    font-size: var(--font-down-1);
+    padding: 0.25rem 0.5rem;
+    box-sizing: border-box;
+
+    .is-first-daily-message & {
+      font-weight: 600;
+    }
+
+    .is-new-message & {
+      color: var(--danger-medium);
+      border-color: var(--danger-medium);
+    }
+  }
+}

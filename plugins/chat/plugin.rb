@@ -62,7 +62,8 @@ register_asset "stylesheets/desktop/sidebar-extensions.scss", :desktop
 register_asset "stylesheets/common/chat-message-actions.scss"
 register_asset "stylesheets/desktop/chat-message-actions.scss", :desktop
 register_asset "stylesheets/mobile/chat-message-actions.scss", :mobile
-register_asset "stylesheets/common/chat-message-separator.scss"
+register_asset "stylesheets/common/chat-message-separator-line.scss"
+register_asset "stylesheets/common/chat-message-separator-date.scss"
 register_asset "stylesheets/common/chat-onebox.scss"
 register_asset "stylesheets/common/chat-skeleton.scss"
 register_asset "stylesheets/colors.scss", :color_definitions

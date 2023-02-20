@@ -247,6 +247,8 @@
 }
 
 .chat-messages-container {
+  position: relative;
+
   .not-mobile-device & .chat-message:hover,
   .chat-message.chat-message-selected {
     background: var(--primary-very-low);

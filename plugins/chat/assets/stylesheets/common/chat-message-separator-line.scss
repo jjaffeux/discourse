@@ -1,0 +1,18 @@
+.chat-message-separator__line {
+  padding: 20px 0;
+
+  &-divider {
+    border-top: 1px solid var(--secondary-high);
+    left: 0;
+    margin: 0 0 -1px;
+    position: relative;
+    right: 0;
+    top: -1px;
+  }
+
+  &.is-new-message {
+    .chat-message-separator__line-divider {
+      border-color: var(--danger-medium);
+    }
+  }
+}

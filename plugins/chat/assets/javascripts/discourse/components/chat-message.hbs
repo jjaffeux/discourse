@@ -1,6 +1,9 @@
 {{! template-lint-disable no-invalid-interactive }}
 
-<ChatMessageSeparator @message={{@message}} />
+{{#if (or @message.newestMessage @message.firstMessageOfTheDayAt)}}
+  <ChatMessageSeparatorDate @message={{@message}} />
+  <ChatMessageSeparatorLine @message={{@message}} />
+{{/if}}
 
 {{#if
   (and

@@ -1,0 +1,17 @@
+<div
+  class={{concat-class
+    "chat-message-separator__date"
+    (if @message.newestMessage "is-new-message")
+    (if @message.firstMessageOfTheDayAt "is-first-daily-message")
+  }}
+>
+  <span class="chat-message-separator__date-text-container">
+    <span class="chat-message-separator__date-text">
+      {{#if @message.newestMessage}}
+        {{i18n "chat.new_messages"}}
+      {{else}}
+        {{@message.firstMessageOfTheDayAt}}
+      {{/if}}
+    </span>
+  </span>
+</div>

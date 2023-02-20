@@ -85,6 +85,7 @@ export default Component.extend({
     this.set("_mentionWarningsSeen", {});
     this.set("unreachableGroupMentions", []);
     this.set("overMembersLimitGroupMentions", []);
+    this._firstMap = {};
   },
 
   didInsertElement() {
@@ -466,16 +467,43 @@ export default Component.extend({
           new Date(messageData.created_at)
         )
       ) {
-        messageData.firstMessageOfTheDayAt = moment(
-          messageData.created_at
-        ).calendar(moment(), {
+        const t = moment(messageData.created_at).calendar(moment(), {
           sameDay: `[${I18n.t("chat.chat_message_separator.today")}]`,
           lastDay: `[${I18n.t("chat.chat_message_separator.yesterday")}]`,
           lastWeek: "LL",
           sameElse: "LL",
         });
+
+        if (this._firstMap[t]) {
+          this.messageLookup[this._firstMap[t]]?.set(
+            "firstMessageOfTheDayAt",
+            null
+          );
+        }
+
+        this._firstMap[t] = messageData.id;
+
+        messageData.firstMessageOfTheDayAt = t;
       }
+    } else if (!messageData.firstMessageOfTheDayAt) {
+      const t = moment(messageData.created_at).calendar(moment(), {
+        sameDay: `[${I18n.t("chat.chat_message_separator.today")}]`,
+        lastDay: `[${I18n.t("chat.chat_message_separator.yesterday")}]`,
+        lastWeek: "LL",
+        sameElse: "LL",
+      });
+
+      if (this._firstMap[t]) {
+        this.messageLookup[this._firstMap[t]]?.set(
+          "firstMessageOfTheDayAt",
+          null
+        );
+      }
+
+      this._firstMap[t] = messageData.id;
+      messageData.firstMessageOfTheDayAt = t;
     }
+
     if (messageData.in_reply_to?.id === previousMessageData?.id) {
       // Reply-to message is directly above. Remove `in_reply_to` from message.
       messageData.in_reply_to = null;
