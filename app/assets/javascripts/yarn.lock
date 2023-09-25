@@ -2563,15 +2563,15 @@ babel-import-util@^0.2.0:
   resolved "https://registry.yarnpkg.com/babel-import-util/-/babel-import-util-0.2.0.tgz#b468bb679919601a3570f9e317536c54f2862e23"
   integrity sha512-CtWYYHU/MgK88rxMrLfkD356dApswtR/kWZ/c6JifG1m10e7tBBrs/366dFzWMAoqYmG5/JSh+94tUSpIwh+ag==
 
-babel-import-util@^1.2.2, babel-import-util@^1.4.1:
+babel-import-util@^1.2.2:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/babel-import-util/-/babel-import-util-1.4.1.tgz#1df6fd679845df45494bac9ca12461d49497fdd4"
   integrity sha512-TNdiTQdPhXlx02pzG//UyVPSKE7SNWjY0n4So/ZnjQpWwaM5LvWBLkWa1JKll5u06HNscHD91XZPuwrMg1kadQ==
 
-babel-import-util@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/babel-import-util/-/babel-import-util-2.0.0.tgz#99a2e7424bcde01898bc61bb19700ff4c74379a3"
-  integrity sha512-pkWynbLwru0RZmA9iKeQL63+CkkW0RCP3kL5njCtudd6YPUKb5Pa0kL4fb3bmuKn2QDBFwY5mvvhEK/+jv2Ynw==
+babel-import-util@^2.0.0, babel-import-util@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/babel-import-util/-/babel-import-util-2.0.1.tgz#263a2963ee9208428c04f05326c6ea32b2206ac6"
+  integrity sha512-N1ZfNprtf/37x0R05J0QCW/9pCAcuI+bjZIK9tlu0JEkwEST7ssdD++gxHRbD58AiG5QE5OuNYhRoEFsc1wESw==
 
 babel-loader@8, babel-loader@^8.0.6, babel-loader@^8.2.2:
   version "8.3.0"
