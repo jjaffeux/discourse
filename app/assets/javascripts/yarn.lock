@@ -28,7 +28,7 @@
   resolved "https://registry.yarnpkg.com/@babel/compat-data/-/compat-data-7.22.9.tgz#71cdb00a1ce3a329ce4cbec3a44f9fef35669730"
   integrity sha512-5UamI7xkUcJ3i9qVDS+KFDEK8/7oJ55/sJMB1Ge7IEapr7KfdfV/HErR+koZwOfd+SgtFKOKRhRakdg++DcJpQ==
 
-"@babel/core@^7.12.0", "@babel/core@^7.14.5", "@babel/core@^7.16.10", "@babel/core@^7.16.7", "@babel/core@^7.21.4", "@babel/core@^7.23.2", "@babel/core@^7.3.4":
+"@babel/core@^7.12.0", "@babel/core@^7.14.5", "@babel/core@^7.16.10", "@babel/core@^7.16.7", "@babel/core@^7.22.10", "@babel/core@^7.23.2", "@babel/core@^7.3.4":
   version "7.23.2"
   resolved "https://registry.yarnpkg.com/@babel/core/-/core-7.23.2.tgz#ed10df0d580fff67c5f3ee70fd22e2e4c90a9f94"
   integrity sha512-n7s51eWdaWZ3vGT2tD4T7J6eJs3QoBXydv7vkUM06Bf1cbVD2Kc2UrkzhiQwobfV7NwOnQXYL7UBJ5VPU+RGoQ==
@@ -1602,6 +1602,26 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@pnpm/constants@7.1.1":
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/@pnpm/constants/-/constants-7.1.1.tgz#3db261425fe15425aa213a2b003f4f60c9378b43"
+  integrity sha512-31pZqMtjwV+Vaq7MaPrT1EoDFSYwye3dp6BiHIGRJmVThCQwySRKM7hCvqqI94epNkqFAAYoWrNynWoRYosGdw==
+
+"@pnpm/error@5.0.2":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@pnpm/error/-/error-5.0.2.tgz#153d18fe9eeaeb02e48e9dc45b042f4c962b3822"
+  integrity sha512-0TEm+tWNYm+9uh6DSKyRbv8pv/6b4NL0PastLvMxIoqZbBZ5Zj1cYi332R9xsSUi31ZOsu2wpgn/bC7DA9hrjg==
+  dependencies:
+    "@pnpm/constants" "7.1.1"
+
+"@pnpm/find-workspace-dir@^6.0.2":
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@pnpm/find-workspace-dir/-/find-workspace-dir-6.0.2.tgz#4e295f92dd8caef1db6597ec50ecf357e81d83e2"
+  integrity sha512-JSrpQUFCs4vY1D5tOmj7qBb+oE2j/lO6341giEdUpvYf3FijY8CY13l8rPjfHV2y3m//utzl0An+q+qx14S6Nw==
+  dependencies:
+    "@pnpm/error" "5.0.2"
+    find-up "^5.0.0"
 
 "@popperjs/core@^2.11.8":
   version "2.11.8"
@@ -3863,10 +3883,10 @@ chrome-trace-event@^1.0.2:
   resolved "https://registry.yarnpkg.com/chrome-trace-event/-/chrome-trace-event-1.0.3.tgz#1015eced4741e15d06664a957dbbf50d041e26ac"
   integrity sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==
 
-ci-info@^3.7.0:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.8.0.tgz#81408265a5380c929f0bc665d62256628ce9ef91"
-  integrity sha512-eXTggHWSooYhq49F2opQhuHWgzucfF2YgODK4e1566GQs5BIfP30B0oenwBJHfWxAs2fyPB1s7Mg949zLf61Yw==
+ci-info@^3.7.0, ci-info@^3.8.0:
+  version "3.9.0"
+  resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.9.0.tgz#4279a62028a7b1f262f3473fc9605f5e218c59b4"
+  integrity sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ==
 
 class-utils@^0.3.5:
   version "0.3.6"
@@ -4904,12 +4924,13 @@ ember-cli-version-checker@^5.1.1, ember-cli-version-checker@^5.1.2:
     semver "^7.3.4"
     silent-error "^1.1.1"
 
-ember-cli@~5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/ember-cli/-/ember-cli-5.0.0.tgz#9a42aea5699c9c34b262dfca614c4f15fb8ef0f5"
-  integrity sha512-poklpwf+GrDhkFRTYvYmpkSA5R0pNy4Vahxjvji5jUl82tot+J95ZY1QH1yx//QzQ7zb1XlcOnceieyd2j1Rbw==
+ember-cli@~5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/ember-cli/-/ember-cli-5.3.0.tgz#95e5311d8fc363fee4f56d08cf03c60340514c1c"
+  integrity sha512-Om19C49hAYFgVduidtfQPbZcR3bmdHhYJ4XxEEEvW+sP1WAXNOPWf5e3W6HGDarjIeg04bZxOMkMZy28bubOBA==
   dependencies:
-    "@babel/core" "^7.21.4"
+    "@babel/core" "^7.22.10"
+    "@pnpm/find-workspace-dir" "^6.0.2"
     broccoli "^3.5.2"
     broccoli-builder "^0.18.14"
     broccoli-concat "^4.2.5"
@@ -4926,7 +4947,7 @@ ember-cli@~5.0.0:
     calculate-cache-key-for-tree "^2.0.0"
     capture-exit "^2.0.0"
     chalk "^4.1.2"
-    ci-info "^3.7.0"
+    ci-info "^3.8.0"
     clean-base-url "^1.0.0"
     compression "^1.7.4"
     configstore "^5.0.1"
@@ -4943,7 +4964,7 @@ ember-cli@~5.0.0:
     execa "^5.1.1"
     exit "^0.1.2"
     express "^4.18.1"
-    filesize "^10.0.5"
+    filesize "^10.0.8"
     find-up "^5.0.0"
     find-yarn-workspace-root "^2.0.0"
     fixturify-project "^2.1.1"
@@ -4962,7 +4983,6 @@ ember-cli@~5.0.0:
     is-git-url "^1.0.0"
     is-language-code "^3.1.0"
     isbinaryfile "^5.0.0"
-    js-yaml "^4.1.0"
     leek "0.0.24"
     lodash.template "^4.5.0"
     markdown-it "^13.0.1"
@@ -4980,7 +5000,7 @@ ember-cli@~5.0.0:
     remove-types "^1.0.0"
     resolve "^1.22.1"
     resolve-package-path "^4.0.3"
-    safe-stable-stringify "^2.4.2"
+    safe-stable-stringify "^2.4.3"
     sane "^5.0.1"
     semver "^7.3.5"
     silent-error "^1.1.1"
@@ -5898,10 +5918,10 @@ file-entry-cache@^6.0.1:
   dependencies:
     flat-cache "^3.0.4"
 
-filesize@^10.0.5, filesize@^10.0.7:
-  version "10.0.9"
-  resolved "https://registry.yarnpkg.com/filesize/-/filesize-10.0.9.tgz#7371841907fd6060eb583a38bac8494c2fd75f2a"
-  integrity sha512-BzSxJtyq7ZEBjQPEC6u7GNrK58xwaITCvHPaH7e5145eowrMwLfm5LMu/7PeHTTKxP4joIyNmxCbVJVXv7xPGQ==
+filesize@^10.0.7, filesize@^10.0.8:
+  version "10.1.0"
+  resolved "https://registry.yarnpkg.com/filesize/-/filesize-10.1.0.tgz#846f5cd8d16e073c5d6767651a8264f6149183cd"
+  integrity sha512-GTLKYyBSDz3nPhlLVPjPWZCnhkd9TrrRArNcy8Z+J2cqScB7h2McAzR6NBX6nYOoWafql0roY8hrocxnZBv9CQ==
 
 fill-range@^4.0.0:
   version "4.0.0"
@@ -9569,7 +9589,7 @@ safe-regex@^1.1.0:
   dependencies:
     ret "~0.1.10"
 
-safe-stable-stringify@^2.3.1, safe-stable-stringify@^2.4.2:
+safe-stable-stringify@^2.3.1, safe-stable-stringify@^2.4.3:
   version "2.4.3"
   resolved "https://registry.yarnpkg.com/safe-stable-stringify/-/safe-stable-stringify-2.4.3.tgz#138c84b6f6edb3db5f8ef3ef7115b8f55ccbf886"
   integrity sha512-e2bDA2WJT0wxseVd4lsDP4+3ONX6HpMXQa1ZhFQ7SU+GjvORCmShbCMltrtIDfkYhVHrOcPtj+KhmDBdPdZD1g==
