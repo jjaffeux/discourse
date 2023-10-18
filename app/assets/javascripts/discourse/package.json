@@ -102,7 +102,7 @@
     "qunit-dom": "^3.0.0",
     "sass": "^1.69.3",
     "select-kit": "1.0.0",
-    "sinon": "^16.1.0",
+    "sinon": "^16.1.1",
     "source-map": "^0.7.4",
     "terser": "^5.21.0",
     "truth-helpers": "1.0.0",
