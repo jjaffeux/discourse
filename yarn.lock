@@ -2754,12 +2754,12 @@
     nanoid "^4.0.0"
     preact "^10.5.13"
 
-"@uppy/drop-target@2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@uppy/drop-target/-/drop-target-2.0.1.tgz#94e106056a846d9de12b0d12231f66c9718a6778"
-  integrity sha512-FMO8wj+0dx4mlwXKxFWSTUF+irgr0BVXadyc4qaoBBtZ3vEcwc3jP7SQfwk3JizV/D5MYG8MRICRbPAIrY9M8w==
+"@uppy/drop-target@3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@uppy/drop-target/-/drop-target-3.0.1.tgz#77a2223c9397baea6fec652799e8fc29f6916176"
+  integrity sha512-nDWXUYtTyyq0Vq7/J0WeRi8eyevGmAIoA5Uy/IJJiKYI5MXP7X3eSIXym161wrsyHZi0ZGUkf0XAwl9e6ZLe/A==
   dependencies:
-    "@uppy/utils" "^5.0.2"
+    "@uppy/utils" "^6.0.0"
 
 "@uppy/store-default@^3.0.2":
   version "3.0.3"
@@ -2770,6 +2770,14 @@
   version "5.4.3"
   resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-5.4.3.tgz#5d8c238805a35dec5b0d3cd4bea4e0a1b7e54584"
   integrity sha512-ewQTWQ5Wu1/ocz/lLCkhoXQwHLRktFK4CxrOsZmeCLK9LxjD1GOwSFjOuL199WDQKXiCle6SVlAJGQ3SDlXVkg==
+  dependencies:
+    lodash "^4.17.21"
+    preact "^10.5.13"
+
+"@uppy/utils@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-6.0.0.tgz#a59867318f4b387ca0e671399b957748a812c12e"
+  integrity sha512-24mvEYlt189setvd0z8l3LJRxiq+W8UAZ3lCHRP1Qzq6rSdd/cVaTiIgV+0ZvNnZMmiEKeKdEcfFG3VeGvE3dg==
   dependencies:
     lodash "^4.17.21"
     preact "^10.5.13"
