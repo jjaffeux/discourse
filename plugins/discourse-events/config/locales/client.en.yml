@@ -3,3 +3,7 @@ en:
     discourse_events:
       share: Share
       interested: Interested
+      create_event:
+        location_step: Location
+        info_step: Info
+        review_step: Review

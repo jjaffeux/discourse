@@ -2,6 +2,7 @@ import Component from "@glimmer/component";
 import { service } from "@ember/service";
 import DModal from "discourse/components/d-modal";
 import icon from "discourse-common/helpers/d-icon";
+import CreateEventButton from "../create-event-button";
 import EventsList from "../events-list";
 
 export default class ListEventsModal extends Component {
@@ -19,6 +20,8 @@ export default class ListEventsModal extends Component {
             {{this.currentUser.discourse_events_count}}
             events
           </h1>
+
+          <CreateEventButton />
         </div>
       </:headerBelowTitle>
       <:body>

@@ -4,6 +4,12 @@ import { withPluginApi } from "discourse/lib/plugin-api";
 function communitySectionLink(api) {
   api.onPageChange((url) => {
     new URLSearchParams(url).forEach((value, key) => {
+      if (key === "/?discourse-events-create") {
+        api.container
+          .lookup("service:router")
+          .transitionTo("discourse-events.events.create");
+      }
+
       if (key === "/?discourse-events-list") {
         api.container
           .lookup("service:router")
