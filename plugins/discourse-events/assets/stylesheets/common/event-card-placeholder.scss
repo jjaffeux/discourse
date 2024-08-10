@@ -1,0 +1,77 @@
+.events__event-card {
+  display: flex;
+  background: var(--primary-100);
+  border-radius: var(--d-border-radius);
+}
+
+.events__event-card-container {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+.events__event-card-date {
+  padding-left: 0.5rem;
+}
+
+.events__event-card-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1rem 0 1rem;
+}
+
+.events__event-card-users {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.events__event-card-participants {
+  margin-left: auto;
+  background: var(--primary-50);
+  color: var(--primary-500);
+  padding-inline: 0.5rem;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  &__count {
+    font-size: var(--font-down-1);
+  }
+}
+
+.events__event-card-join {
+  margin-right: auto;
+}
+
+.events__event-card-date {
+  font-size: var(--font-down-1);
+  font-weight: 700;
+}
+
+.events__event-card-title {
+  font-size: var(--font-up-2);
+  padding: 0 1rem 1rem 1rem;
+}
+
+.events__event-card-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.events__event-card-actions {
+  display: flex;
+  padding: 1rem;
+  border-top: 1px solid var(--primary-300);
+}
+
+.events__event-card-actions-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}

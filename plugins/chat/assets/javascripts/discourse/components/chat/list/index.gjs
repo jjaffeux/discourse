@@ -1,5 +1,5 @@
 import Component from "@glimmer/component";
-import { hash } from "@ember/helper";
+import { array, hash } from "@ember/helper";
 import { action } from "@ember/object";
 import { modifier } from "ember-modifier";
 import ConditionalLoadingSpinner from "discourse/components/conditional-loading-spinner";
@@ -8,6 +8,7 @@ import { INPUT_DELAY } from "discourse-common/config/environment";
 import discourseDebounce from "discourse-common/lib/debounce";
 import EmptyState from "./empty-state";
 import Item from "./item";
+import Placeholder from "./placeholder";
 
 export default class List extends Component {
   loadMore = modifier((element) => {
@@ -37,25 +38,40 @@ export default class List extends Component {
     return this.args.itemComponent ?? Item;
   }
 
+  get placeholders() {
+    return Array.from({ length: Math.min(this.args.placeholdersCount, 10) });
+  }
+
   @action
   loadCollection() {
     discourseDebounce(this, this.debouncedLoadCollection, INPUT_DELAY);
   }
 
   async debouncedLoadCollection() {
-    await this.args.collection.load({ limit: 10 });
+    await this.args.collection.load({
+      limit: 5,
+      next_cursor:
+        this.args.collection.items[this.args.collection.items.length - 1]
+          ?.startAt,
+    });
   }
 
   <template>
     <div class="c-list">
       <div {{this.fill}} ...attributes>
-        {{#each @collection.items as |item|}}
-          {{yield (hash Item=(component this.itemComponent item=item))}}
+        {{#if @collection.fetchedOnce}}
+          {{#each @collection.items as |item|}}
+            {{yield (hash Item=(component this.itemComponent item=item))}}
+          {{else}}
+            {{#if @collection.fetchedOnce}}
+              {{yield (hash EmptyState=EmptyState)}}
+            {{/if}}
+          {{/each}}
         {{else}}
-          {{#if @collection.fetchedOnce}}
-            {{yield (hash EmptyState=EmptyState)}}
-          {{/if}}
-        {{/each}}
+          {{#each this.placeholders}}
+            {{yield (hash Placeholder=Placeholder)}}
+          {{/each}}
+        {{/if}}
       </div>
 
       <div {{this.loadMore}}>

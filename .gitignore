@@ -35,6 +35,7 @@
 
 # Plugins except for the bundled ones
 /plugins/*
+!/plugins/discourse-events
 !/plugins/discourse-details
 !/plugins/discourse-local-dates
 !/plugins/discourse-narrative-bot

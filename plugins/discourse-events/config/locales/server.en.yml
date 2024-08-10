@@ -1,0 +1,3 @@
+en:
+  site_settings:
+    discourse_events_enabled: "Enable the Discourse Events plugin"
