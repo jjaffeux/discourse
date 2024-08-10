@@ -1,22 +1,24 @@
 import Component from "@glimmer/component";
 import { cached } from "@glimmer/tracking";
 import { service } from "@ember/service";
+import { bind } from "discourse-common/utils/decorators";
 import List from "discourse/plugins/chat/discourse/components/chat/list";
-import Event from "../models/event";
 import EventCard from "./event-card";
 
 export default class EventsList extends Component {
   @service discourseEventsApi;
+  @service discourseEventsManager;
 
   @cached
   get collection() {
     return this.discourseEventsApi.events(this.processEvents);
   }
 
+  @bind
   processEvents(response) {
-    return response.events.map((event) => {
-      return Event.create(event);
-    });
+    return response.events.map((event) =>
+      this.discourseEventsManager.add(event, { replace: true })
+    );
   }
 
   <template>
@@ -27,6 +29,7 @@ export default class EventsList extends Component {
       as |list|
     >
       <list.Item as |event|>
+        {{log event}}
         <EventCard @event={{event}} />
       </list.Item>
 

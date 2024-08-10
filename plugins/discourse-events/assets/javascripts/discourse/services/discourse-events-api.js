@@ -18,6 +18,10 @@ export default class DiscourseEventsApi extends Service {
     return new Collection(`${this.#basePath}/events`, handler);
   }
 
+  event(id) {
+    return this.#getRequest(`/events/${id}`);
+  }
+
   get #basePath() {
     return "/discourse-events/api";
   }

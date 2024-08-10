@@ -2,15 +2,10 @@ import Component from "@glimmer/component";
 import { LinkTo } from "@ember/routing";
 import DButton from "discourse/components/d-button";
 import avatar from "discourse/helpers/avatar";
-import { duration } from "discourse/lib/formatter";
 import icon from "discourse-common/helpers/d-icon";
-import DMenu from "float-kit/components/d-menu";
+import MoreMenu from "./more-menu";
 
 export default class EventCard extends Component {
-  get formatedStartAt() {
-    return moment(this.args.event.startAt).calendar();
-  }
-
   <template>
     <div class="events__event-card">
       <div class="events__event-card-container">
@@ -19,7 +14,7 @@ export default class EventCard extends Component {
             {{icon "calendar-alt"}}
           </div>
           <div class="events__event-card-date">
-            {{this.formatedStartAt}}
+            {{@event.formatedDate}}
           </div>
 
           <div class="events__event-card-users">
@@ -51,15 +46,11 @@ export default class EventCard extends Component {
             </div>
 
             <div class="events__event-card-buttons">
-              <DMenu @icon="ellipsis-h">
-                <:content>
-                  test
-                </:content>
-              </DMenu>
+              <MoreMenu @event={{@event}} />
 
               <DButton @translatedLabel="Share" @icon="share" />
 
-              {{#if @event.started}}
+              {{#if @event.onGoing}}
                 <DButton @translatedLabel="Join" class="ok" />
               {{else}}
                 <DButton @translatedLabel="Bar" />

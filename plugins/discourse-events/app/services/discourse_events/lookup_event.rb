@@ -10,6 +10,7 @@ def create_event(index, start_at, end_at: nil, creator_id: nil)
     creator_id: User.last.id,
   }
 end
+
 ALL_EVENTS = [
   create_event(0, 30.minutes.ago),
   create_event(1, 14.minutes.from_now),
@@ -24,9 +25,9 @@ module DiscourseEvents
   # List events
   #
   # @example
-  #  DiscourseEvents::ListEvents.call(guardian: guardian, **optional_params)
+  #  DiscourseEvents::LookupEvent.call(guardian: guardian, **optional_params)
   #
-  class ListEvents
+  class LookupEvent
     include Service::Base
 
     # @!method call(guardian:)
@@ -35,23 +36,25 @@ module DiscourseEvents
 
     contract
 
-    model :events
-
     class Contract
-      attribute :limit, :integer
-      attribute :next_cursor
+      attribute :id, :integer
     end
+
+    model :event
 
     private
 
-    def fetch_events(contract:)
-      all_events = ALL_EVENTS
-
-      if contract.next_cursor
-        all_events = all_events.select { |event| event[:start_at] >= contract.next_cursor.to_time }
-      end
-
-      all_events[0..contract.limit - 1]
+    def fetch_event(contract:)
+      start_at = 30.minutes.ago
+      end_at = nil
+      {
+        id: contract.id,
+        title: "Event ##{contract.id}",
+        description: "Description of event ##{contract.id}",
+        start_at: start_at,
+        end_at: end_at || start_at + 1.hour,
+        creator_id: User.last.id,
+      }
     end
   end
 end
