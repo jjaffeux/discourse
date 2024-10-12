@@ -409,8 +409,8 @@ importers:
         specifier: 5.4.3
         version: 5.4.3
       '@uppy/xhr-upload':
-        specifier: 3.1.1
-        version: 3.1.1(@uppy/core@3.0.4)
+        specifier: 4.2.0
+        version: 4.2.0(@uppy/core@3.0.4)
       a11y-dialog:
         specifier: 8.1.1
         version: 8.1.1
@@ -622,8 +622,8 @@ importers:
         specifier: 5.4.3
         version: 5.4.3
       '@uppy/xhr-upload':
-        specifier: 3.1.1
-        version: 3.1.1(@uppy/core@3.0.4)
+        specifier: 4.2.0
+        version: 4.2.0(@uppy/core@3.0.4)
       discourse-i18n:
         specifier: workspace:1.0.0
         version: link:../discourse-i18n
@@ -2784,6 +2784,11 @@ packages:
     peerDependencies:
       '@uppy/core': ^3.13.1
 
+  '@uppy/companion-client@4.1.0':
+    resolution: {integrity: sha512-nQ8CQfZcYVBNtFQ6ePj7FDIq38DXlH0YpzP/91LR9gnDVISJKKUuvWfr6tPktj1lRw9FZV8jLmlMKT2ituVKiw==}
+    peerDependencies:
+      '@uppy/core': ^4.2.0
+
   '@uppy/core@3.0.4':
     resolution: {integrity: sha512-vFofKmmVVsQE9bnOXozAPy94kLQMUdMH/l8m4ncXmxyyGRc2e9VfvY9wiy2EEsoj11O7YVzHOP70FYdRReUpVw==}
 
@@ -2801,10 +2806,18 @@ packages:
   '@uppy/utils@5.9.0':
     resolution: {integrity: sha512-9Ubddd3orCOLYjf0KobwgJ+aTrABSxk9t4X/QdM4qJHVZuMIftkaMplrViRUO+kvIBCXEZDIP2AmS060siDNGw==}
 
+  '@uppy/utils@6.0.2':
+    resolution: {integrity: sha512-ZoNeAa1YTKSlcvXe1SP3POjzjRZ9jSojorbst03vwd1Ks9vHPGf6pne61DowTXHZ3HMj1vpcIaQ1VIEWeeADlA==}
+
   '@uppy/xhr-upload@3.1.1':
     resolution: {integrity: sha512-VoTi17L3Ta9pFLxrHAD1L+PE3rR498Bitml8X8FtVijp+MFz9X4KqXxF1+y8DSn6M+sevuDAnf32cZqou/e/gw==}
     peerDependencies:
       '@uppy/core': ^3.1.2
+
+  '@uppy/xhr-upload@4.2.0':
+    resolution: {integrity: sha512-MhpazjMEjFgEyB9Ewiz+ba4U3uZ6yBDrylBeMI0XSxJD5ZwygYBzqpacB6eoVZqHqyb9He90fdZnod5dD9Cc0g==}
+    peerDependencies:
+      '@uppy/core': ^4.2.0
 
   '@volar/kit@2.3.4':
     resolution: {integrity: sha512-MVDrvAHiYMCrt9kEB0Z8ui/CW88fMFj5ZBYslmIsldsalKoJsaSL6ZeKcPmJFn5R5FU6tAlRh3UqcZFbrd9G5Q==}
@@ -11940,6 +11953,13 @@ snapshots:
       namespace-emitter: 2.0.1
       p-retry: 6.2.0
 
+  '@uppy/companion-client@4.1.0(@uppy/core@3.0.4)':
+    dependencies:
+      '@uppy/core': 3.0.4
+      '@uppy/utils': 6.0.2
+      namespace-emitter: 2.0.1
+      p-retry: 6.2.0
+
   '@uppy/core@3.0.4':
     dependencies:
       '@transloadit/prettier-bytes': 0.0.9
@@ -11968,12 +11988,23 @@ snapshots:
       lodash: 4.17.21
       preact: 10.23.2
 
+  '@uppy/utils@6.0.2':
+    dependencies:
+      lodash: 4.17.21
+      preact: 10.23.2
+
   '@uppy/xhr-upload@3.1.1(@uppy/core@3.0.4)':
     dependencies:
       '@uppy/companion-client': 3.8.2(@uppy/core@3.0.4)
       '@uppy/core': 3.0.4
       '@uppy/utils': 5.4.3
       nanoid: 4.0.2
+
+  '@uppy/xhr-upload@4.2.0(@uppy/core@3.0.4)':
+    dependencies:
+      '@uppy/companion-client': 4.1.0(@uppy/core@3.0.4)
+      '@uppy/core': 3.0.4
+      '@uppy/utils': 6.0.2
 
   '@volar/kit@2.3.4(typescript@5.6.3)':
     dependencies:
