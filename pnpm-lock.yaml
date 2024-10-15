@@ -406,8 +406,8 @@ importers:
         specifier: 2.0.1
         version: 2.0.1(@uppy/core@3.0.4)
       '@uppy/utils':
-        specifier: 5.4.3
-        version: 5.4.3
+        specifier: 6.0.3
+        version: 6.0.3
       '@uppy/xhr-upload':
         specifier: 3.1.1
         version: 3.1.1(@uppy/core@3.0.4)
@@ -619,8 +619,8 @@ importers:
         specifier: 2.0.1
         version: 2.0.1(@uppy/core@3.0.4)
       '@uppy/utils':
-        specifier: 5.4.3
-        version: 5.4.3
+        specifier: 6.0.3
+        version: 6.0.3
       '@uppy/xhr-upload':
         specifier: 3.1.1
         version: 3.1.1(@uppy/core@3.0.4)
@@ -2795,11 +2795,11 @@ packages:
   '@uppy/store-default@3.2.2':
     resolution: {integrity: sha512-OiSgT++Jj4nLK0N9WTeod3UNjCH81OXE5BcMJCd9oWzl2d0xPNq2T/E9Y6O72XVd+6Y7+tf5vZlPElutfMB3KQ==}
 
-  '@uppy/utils@5.4.3':
-    resolution: {integrity: sha512-ewQTWQ5Wu1/ocz/lLCkhoXQwHLRktFK4CxrOsZmeCLK9LxjD1GOwSFjOuL199WDQKXiCle6SVlAJGQ3SDlXVkg==}
-
   '@uppy/utils@5.9.0':
     resolution: {integrity: sha512-9Ubddd3orCOLYjf0KobwgJ+aTrABSxk9t4X/QdM4qJHVZuMIftkaMplrViRUO+kvIBCXEZDIP2AmS060siDNGw==}
+
+  '@uppy/utils@6.0.3':
+    resolution: {integrity: sha512-GBVzyAIeVKNe/F3TT63rXR80MSL9ov/FG3BbApO+4wbIt4vai7xpOxGCeTXpW2JjEeOwEb50n1fn92zMCdV9Dg==}
 
   '@uppy/xhr-upload@3.1.1':
     resolution: {integrity: sha512-VoTi17L3Ta9pFLxrHAD1L+PE3rR498Bitml8X8FtVijp+MFz9X4KqXxF1+y8DSn6M+sevuDAnf32cZqou/e/gw==}
@@ -11923,13 +11923,13 @@ snapshots:
     dependencies:
       '@uppy/companion-client': 3.8.2(@uppy/core@3.0.4)
       '@uppy/core': 3.0.4
-      '@uppy/utils': 5.4.3
+      '@uppy/utils': 5.9.0
 
   '@uppy/aws-s3@3.0.6(@uppy/core@3.0.4)':
     dependencies:
       '@uppy/companion-client': 3.8.2(@uppy/core@3.0.4)
       '@uppy/core': 3.0.4
-      '@uppy/utils': 5.4.3
+      '@uppy/utils': 5.9.0
       '@uppy/xhr-upload': 3.1.1(@uppy/core@3.0.4)
       nanoid: 4.0.2
 
@@ -11944,7 +11944,7 @@ snapshots:
     dependencies:
       '@transloadit/prettier-bytes': 0.0.9
       '@uppy/store-default': 3.2.2
-      '@uppy/utils': 5.4.3
+      '@uppy/utils': 5.9.0
       lodash.throttle: 4.1.1
       mime-match: 1.0.2
       namespace-emitter: 2.0.1
@@ -11954,16 +11954,16 @@ snapshots:
   '@uppy/drop-target@2.0.1(@uppy/core@3.0.4)':
     dependencies:
       '@uppy/core': 3.0.4
-      '@uppy/utils': 5.4.3
+      '@uppy/utils': 5.9.0
 
   '@uppy/store-default@3.2.2': {}
 
-  '@uppy/utils@5.4.3':
+  '@uppy/utils@5.9.0':
     dependencies:
       lodash: 4.17.21
       preact: 10.23.2
 
-  '@uppy/utils@5.9.0':
+  '@uppy/utils@6.0.3':
     dependencies:
       lodash: 4.17.21
       preact: 10.23.2
@@ -11972,7 +11972,7 @@ snapshots:
     dependencies:
       '@uppy/companion-client': 3.8.2(@uppy/core@3.0.4)
       '@uppy/core': 3.0.4
-      '@uppy/utils': 5.4.3
+      '@uppy/utils': 5.9.0
       nanoid: 4.0.2
 
   '@volar/kit@2.3.4(typescript@5.6.3)':
