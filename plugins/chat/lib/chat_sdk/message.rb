@@ -80,29 +80,41 @@ module ChatSDK
       message
     end
 
-    def stream(message_id:, raw:, guardian:, &block)
-      message = Chat::Message.find(message_id)
-      helper = StreamHelper.new(message, guardian)
-      helper.stream(raw: raw)
-      ::Chat::Publisher.publish_edit!(message.chat_channel, message.reload)
+    def stream(message_id: nil, message: nil, raw:, &block)
+      message = message || Chat::Message.find(message_id)
+      message.message += raw
+      message.cook
+      ::Chat::Publisher.publish_edit!(message.chat_channel, message)
       message
     end
 
-    def stop_stream(message_id:, guardian:)
-      Chat::StopMessageStreaming.call(params: { message_id: }, guardian:) do
-        on_success { |message:| message }
-        on_model_not_found(:message) { raise "Couldn't find message with id: `#{message_id}`" }
-        on_model_not_found(:membership) do
-          raise "Couldn't find membership for user with id: `#{guardian.user.id}`"
-        end
-        on_failed_policy(:can_join_channel) do
-          raise "User with id: `#{guardian.user.id}` can't join this channel"
-        end
-        on_failed_policy(:can_stop_streaming) do
-          raise "User with id: `#{guardian.user.id}` can't stop streaming this message"
-        end
-        on_failure { raise "Unexpected error" }
-      end
+    def stop_stream(message:, raw:, guardian:)
+      Chat::UpdateMessage.call(
+        guardian: guardian,
+        params: {
+          message_id: message.id,
+          message: message.message + raw,
+          streaming: false,
+        },
+        options: {
+          strip_whitespaces: false,
+        },
+      ) { on_failure { raise "Unexpected error" } }
+
+      # Chat::StopMessageStreaming.call(params: { message_id: }, guardian:) do
+      #   on_success { |message:| message }
+      #   on_model_not_found(:message) { raise "Couldn't find message with id: `#{message_id}`" }
+      #   on_model_not_found(:membership) do
+      #     raise "Couldn't find membership for user with id: `#{guardian.user.id}`"
+      #   end
+      #   on_failed_policy(:can_join_channel) do
+      #     raise "User with id: `#{guardian.user.id}` can't join this channel"
+      #   end
+      #   on_failed_policy(:can_stop_streaming) do
+      #     raise "User with id: `#{guardian.user.id}` can't stop streaming this message"
+      #   end
+      #   on_failure { raise "Unexpected error" }
+      # end
     end
 
     def create(
