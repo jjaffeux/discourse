@@ -5309,6 +5309,16 @@ en:
         none_selected: "Select a group to get started"
         no_custom_groups: "Create a new custom group"
 
+      api_keys:
+        title: "API Keys"
+        description: "The API keys feature lets you securely integrate Discourse with external systems and automate actions. Admins can create keys with specific scopes to control access to resources and sensitive data. Scopes limit functionality, ensuring enhanced security."
+        add: "Add API key"
+        edit: "Edit"
+        back: "Back to API keys"
+        revoke: "Revoke"
+        undo_revoke: "Undo revoke"
+        no_api_keys: "You don't have any API keys yet."
+
       api:
         generate_master: "Generate Master API Key"
         none: "There are no active API keys right now."

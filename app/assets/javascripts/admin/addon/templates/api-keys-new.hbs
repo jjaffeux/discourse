@@ -1,7 +1,4 @@
-<LinkTo @route="adminApiKeys.index" class="go-back">
-  {{d-icon "arrow-left"}}
-  <span>{{i18n "admin.api.all_api_keys"}}</span>
-</LinkTo>
+<BackButton @route="adminApiKeys.index" @label="admin.api_keys.back" />
 
 <div class="api-key api-key-new">
   {{#if this.model.id}}
