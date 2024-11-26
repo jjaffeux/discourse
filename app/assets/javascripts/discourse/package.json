@@ -60,7 +60,7 @@
     "@types/jquery": "^3.5.32",
     "@types/qunit": "^2.19.12",
     "@types/rsvp": "^4.0.9",
-    "@uppy/aws-s3": "^4.1.0",
+    "@uppy/aws-s3": "^4.1.2",
     "@uppy/core": "^4.2.2",
     "@uppy/drop-target": "3.0.1",
     "@uppy/utils": "^6.0.3",
