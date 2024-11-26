@@ -63,7 +63,7 @@
     "@uppy/aws-s3": "^4.1.0",
     "@uppy/core": "^4.2.2",
     "@uppy/drop-target": "3.0.1",
-    "@uppy/utils": "^6.0.3",
+    "@uppy/utils": "^6.0.4",
     "@uppy/xhr-upload": "^4.2.1",
     "a11y-dialog": "8.1.1",
     "admin": "workspace:1.0.0",
