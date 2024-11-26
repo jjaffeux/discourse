@@ -6,36 +6,7 @@ import AdminConfigAreaEmptyList from "admin/components/admin-config-area-empty-l
 import ApiKeyItem from "admin/components/api-key-item";
 
 export default class ApiKeysList extends Component {
-  @tracked apiKeys = [];
-
-  loading = false;
-
-  constructor() {
-    super(...arguments);
-    this.apiKeys = this.args.apiKeys;
-  }
-
-  @action
-  loadMore() {
-    if (this.loading || this.args.apiKeys.loaded) {
-      return;
-    }
-
-    const limit = 50;
-
-    this.set("loading", true);
-    this.store
-      .findAll("api-key", { offset: this.args.apiKeys.length, limit })
-      .then((keys) => {
-        this.args.apiKeys.addObjects(keys);
-        if (keys.length < limit) {
-          this.args.apiKeys.set("loaded", true);
-        }
-      })
-      .finally(() => {
-        this.set("loading", false);
-      });
-  }
+  @tracked apiKeys = this.args.apiKeys;
 
   <template>
     <div class="container admin-api_keys">
