@@ -1,5 +1,5 @@
 import Component from "@glimmer/component";
-import { tracked } from "@glimmer/tracking";
+import { cached, tracked } from "@glimmer/tracking";
 import { Input } from "@ember/component";
 import { concat, fn, hash } from "@ember/helper";
 import { action, get } from "@ember/object";
@@ -26,6 +26,8 @@ export default class AdminConfigAreasApiKeysNew extends Component {
   @service store;
 
   @tracked username;
+  @tracked scopesLoaded = false;
+  @tracked scopes = null;
 
   userModes = [
     { id: "all", name: i18n("admin.api.all_users") },
@@ -39,18 +41,37 @@ export default class AdminConfigAreasApiKeysNew extends Component {
   ];
 
   globalScopes = null;
-  scopes = null;
 
   constructor() {
     super(...arguments);
     this.#loadScopes();
   }
 
+  @cached
   get formData() {
     return {
       user_mode: "all",
-      scope_mode: "global",
-    }
+      scope_mode: "all",
+      scopes: Object.keys(this.scopes).reduce((result, resource) => {
+        result[resource] = this.scopes[resource].map((scope) => {
+          const params = scope.params
+            ? scope.params.reduce((acc, param) => {
+                acc[param] = undefined;
+                return acc;
+              }, {})
+            : {};
+
+          return {
+            key: scope.key,
+            enabled: undefined,
+            urls: scope.urls,
+            ...(params && { params }),
+          };
+        });
+
+        return result;
+      }, {}),
+    };
   }
 
   @action
@@ -73,24 +94,27 @@ export default class AdminConfigAreasApiKeysNew extends Component {
 
   @action
   async save(data) {
-    const payload = { description: data.description };
+    console.log(data);
+    // const payload = { description: data.description };
 
-    if (this.username) {
-      payload.username = this.username;
-    }
+    // if (this.username) {
+    //   payload.username = this.username;
+    // }
 
-    if (data.scope_mode === "granular") {
-      // TODO
-    } else if (data.scope_mode === "read_only") {
-      payload.scopes = this.globalScopes.filter((scope) => scope.key === "read");
-    }
+    // if (data.scope_mode === "granular") {
+    //   // TODO
+    // } else if (data.scope_mode === "read_only") {
+    //   payload.scopes = this.globalScopes.filter(
+    //     (scope) => scope.key === "read"
+    //   );
+    // }
 
-    try {
-      await this.store.createRecord("api-key").save(payload);
-      this.router.transitionTo("adminApiKeys");
-    } catch (error) {
-      popupAjaxError(error);
-    }
+    // try {
+    //   await this.store.createRecord("api-key").save(payload);
+    //   this.router.transitionTo("adminApiKeys");
+    // } catch (error) {
+    //   popupAjaxError(error);
+    // }
   }
 
   @action
@@ -110,6 +134,8 @@ export default class AdminConfigAreasApiKeysNew extends Component {
       this.scopes = data.scopes;
     } catch (error) {
       popupAjaxError(error);
+    } finally {
+      this.scopesLoaded = true;
     }
   }
 
@@ -119,100 +145,123 @@ export default class AdminConfigAreasApiKeysNew extends Component {
     <div class="admin-config-area user-field">
       <div class="admin-config-area__primary-content">
         <div class="admin-config-area-card">
-          <Form @onSubmit={{this.save}} @data={{this.formData}} as |form transientData|>
-            <form.Field
-              @name="description"
-              @title={{i18n "admin.api.description"}}
-              @format="large"
-              @validation="required"
-              as |field|
+          {{#if this.scopesLoaded}}
+            <Form
+              @onSubmit={{this.save}}
+              @data={{this.formData}}
+              as |form transientData|
             >
-              <field.Input />
-            </form.Field>
-
-            <form.Field
-              @name="user_mode"
-              @title={{i18n "admin.api.user_mode"}}
-              @format="large"
-              @validation="required"
-              as |field|
-            >
-              <field.Select as |select|>
-                {{#each this.userModes as |userMode|}}
-                  <select.Option
-                    @value={{userMode.id}}
-                  >{{userMode.name}}</select.Option>
-                {{/each}}
-              </field.Select>
-            </form.Field>
-
-            {{#if (eq transientData.user_mode "single")}}
               <form.Field
-                @name="user"
-                @title={{i18n "admin.api.user"}}
+                @name="description"
+                @title={{i18n "admin.api.description"}}
                 @format="large"
                 @validation="required"
                 as |field|
               >
-                <field.Custom>
-                  <EmailGroupUserChooser
-                    @value={{this.username}}
-                    @onChange={{fn this.updateUsername field}}
-                    @options={{hash
-                      maximum=1
-                      filterPlaceholder="admin.api.user_placeholder"
-                    }}
-                  />
-                </field.Custom>
+                <field.Input />
               </form.Field>
-            {{/if}}
 
-            <form.Field
-              @name="scope_mode"
-              @title={{i18n "admin.api.scope_mode"}}
-              @format="large"
-              @validation="required"
-              as |field|
-            >
-              <field.Select as |select|>
-                {{#each this.scopeModes as |scopeMode|}}
-                  <select.Option
-                    @value={{scopeMode.id}}
-                  >{{scopeMode.name}}</select.Option>
-                {{/each}}
-              </field.Select>
-            </form.Field>
+              <form.Field
+                @name="user_mode"
+                @title={{i18n "admin.api.user_mode"}}
+                @format="large"
+                @validation="required"
+                as |field|
+              >
+                <field.Select as |select|>
+                  {{#each this.userModes as |userMode|}}
+                    <select.Option
+                      @value={{userMode.id}}
+                    >{{userMode.name}}</select.Option>
+                  {{/each}}
+                </field.Select>
+              </form.Field>
 
-            {{#if (eq transientData.scope_mode "granular")}}
-              <h2 class="scopes-title">{{i18n "admin.api.scopes.title"}}</h2>
-              <p>{{i18n "admin.api.scopes.description"}}</p>
-              <table class="scopes-table grid">
-                <thead>
-                  <tr>
-                    <td></td>
-                    <td></td>
-                    <td>{{i18n "admin.api.scopes.allowed_urls"}}</td>
-                    <td>{{i18n "admin.api.scopes.optional_allowed_parameters"}}</td>
-                  </tr>
-                </thead>
-                <tbody>
-                  {{#each-in this.scopes as |resource actions|}}
-                    <tr class="scope-resource-name">
-                      <td><b>{{resource}}</b></td>
+              {{#if (eq transientData.user_mode "single")}}
+                <form.Field
+                  @name="user"
+                  @title={{i18n "admin.api.user"}}
+                  @format="large"
+                  @validation="required"
+                  as |field|
+                >
+                  <field.Custom>
+                    <EmailGroupUserChooser
+                      @value={{this.username}}
+                      @onChange={{fn this.updateUsername field}}
+                      @options={{hash
+                        maximum=1
+                        filterPlaceholder="admin.api.user_placeholder"
+                      }}
+                    />
+                  </field.Custom>
+                </form.Field>
+              {{/if}}
+
+              <form.Field
+                @name="scope_mode"
+                @title={{i18n "admin.api.scope_mode"}}
+                @format="large"
+                @validation="required"
+                as |field|
+              >
+                <field.Select as |select|>
+                  {{#each this.scopeModes as |scopeMode|}}
+                    <select.Option
+                      @value={{scopeMode.id}}
+                    >{{scopeMode.name}}</select.Option>
+                  {{/each}}
+                </field.Select>
+              </form.Field>
+
+              {{#if (eq transientData.scope_mode "granular")}}
+                <h2 class="scopes-title">{{i18n "admin.api.scopes.title"}}</h2>
+                <p>{{i18n "admin.api.scopes.description"}}</p>
+                <table class="scopes-table grid">
+                  <thead>
+                    <tr>
                       <td></td>
                       <td></td>
-                      <td></td>
+                      <td>{{i18n "admin.api.scopes.allowed_urls"}}</td>
+                      <td>{{i18n
+                          "admin.api.scopes.optional_allowed_parameters"
+                        }}</td>
                     </tr>
-                    {{#each actions as |act|}}
-                      <tr>
-                        <td><Input @type="checkbox" @checked={{act.selected}} /></td>
+                  </thead>
+                  <tbody>
+                    <form.Object @name="scopes" as |scopesObject scopeName|>
+                      <tr class="scope-resource-name">
+                        <td><b>{{scopeName}}</b></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+
+                      <scopesObject.Collection
+                        @name={{scopeName}}
+                        @tagName="tr"
+                        as |topicsCollection index collectionData|
+                      >
                         <td>
-                          <div class="scope-name">{{act.name}}</div>
+                          <topicsCollection.Field
+                            @name="enabled"
+                            @title="enabled"
+                            @showTitle={{false}}
+                            as |field|
+                          >
+                            <field.Checkbox />
+                          </topicsCollection.Field>
+                        </td>
+                        <td>
+                          <div class="scope-name">{{collectionData.name}}</div>
                           <DTooltip
                             @icon="circle-question"
                             @content={{i18n
                               (concat
-                                "admin.api.scopes.descriptions." resource "." act.key
+                                "admin.api.scopes.descriptions."
+                                scopeName
+                                "."
+                                collectionData.key
                               )
                               class="scope-tooltip"
                             }}
@@ -221,35 +270,41 @@ export default class AdminConfigAreasApiKeysNew extends Component {
                         <td>
                           <DButton
                             @icon="link"
-                            @action={{fn this.showURLs act.urls}}
+                            @action={{fn this.showURLs collectionData.urls}}
                             class="btn-info"
                           />
                         </td>
                         <td>
-                          {{#each act.params as |p|}}
-                            <Input
-                              maxlength="255"
-                              @value={{get act p}}
-                              placeholder={{p}}
-                            />
-                          {{/each}}
+                          <topicsCollection.Object
+                            @name="params"
+                            as |paramsObject name|
+                          >
+                            <paramsObject.Field
+                              @name={{name}}
+                              @title={{name}}
+                              @showTitle={{false}}
+                              as |field|
+                            >
+                              <field.Input placeholder={{name}} />
+                            </paramsObject.Field>
+                          </topicsCollection.Object>
                         </td>
-                      </tr>
-                    {{/each}}
-                  {{/each-in}}
-                </tbody>
-              </table>
-            {{/if}}
+                      </scopesObject.Collection>
+                    </form.Object>
+                  </tbody>
+                </table>
+              {{/if}}
 
-            <form.Actions>
-              <form.Submit class="save" @label="admin.api_keys.save" />
-              <form.Button
-                @route="adminApiKeys.index"
-                @label="admin.api_keys.cancel"
-                class="btn-default"
-              />
-            </form.Actions>
-          </Form>
+              <form.Actions>
+                <form.Submit class="save" @label="admin.api_keys.save" />
+                <form.Button
+                  @route="adminApiKeys.index"
+                  @label="admin.api_keys.cancel"
+                  class="btn-default"
+                />
+              </form.Actions>
+            </Form>
+          {{/if}}
         </div>
       </div>
     </div>
