@@ -41,8 +41,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       '@fortawesome/fontawesome-free':
-        specifier: 6.6.0
-        version: 6.6.0
+        specifier: 6.7.2
+        version: 6.7.2
       '@glint/core':
         specifier: ^1.5.0
         version: 1.5.0(typescript@5.7.2)
@@ -744,7 +744,7 @@ importers:
         version: 4.2.0
       ember-this-fallback:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=znalyv6akdxlqfpmxunrdi3osa)(ember-cli-htmlbars@6.3.0)(ember-source@5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.0)(rsvp@4.8.5)(webpack@5.97.1(@swc/core@1.10.1)(esbuild@0.24.0)))
+        version: 0.4.0(patch_hash=znalyv6akdxlqfpmxunrdi3osa)(ember-cli-htmlbars@6.3.0)(ember-source@5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.0)(rsvp@4.8.5))
     devDependencies:
       ember-cli:
         specifier: ~6.0.1
@@ -1087,7 +1087,7 @@ importers:
         version: 5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.0)(rsvp@4.8.5)(webpack@5.97.1(@swc/core@1.10.1)(esbuild@0.24.0))
       ember-this-fallback:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=znalyv6akdxlqfpmxunrdi3osa)(ember-cli-htmlbars@6.3.0)(ember-source@5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.0)(rsvp@4.8.5)(webpack@5.97.1(@swc/core@1.10.1)(esbuild@0.24.0)))
+        version: 0.4.0(patch_hash=znalyv6akdxlqfpmxunrdi3osa)(ember-cli-htmlbars@6.3.0)(ember-source@5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.0)(rsvp@4.8.5))
       handlebars:
         specifier: ^4.7.8
         version: 4.7.8
@@ -2144,8 +2144,8 @@ packages:
   '@floating-ui/utils@0.2.8':
     resolution: {integrity: sha512-kym7SodPp8/wloecOpcmSnWJsK7M0E5Wg8UcFA+uO4B9s5d0ywXOEro/8HM9x0rW+TljRzul/14UYz3TleT3ig==}
 
-  '@fortawesome/fontawesome-free@6.6.0':
-    resolution: {integrity: sha512-60G28ke/sXdtS9KZCpZSHHkCbdsOGEhIUGlwq6yhY74UpTiToIh8np7A8yphhM4BWsvNFtIvLpi4co+h9Mr9Ow==}
+  '@fortawesome/fontawesome-free@6.7.2':
+    resolution: {integrity: sha512-JUOtgFW6k9u4Y+xeIaEiLr3+cjoUPiAuLXoyKOJSia6Duzb7pq+A76P9ZdPDoAoxHdHzq6gE9/jKBGXlZT8FbA==}
     engines: {node: '>=6'}
 
   '@glimmer/compiler@0.92.4':
@@ -9729,7 +9729,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.8': {}
 
-  '@fortawesome/fontawesome-free@6.6.0': {}
+  '@fortawesome/fontawesome-free@6.7.2': {}
 
   '@glimmer/compiler@0.92.4':
     dependencies:
@@ -12857,7 +12857,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-this-fallback@0.4.0(patch_hash=znalyv6akdxlqfpmxunrdi3osa)(ember-cli-htmlbars@6.3.0)(ember-source@5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.0)(rsvp@4.8.5)(webpack@5.97.1(@swc/core@1.10.1)(esbuild@0.24.0))):
+  ember-this-fallback@0.4.0(patch_hash=znalyv6akdxlqfpmxunrdi3osa)(ember-cli-htmlbars@6.3.0)(ember-source@5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.0)(rsvp@4.8.5)):
     dependencies:
       '@glimmer/syntax': 0.84.3
       babel-plugin-ember-template-compilation: 2.2.5
