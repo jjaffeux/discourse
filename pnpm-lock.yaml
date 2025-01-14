@@ -89,8 +89,8 @@ importers:
         specifier: ^4.0.4
         version: 4.0.4
       lefthook:
-        specifier: ^1.10.3
-        version: 1.10.3
+        specifier: ^1.10.5
+        version: 1.10.5
       licensee:
         specifier: ^11.1.1
         version: 11.1.1(patch_hash=55h346kvblvnigtrwrsh4hpona)
@@ -653,7 +653,7 @@ importers:
         version: 4.2.0
       ember-this-fallback:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=znalyv6akdxlqfpmxunrdi3osa)(ember-cli-htmlbars@6.3.0)(ember-source@5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.1)(rsvp@4.8.5)(webpack@5.97.1(@swc/core@1.10.7)(esbuild@0.24.2)))
+        version: 0.4.0(patch_hash=znalyv6akdxlqfpmxunrdi3osa)(ember-cli-htmlbars@6.3.0)(ember-source@5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.1)(rsvp@4.8.5))
     devDependencies:
       ember-cli:
         specifier: ~6.1.0
@@ -993,7 +993,7 @@ importers:
         version: 5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.1)(rsvp@4.8.5)(webpack@5.97.1(@swc/core@1.10.7)(esbuild@0.24.2))
       ember-this-fallback:
         specifier: ^0.4.0
-        version: 0.4.0(patch_hash=znalyv6akdxlqfpmxunrdi3osa)(ember-cli-htmlbars@6.3.0)(ember-source@5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.1)(rsvp@4.8.5)(webpack@5.97.1(@swc/core@1.10.7)(esbuild@0.24.2)))
+        version: 0.4.0(patch_hash=znalyv6akdxlqfpmxunrdi3osa)(ember-cli-htmlbars@6.3.0)(ember-source@5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.1)(rsvp@4.8.5))
       handlebars:
         specifier: ^4.7.8
         version: 4.7.8
@@ -5780,58 +5780,58 @@ packages:
     resolution: {integrity: sha512-M6T051+5QCGLBQb8id3hdvIW8+zeFV2FyBGFS9IEK5H9Wt4MueD4bW1eWikpHgZp+5xR3l5c8pZUkQsIA0BFZg==}
     engines: {node: '>=8'}
 
-  lefthook-darwin-arm64@1.10.3:
-    resolution: {integrity: sha512-XmdYa49PQPahBNaS+M6PHvMG83azN2l2/mrpfPhOwYJjR+kBtonpgySOKGKxuzgz1lIHRHVkkJnN4oRhxA0VzQ==}
+  lefthook-darwin-arm64@1.10.5:
+    resolution: {integrity: sha512-Sllv7RgzR33gwmnWf6dFttzXbA78f9dBDhX4IVJUUSa5AM/6uvchooM7+sdvv3+G8aR3MsGewIImlZoD5rn3wg==}
     cpu: [arm64]
     os: [darwin]
 
-  lefthook-darwin-x64@1.10.3:
-    resolution: {integrity: sha512-ymreiYQjXe8+eGYCY3LIPJuS5tUHllMkY/FVN7sYssD5zCUEUib3WnYW6nzON+hTz0MFCGpxMEt+8WB6EwYBHA==}
+  lefthook-darwin-x64@1.10.5:
+    resolution: {integrity: sha512-pClWV5IpCjBDYD7QetQMxOjZQ/9/ry8HH9QGHPAHELHISqpMePd9sVvaRBQNeq9KY2nqmn46/4oJ+dCI3jUEuQ==}
     cpu: [x64]
     os: [darwin]
 
-  lefthook-freebsd-arm64@1.10.3:
-    resolution: {integrity: sha512-zbmX+XJmMZs5cEFPFlf6WsHxz40Gi9KBw0qdt3DKO4YN6zfGFGk3XAxlZBTgzfzIXWDF30psNOMmjz3YWMX8kw==}
+  lefthook-freebsd-arm64@1.10.5:
+    resolution: {integrity: sha512-5xqw26FSE0UEYLXkbTuPQcLpCbchCRDVaMwGN7jbF5WpeFAinYumfZ/ZzmXtfE+l4DSMALc/62EpA2sEtOxAuA==}
     cpu: [arm64]
     os: [freebsd]
 
-  lefthook-freebsd-x64@1.10.3:
-    resolution: {integrity: sha512-AYQ2WAd7d4eU+bnRcJxMXN22PSZlpuomcxNuEyBt9Iob3wTxadIs/VA5sjYC+eq3WMTNK1LprMoHmBrFOuCdaQ==}
+  lefthook-freebsd-x64@1.10.5:
+    resolution: {integrity: sha512-tLOol890ozyZ1cvlZWqk6StBwA5yFifwuoWcFFdGCDJp10NSs6EmKedYKxLVP+v7gcaqg+69bnGgZpPgG9KCoA==}
     cpu: [x64]
     os: [freebsd]
 
-  lefthook-linux-arm64@1.10.3:
-    resolution: {integrity: sha512-AeegzjSa/diFGEK8LrmzVTk9yb3m/TyN/YQDq10knc5Cp1tS+17ctiEj+/lwnxCQjIrClN7dPq5LFgXqjHJNKQ==}
+  lefthook-linux-arm64@1.10.5:
+    resolution: {integrity: sha512-ygVMXFUOVMIwC4cFSUr1YVXkyazLMwQfHc6Bh+D3RraHQ4CuqfGLr9Dqg3JUxQrczOsWlvw7m8fAgz37n4hquQ==}
     cpu: [arm64]
     os: [linux]
 
-  lefthook-linux-x64@1.10.3:
-    resolution: {integrity: sha512-Ysf0806Yjw9CRDn5At4KktJFZiaFpq81dcEiTZ4OA7D5z45+1FOhlID5mImPuQDyi4MaPRnyTdcnOOtENb4Umg==}
+  lefthook-linux-x64@1.10.5:
+    resolution: {integrity: sha512-zu8nnQKjM8P+awoRpIqbyo83Oi88QVDjS5veIXGj61bVNvrMJHMGqMseKJVV+6DNGuTOFx+7W2Iv5OrzQKJgGw==}
     cpu: [x64]
     os: [linux]
 
-  lefthook-openbsd-arm64@1.10.3:
-    resolution: {integrity: sha512-iZkwhMyJKq9wGg+CKHdwwdRABbtVK4M0cVi2QOQQKPGWE6VfDJL6eJWUed0fsSQ0OvX9InaSsKQPPMnxdqHI5w==}
+  lefthook-openbsd-arm64@1.10.5:
+    resolution: {integrity: sha512-XRQ4/Jxfm2HnVQB8ZI2f35JNeuO4PANKpO6u29eNMlCJh9HejbdyDbZ3EpS8qIFREkHOxaiKI3fbYd5nsOKcUw==}
     cpu: [arm64]
     os: [openbsd]
 
-  lefthook-openbsd-x64@1.10.3:
-    resolution: {integrity: sha512-miNizDXKq3lwjMpQZvqCv4CBXc0o7sRvAw31MJKa4y1YQ0Ib56tlcaC7UoZpLCgNv0ySH2msOUxUTrzwtbYVdg==}
+  lefthook-openbsd-x64@1.10.5:
+    resolution: {integrity: sha512-cVWj6oHOpQ8SdSxfQ920TceSzJyf3jwYJ/QTG4Du2yyl8kds6D3l4Qo54zvfTCeEkOFiY+pAODLLYdQZOEQSnw==}
     cpu: [x64]
     os: [openbsd]
 
-  lefthook-windows-arm64@1.10.3:
-    resolution: {integrity: sha512-cpTRNwkNoKayIiCbZaL5cBJ+YR4Mz6gFLd85ZPwIuO9FQpR/haJZU0VOJOJwjN5XRVBAFPR6ARFW7h47YFw0EQ==}
+  lefthook-windows-arm64@1.10.5:
+    resolution: {integrity: sha512-ISyQZlV5P4VmAk8ovdqPyNse4XDp4WM21AKzaDvaGvT/NRgg9Qn9yHFeChgjlUQJitOF7GsQ2hqfli6P4xk62A==}
     cpu: [arm64]
     os: [win32]
 
-  lefthook-windows-x64@1.10.3:
-    resolution: {integrity: sha512-WJPPJBwBY2wl2VzaXZizNWDKeskH9iEbfgEhQl69hQtsaHVcRYFbZWEg9pPp6kHBp0jMTDZ4+OqMZGOf6iNLDA==}
+  lefthook-windows-x64@1.10.5:
+    resolution: {integrity: sha512-s9tEKZXi3iRqVW/u/9qwOGAiRfDzeO0kNJZKT0JVH3MnZwewF/pVYh+XcfcoNr+SSgsiKvZalN41Sl7XrKyoAw==}
     cpu: [x64]
     os: [win32]
 
-  lefthook@1.10.3:
-    resolution: {integrity: sha512-lfOJ6C+eHuy8id75gFuIubuK7uAMI1d9ESuXhR2I3WYmugt1M583FbPunhw3Wap6eQtEGjQEUulIwK47qwzR/w==}
+  lefthook@1.10.5:
+    resolution: {integrity: sha512-zVRJtGh6wK6DuUVFeGrYmnSk2fB6L1wh0hOPbRw4E5CMHo7uiTD2f5zRh7VKtMS8jFUnw9sEprffoYqRkJWdeA==}
     hasBin: true
 
   levn@0.4.1:
@@ -12763,7 +12763,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-this-fallback@0.4.0(patch_hash=znalyv6akdxlqfpmxunrdi3osa)(ember-cli-htmlbars@6.3.0)(ember-source@5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.1)(rsvp@4.8.5)(webpack@5.97.1(@swc/core@1.10.7)(esbuild@0.24.2))):
+  ember-this-fallback@0.4.0(patch_hash=znalyv6akdxlqfpmxunrdi3osa)(ember-cli-htmlbars@6.3.0)(ember-source@5.12.0(patch_hash=xx7mvsb7nmshqkkqhmf45r3hse)(@glimmer/component@1.1.2(@babel/core@7.26.0))(@glint/template@1.5.1)(rsvp@4.8.5)):
     dependencies:
       '@glimmer/syntax': 0.84.3
       babel-plugin-ember-template-compilation: 2.2.5
@@ -14554,48 +14554,48 @@ snapshots:
     dependencies:
       invert-kv: 3.0.1
 
-  lefthook-darwin-arm64@1.10.3:
+  lefthook-darwin-arm64@1.10.5:
     optional: true
 
-  lefthook-darwin-x64@1.10.3:
+  lefthook-darwin-x64@1.10.5:
     optional: true
 
-  lefthook-freebsd-arm64@1.10.3:
+  lefthook-freebsd-arm64@1.10.5:
     optional: true
 
-  lefthook-freebsd-x64@1.10.3:
+  lefthook-freebsd-x64@1.10.5:
     optional: true
 
-  lefthook-linux-arm64@1.10.3:
+  lefthook-linux-arm64@1.10.5:
     optional: true
 
-  lefthook-linux-x64@1.10.3:
+  lefthook-linux-x64@1.10.5:
     optional: true
 
-  lefthook-openbsd-arm64@1.10.3:
+  lefthook-openbsd-arm64@1.10.5:
     optional: true
 
-  lefthook-openbsd-x64@1.10.3:
+  lefthook-openbsd-x64@1.10.5:
     optional: true
 
-  lefthook-windows-arm64@1.10.3:
+  lefthook-windows-arm64@1.10.5:
     optional: true
 
-  lefthook-windows-x64@1.10.3:
+  lefthook-windows-x64@1.10.5:
     optional: true
 
-  lefthook@1.10.3:
+  lefthook@1.10.5:
     optionalDependencies:
-      lefthook-darwin-arm64: 1.10.3
-      lefthook-darwin-x64: 1.10.3
-      lefthook-freebsd-arm64: 1.10.3
-      lefthook-freebsd-x64: 1.10.3
-      lefthook-linux-arm64: 1.10.3
-      lefthook-linux-x64: 1.10.3
-      lefthook-openbsd-arm64: 1.10.3
-      lefthook-openbsd-x64: 1.10.3
-      lefthook-windows-arm64: 1.10.3
-      lefthook-windows-x64: 1.10.3
+      lefthook-darwin-arm64: 1.10.5
+      lefthook-darwin-x64: 1.10.5
+      lefthook-freebsd-arm64: 1.10.5
+      lefthook-freebsd-x64: 1.10.5
+      lefthook-linux-arm64: 1.10.5
+      lefthook-linux-x64: 1.10.5
+      lefthook-openbsd-arm64: 1.10.5
+      lefthook-openbsd-x64: 1.10.5
+      lefthook-windows-arm64: 1.10.5
+      lefthook-windows-x64: 1.10.5
 
   levn@0.4.1:
     dependencies:
