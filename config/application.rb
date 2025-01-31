@@ -241,13 +241,6 @@ module Discourse
       Discourse::Utils.atomic_ln_s(DiscourseFonts.path_for_fonts, fonts_path)
     end
 
-    emojis_path = File.join(config.root, "public/images/emoji")
-    if !File.exist?(emojis_path) || File.realpath(emojis_path) != DiscourseEmojis.path_for_emojis
-      STDERR.puts "Symlinking emojis from discourse-emojis gem"
-      File.delete(emojis_path) if File.exist?(emojis_path)
-      Discourse::Utils.atomic_ln_s(DiscourseEmojis.path_for_emojis, emojis_path)
-    end
-
     require "stylesheet/manager"
     require "svg_sprite"
 
