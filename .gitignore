@@ -24,6 +24,9 @@
 /public/tombstone
 /public/uploads
 
+# symlinked from discourse-emojis gem
+/lib/emoji/*.json
+
 # Ignore the default SQLite database and db dumps
 *.sql
 *.sql.gz

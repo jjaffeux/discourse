@@ -52,7 +52,9 @@ gem "active_model_serializers", "~> 0.8.3"
 gem "http_accept_language", require: false
 
 gem "discourse-fonts", require: "discourse_fonts"
-gem "discourse-emojis", path: "/Users/joffreyjaffeux/Code/discourse-emojis"
+gem "discourse-emojis",
+    require: "discourse_emojis",
+    path: "/Users/joffreyjaffeux/Code/discourse-emojis"
 
 gem "message_bus"
 
