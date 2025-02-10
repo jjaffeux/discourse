@@ -1,7 +1,7 @@
 PATH
   remote: /Users/joffreyjaffeux/Code/discourse-emojis
   specs:
-    discourse-emojis (0.0.1)
+    discourse-emojis (0.1.0)
 
 GEM
   remote: https://rubygems.org/

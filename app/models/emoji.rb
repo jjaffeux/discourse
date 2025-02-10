@@ -130,7 +130,7 @@ class Emoji
   end
 
   def self.groups_file
-    @groups_file ||= "#{Rails.root}/lib/emoji/groups.json"
+    @groups_file ||= DiscourseEmojis.paths[:groups]
   end
 
   def self.groups
@@ -147,7 +147,7 @@ class Emoji
   end
 
   def self.emojis_db_file
-    @emojis_db_file ||= "#{Rails.root}/lib/emoji/emojis.json"
+    @emojis_db_file ||= DiscourseEmojis.paths[:emojis]
   end
 
   def self.emojis_db
@@ -155,7 +155,7 @@ class Emoji
   end
 
   def self.translations_db_file
-    @translations_db_file ||= "#{Rails.root}/lib/emoji/translations.json"
+    @translations_db_file ||= DiscourseEmojis.paths[:translations]
   end
 
   def self.translations_db
@@ -163,7 +163,7 @@ class Emoji
   end
 
   def self.tonable_emojis_db_file
-    @tonable_emojis_db_file ||= "#{Rails.root}/lib/emoji/tonable_emojis.json"
+    @tonable_emojis_db_file ||= DiscourseEmojis.paths[:tonable_emojis]
   end
 
   def self.tonable_emojis_db
@@ -171,7 +171,7 @@ class Emoji
   end
 
   def self.aliases_db_file
-    @aliases_db_file ||= "#{Rails.root}/lib/emoji/aliases.json"
+    @aliases_db_file ||= DiscourseEmojis.paths[:aliases]
   end
 
   def self.aliases_db
@@ -179,7 +179,7 @@ class Emoji
   end
 
   def self.search_aliases_db_file
-    @search_aliases_db_file ||= "#{Rails.root}/lib/emoji/search_aliases.json"
+    @search_aliases_db_file ||= DiscourseEmojis.paths[:search_aliases]
   end
 
   def self.search_aliases_db
