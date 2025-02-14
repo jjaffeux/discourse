@@ -179,15 +179,6 @@ task "javascript:update_constants" => :environment do
     };
   JS
 
-  write_template("pretty-text/addon/emoji/data.js", task_name, <<~JS)
-    export const emojis = #{Emoji.standard.map(&:name).flatten.inspect};
-    export const tonableEmojis = #{Emoji.tonable_emojis.flatten.inspect};
-    export const aliases = #{Emoji.aliases.inspect.gsub("=>", ":")};
-    export const searchAliases = #{Emoji.search_aliases.inspect.gsub("=>", ":")};
-    export const translations = #{Emoji.translations.inspect.gsub("=>", ":")};
-    export const replacements = #{Emoji.unicode_replacements_json};
-  JS
-
   write_template("pretty-text/addon/emoji/version.js", task_name, <<~JS)
     export const IMAGE_VERSION = "#{Emoji::EMOJI_VERSION}";
   JS
