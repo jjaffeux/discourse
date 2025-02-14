@@ -118,16 +118,6 @@ export default class EmojiPicker extends Component {
     };
   }
 
-  get flatEmojis() {
-    if (!this.emojiStore.list) {
-      return [];
-    }
-
-    // eslint-disable-next-line no-unused-vars
-    let { favorites, ...rest } = this.emojiStore.list;
-    return Object.values(rest).flat();
-  }
-
   @action
   registerFilterInput(element) {
     this.filterInput = element;
@@ -183,8 +173,12 @@ export default class EmojiPicker extends Component {
       exclude: this.site.denied_emojis,
     }).slice(0, 50);
 
-    this.filteredEmojis =
-      this.flatEmojis.filter((emoji) => results.includes(emoji.name)) ?? [];
+    this.filteredEmojis = results.map((emoji) => {
+      return {
+        name: emoji,
+        url: emojiUrlFor(emoji),
+      };
+    });
 
     this.isFiltering = false;
 
