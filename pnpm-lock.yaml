@@ -267,8 +267,8 @@ importers:
   app/assets/javascripts/discourse:
     dependencies:
       '@faker-js/faker':
-        specifier: ^9.5.0
-        version: 9.5.0
+        specifier: ^9.6.0
+        version: 9.6.0
       '@glimmer/syntax':
         specifier: 0.93.1
         version: 0.93.1
@@ -2071,8 +2071,8 @@ packages:
     resolution: {integrity: sha512-+0TjwR1eAUdZtvv/ir1mGX+v0tUoR3VEPB8Up0LLJC+whRW0GgBBtpbOkg/a/U4Dxa6l5a3l9AJ1aWIQVyoWJA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@faker-js/faker@9.5.0':
-    resolution: {integrity: sha512-3qbjLv+fzuuCg3umxc9/7YjrEXNaKwHgmig949nfyaTx8eL4FAsvFbu+1JcFUj1YAXofhaDn6JdEUBTYuk0Ssw==}
+  '@faker-js/faker@9.6.0':
+    resolution: {integrity: sha512-3vm4by+B5lvsFPSyep3ELWmZfE3kicDtmemVpuwl1yH7tqtnHdsA6hG8fbXedMVdkzgtvzWoRgjSB4Q+FHnZiw==}
     engines: {node: '>=18.0.0', npm: '>=9.0.0'}
 
   '@floating-ui/core@1.6.7':
@@ -8376,10 +8376,10 @@ packages:
   virtual-dom@2.1.1:
     resolution: {integrity: sha512-wb6Qc9Lbqug0kRqo/iuApfBpJJAq14Sk1faAnSmtqXiwahg7PVTvWMs9L02Z8nNIMqbwsxzBAA90bbtRLbw0zg==}
 
-  volar-service-typescript@0.0.62:
-    resolution: {integrity: sha512-p7MPi71q7KOsH0eAbZwPBiKPp9B2+qrdHAd6VY5oTo9BUXatsOAdakTm9Yf0DUj6uWBAaOT01BSeVOPwucMV1g==}
+  volar-service-typescript@0.0.60:
+    resolution: {integrity: sha512-QDGC66exWZMH6fs93M6XFIBMxDObxgV9q1XENII7vGzvW5KqikYG4f06AO+MWsHmAna8cI+X28xITb0SzzB0Yw==}
     peerDependencies:
-      '@volar/language-service': ~2.4.0
+      '@volar/language-service': ~2.4.0-alpha.19
     peerDependenciesMeta:
       '@volar/language-service':
         optional: true
@@ -9957,7 +9957,7 @@ snapshots:
       '@eslint/core': 0.11.0
       levn: 0.4.1
 
-  '@faker-js/faker@9.5.0': {}
+  '@faker-js/faker@9.6.0': {}
 
   '@floating-ui/core@1.6.7':
     dependencies:
@@ -10215,7 +10215,7 @@ snapshots:
       silent-error: 1.1.1
       typescript: 5.6.3
       uuid: 8.3.2
-      volar-service-typescript: 0.0.62(@volar/language-service@2.4.0-alpha.16)
+      volar-service-typescript: 0.0.60(@volar/language-service@2.4.0-alpha.16)
       vscode-languageserver-protocol: 3.17.5
       vscode-languageserver-textdocument: 1.0.12
       vscode-uri: 3.0.8
@@ -17799,7 +17799,7 @@ snapshots:
       x-is-array: 0.1.0
       x-is-string: 0.1.0
 
-  volar-service-typescript@0.0.62(@volar/language-service@2.4.0-alpha.16):
+  volar-service-typescript@0.0.60(@volar/language-service@2.4.0-alpha.16):
     dependencies:
       path-browserify: 1.0.1
       semver: 7.7.1
