@@ -536,23 +536,23 @@ GEM
     sanitize (7.0.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.16.8)
-    sass-embedded (1.85.0-aarch64-linux-gnu)
-      google-protobuf (~> 4.29)
-    sass-embedded (1.85.0-aarch64-linux-musl)
-      google-protobuf (~> 4.29)
-    sass-embedded (1.85.0-arm-linux-gnueabihf)
-      google-protobuf (~> 4.29)
-    sass-embedded (1.85.0-arm-linux-musleabihf)
-      google-protobuf (~> 4.29)
-    sass-embedded (1.85.0-arm64-darwin)
-      google-protobuf (~> 4.29)
-    sass-embedded (1.85.0-x86_64-darwin)
-      google-protobuf (~> 4.29)
-    sass-embedded (1.85.0-x86_64-linux-gnu)
-      google-protobuf (~> 4.29)
-    sass-embedded (1.85.0-x86_64-linux-musl)
-      google-protobuf (~> 4.29)
-    sassc-embedded (1.80.2)
+    sass-embedded (1.87.0-aarch64-linux-gnu)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.87.0-aarch64-linux-musl)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.87.0-arm-linux-gnueabihf)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.87.0-arm-linux-musleabihf)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.87.0-arm64-darwin)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.87.0-x86_64-darwin)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.87.0-x86_64-linux-gnu)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.87.0-x86_64-linux-musl)
+      google-protobuf (~> 4.30)
+    sassc-embedded (1.80.4)
       sass-embedded (~> 1.80)
     securerandom (0.4.1)
     selenium-devtools (0.135.0)
@@ -1043,15 +1043,15 @@ CHECKSUMS
   ruby2_keywords (0.0.5) sha256=ffd13740c573b7301cf7a2e61fc857b2a8e3d3aff32545d6f8300d8bae10e3ef
   rubyzip (2.4.1) sha256=8577c88edc1fde8935eb91064c5cb1aef9ad5494b940cf19c775ee833e075615
   sanitize (7.0.0) sha256=269d1b9d7326e69307723af5643ec032ff86ad616e72a3b36d301ac75a273984
-  sass-embedded (1.85.0-aarch64-linux-gnu) sha256=d1741ce084e853d927563e24fde288ad2f347adf38a28d9a14846c24a733f112
-  sass-embedded (1.85.0-aarch64-linux-musl) sha256=156c7c272c7354670a237e44c8b4886b77b56154437d6609b6b79a8e4611e2cd
-  sass-embedded (1.85.0-arm-linux-gnueabihf) sha256=f789814c42f8dc0095c809a98999a96eb514314a57951f7415733288e9cc890a
-  sass-embedded (1.85.0-arm-linux-musleabihf) sha256=4f882a806acc525a26dc8772d3256711b4231cbaa87c966d19a1bf1e4748bac8
-  sass-embedded (1.85.0-arm64-darwin) sha256=85c6bb983854dac1ac9a6215883ae766c533ea7cdf187fe502aa904c085389af
-  sass-embedded (1.85.0-x86_64-darwin) sha256=aeb51e152c0b7fcfe5467b8c069f49d5b9ab42143ca25c8bb435658455c6f047
-  sass-embedded (1.85.0-x86_64-linux-gnu) sha256=30e2b01b9d487cce2a421c5dda7bc2d0f64b52450174bde83fe3a299789e4294
-  sass-embedded (1.85.0-x86_64-linux-musl) sha256=ca01931c54b59db1130a779386bcfc798f8dcfee1f98f60fbcf8c5dbdc0f9c23
-  sassc-embedded (1.80.2) sha256=625ac3923fe9af1a8072210cf22b01b66f3dc23748a4997a9b28bfdff7c7967d
+  sass-embedded (1.87.0-aarch64-linux-gnu) sha256=c663f295deb6c9cf5765a05684cab158c7f97c0dce64bd810cbb01c567a10cd2
+  sass-embedded (1.87.0-aarch64-linux-musl) sha256=0ffaed8b807fac0a558afc8c5e1e075666dc3b02813e001010ee066bbc0798f1
+  sass-embedded (1.87.0-arm-linux-gnueabihf) sha256=909218eddf95e135149de35246fca8338190c716d9f522cc2064f6c434c73134
+  sass-embedded (1.87.0-arm-linux-musleabihf) sha256=27d5dc0b18203f915219a2a739c8b0dc9014118218726406c11a868563063ff6
+  sass-embedded (1.87.0-arm64-darwin) sha256=32ab4bf24784882a409cb53bed859bed56fdb45219e05e89ef9452e05215e9d6
+  sass-embedded (1.87.0-x86_64-darwin) sha256=5e50c456c59bb65b3af4de17a9e100aeb62360f38727253eddce0022c33cec2b
+  sass-embedded (1.87.0-x86_64-linux-gnu) sha256=e82e70dbceb980530b0742991c19a704b8cf4f968b792df12e4190071ebe2212
+  sass-embedded (1.87.0-x86_64-linux-musl) sha256=d466b356ca7de1d0969d6a1783e48b1d4d7e540b66e07d5fc48dedd757ae7f96
+  sassc-embedded (1.80.4) sha256=1555fc147ff4f51d847afffd24d641793b0dc1c7ecee8921e6fd667bf2fa2769
   securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1
   selenium-devtools (0.135.0) sha256=3862ec1f3e940a030f492b3691d11af35544789f961fcd0633cb89e4ea4251ec
   selenium-webdriver (4.31.0) sha256=ddb2d88eee23cddb5d6a9dadd909427a9e5163718338e11a91eef2fbead100e9
