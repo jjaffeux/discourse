@@ -81,6 +81,7 @@ class Root extends Component {
       placement: this.contentPlacement,
       // Toast shouldn't lock body scroll - page should remain interactive
       lockScroll: false,
+      onClickOutside: { dismiss: false, stopOverlayPropagation: false },
     });
 
     this.sheetRegistry.register(this.sheet);

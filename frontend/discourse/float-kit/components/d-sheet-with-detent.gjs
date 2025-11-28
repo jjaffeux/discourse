@@ -55,6 +55,7 @@ class Root extends Component {
       onTravel: this.args.onTravel,
       swipeOvershoot: false,
       nativeEdgeSwipePrevention: true,
+      onClickOutside: this.args.onClickOutside,
     });
 
     this.sheetRegistry.register(this.sheet);

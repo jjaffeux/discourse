@@ -88,6 +88,7 @@ export default class Root extends Component {
       swipeOvershoot: this.args.swipeOvershoot,
       nativeEdgeSwipePrevention: this.args.nativeEdgeSwipePrevention,
       placement: this.args.contentPlacement,
+      onClickOutside: this.args.onClickOutside,
     });
 
     this.sheetRegistry.register(this.sheet);
