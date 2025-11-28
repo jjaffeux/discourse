@@ -1,0 +1,108 @@
+// ============================================================================
+// d-scroll component styles
+// Following Silk's Scroll component CSS patterns
+// ============================================================================
+
+// Base view styles
+.d-scroll-view {
+  position: relative;
+}
+
+// Axis-specific overflow handling
+[data-d-scroll~="view"][data-d-scroll~="axis-y"] {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+[data-d-scroll~="view"][data-d-scroll~="axis-x"] {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+// Note: scrollGesture=false does NOT disable native scrolling via CSS
+// when scrollGestureTrap is also set (as in SheetWithDetent).
+// Silk uses CSS specificity to allow scrolling when trap is active:
+// - scrollDisabled rule has 2 attrs (low specificity)
+// - scrollTrap + overflow rules have 4 attrs (high specificity, wins)
+// So we don't add overflow:hidden here - scrolling works normally.
+
+// Scrollbar visibility
+[data-d-scroll~="view"][data-d-scroll~="no-scrollbar"] {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// Scroll anchoring (CSS overflow-anchor)
+[data-d-scroll~="view"][data-d-scroll~="no-anchoring"] {
+  overflow-anchor: none;
+}
+
+// Scroll snap types
+[data-d-scroll~="view"][data-d-scroll~="snap-proximity"] {
+  &[data-d-scroll~="axis-y"] {
+    scroll-snap-type: y proximity;
+  }
+
+  &[data-d-scroll~="axis-x"] {
+    scroll-snap-type: x proximity;
+  }
+}
+
+[data-d-scroll~="view"][data-d-scroll~="snap-mandatory"] {
+  &[data-d-scroll~="axis-y"] {
+    scroll-snap-type: y mandatory;
+  }
+
+  &[data-d-scroll~="axis-x"] {
+    scroll-snap-type: x mandatory;
+  }
+}
+
+// Overshoot prevention (like Silk's scrollGestureOvershoot)
+[data-d-scroll~="view"][data-d-scroll~="no-overshoot"] {
+  overscroll-behavior: none;
+}
+
+// Page scroll replacement mode
+[data-d-scroll~="view"][data-d-scroll~="page-scroll-replacement"] {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// Safe area handling via CSS variable
+[data-d-scroll~="view"] {
+  // Extra padding when visual viewport is smaller (e.g., keyboard shown)
+  padding-bottom: var(--d-scroll-safe-area-inset, 0);
+}
+
+// Content wrapper
+[data-d-scroll~="content"] {
+  min-height: 100%;
+}
+
+// Trigger button - reset default button styles
+[data-d-scroll~="trigger"] {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--tertiary);
+    outline-offset: 2px;
+  }
+}
+

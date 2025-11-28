@@ -1,0 +1,41 @@
+---
+description: when working on silk library and d-sheet
+alwaysApply: false
+---
+
+NEVER USE A SIMPLER APPROACH THAN THE ONE USED IN SILK LIBRARY.
+NEVER USE A SIMPLER APPROACH THAN THE ONE USED IN SILK LIBRARY.
+NEVER USE A SIMPLER APPROACH THAN THE ONE USED IN SILK LIBRARY.
+NEVER USE A SIMPLER APPROACH THAN THE ONE USED IN SILK LIBRARY.
+NEVER USE A SIMPLER APPROACH THAN THE ONE USED IN SILK LIBRARY.
+
+It's very important that you never make guesses:
+
+- write debugging logs and look at the console, taking screenshots is often not enough as the animations go too fast for it, so always try to have comprehensive logging to understand what is actually happening
+- ALWAYS ALWAYS ALWAYS follow the implementation of the silk library, never try to get a simpler solution or invent your own solution. Follow as closely as possible the silk implementation
+- PEOPLE WILL DIE IF YOU DON'T FOLLOW SILK IMPLEMENTATION, DO NOT ATTEMPT TO IMPLEMENT THINGS DIFFERENTLY THAN SILK. THE ONLY CHANGE YOU CAN DO IS TO CONVERT REACT PATTERNS TO EMBER PATTERNS
+
+You are building an Ember version of the React library: silk. This library is providing building blocks to build sheets as a native app in a web app.
+
+For now we are focusing on the bottom sheet case.
+
+You can always try the reference example:
+
+- visit https://silkhq.com/
+- click Bottom Sheet
+
+If you want to try the library we are building:
+
+- visit http://127.0.0.1:4200/session/j.jaffeux/become (to login)
+- visit http://127.0.0.1:4200/styleguide/molecules/sheets
+- click on trigger
+
+You have access to the following reference information:
+
+- ../../silk/source.css -> the silk css
+- ../../silk/source.js -> the silk js
+- ../../silk/architecture.md -> overview of silk architecure
+- ../../silk/sheet-with-detent-structure.md -> an explanation of the DOM structure
+- ../../silk/silk-documentation -> the full silk documentation
+
+We use data-d-sheet instead of data-silk.
