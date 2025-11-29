@@ -1,32 +1,80 @@
 // ============================================================================
 // d-scroll component styles
-// Following Silk's Scroll component CSS patterns
+// Following Silk's Scroll component CSS from source.css exactly
 // ============================================================================
 
-// Base view styles
-.d-scroll-view {
+// ============================================================================
+// c1 - Root wrapper (Scroll.Root)
+// From Silk source.css lines 1044-1074
+// ============================================================================
+
+[data-d-scroll~="root"] {
+  // Silk: --NOTE: "`display` can only be set to `none` or `grid`"
+  display: grid;
   position: relative;
+  overflow: hidden;
 }
 
-// Axis-specific overflow handling
+// Silk: All direct children are positioned absolutely to fill the grid cell
+[data-d-scroll~="root"] > * {
+  position: absolute !important;
+}
+
+// ============================================================================
+// c2 - Scroll container (scrollable element)
+// ============================================================================
+
+[data-d-scroll~="view"] {
+  scrollbar-color: inherit;
+  scrollbar-gutter: inherit;
+  outline: none !important;
+  padding: 0 !important;
+  display: grid !important;
+  position: relative !important;
+}
+
+[data-d-scroll~="view"]:focus {
+  outline: none;
+}
+
+// Grid template for sentinel/spacer structure
+// Silk: --grid-template: 0px max-content 0px max-content 0px max-content 0px
+[data-d-scroll~="view"] {
+  --grid-template: 0px max-content 0px max-content 0px max-content 0px !important;
+}
+
 [data-d-scroll~="view"][data-d-scroll~="axis-y"] {
-  overflow-x: hidden;
-  overflow-y: auto;
+  grid-template-rows: var(--grid-template);
 }
 
 [data-d-scroll~="view"][data-d-scroll~="axis-x"] {
-  overflow-x: auto;
-  overflow-y: hidden;
+  grid-template-columns: var(--grid-template);
 }
 
-// Note: scrollGesture=false does NOT disable native scrolling via CSS
-// when scrollGestureTrap is also set (as in SheetWithDetent).
-// Silk uses CSS specificity to allow scrolling when trap is active:
-// - scrollDisabled rule has 2 attrs (low specificity)
-// - scrollTrap + overflow rules have 4 attrs (high specificity, wins)
-// So we don't add overflow:hidden here - scrolling works normally.
+// Overflow handling - Silk c2 cAd / cAc
+[data-d-scroll~="view"][data-d-scroll~="axis-y"] {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
 
+[data-d-scroll~="view"][data-d-scroll~="axis-x"] {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
+// Overscroll behavior - Silk c2 cCa / cDa
+[data-d-scroll~="view"][data-d-scroll~="axis-x"] {
+  overscroll-behavior-x: contain !important;
+}
+
+[data-d-scroll~="view"][data-d-scroll~="axis-y"] {
+  overscroll-behavior-y: contain !important;
+}
+
+// ============================================================================
 // Scrollbar visibility
+// ============================================================================
+
 [data-d-scroll~="view"][data-d-scroll~="no-scrollbar"] {
   scrollbar-width: none;
 
@@ -35,38 +83,46 @@
   }
 }
 
-// Scroll anchoring (CSS overflow-anchor)
+// ============================================================================
+// Scroll anchoring
+// ============================================================================
+
 [data-d-scroll~="view"][data-d-scroll~="no-anchoring"] {
   overflow-anchor: none;
 }
 
-// Scroll snap types
-[data-d-scroll~="view"][data-d-scroll~="snap-proximity"] {
-  &[data-d-scroll~="axis-y"] {
-    scroll-snap-type: y proximity;
-  }
+// ============================================================================
+// Scroll snap
+// ============================================================================
 
-  &[data-d-scroll~="axis-x"] {
-    scroll-snap-type: x proximity;
-  }
+[data-d-scroll~="view"][data-d-scroll~="snap-proximity"][data-d-scroll~="axis-y"] {
+  scroll-snap-type: y proximity;
 }
 
-[data-d-scroll~="view"][data-d-scroll~="snap-mandatory"] {
-  &[data-d-scroll~="axis-y"] {
-    scroll-snap-type: y mandatory;
-  }
-
-  &[data-d-scroll~="axis-x"] {
-    scroll-snap-type: x mandatory;
-  }
+[data-d-scroll~="view"][data-d-scroll~="snap-proximity"][data-d-scroll~="axis-x"] {
+  scroll-snap-type: x proximity;
 }
 
-// Overshoot prevention (like Silk's scrollGestureOvershoot)
+[data-d-scroll~="view"][data-d-scroll~="snap-mandatory"][data-d-scroll~="axis-y"] {
+  scroll-snap-type: y mandatory;
+}
+
+[data-d-scroll~="view"][data-d-scroll~="snap-mandatory"][data-d-scroll~="axis-x"] {
+  scroll-snap-type: x mandatory;
+}
+
+// ============================================================================
+// Overshoot prevention
+// ============================================================================
+
 [data-d-scroll~="view"][data-d-scroll~="no-overshoot"] {
-  overscroll-behavior: none;
+  overscroll-behavior: none !important;
 }
 
-// Page scroll replacement mode
+// ============================================================================
+// Page scroll replacement
+// ============================================================================
+
 [data-d-scroll~="view"][data-d-scroll~="page-scroll-replacement"] {
   position: fixed;
   inset: 0;
@@ -74,18 +130,92 @@
   height: 100%;
 }
 
-// Safe area handling via CSS variable
-[data-d-scroll~="view"] {
-  // Extra padding when visual viewport is smaller (e.g., keyboard shown)
-  padding-bottom: var(--d-scroll-safe-area-inset, 0);
-}
+// ============================================================================
+// c3 - Content wrapper
+// ============================================================================
 
-// Content wrapper
 [data-d-scroll~="content"] {
-  min-height: 100%;
+  position: relative !important;
 }
 
-// Trigger button - reset default button styles
+// Content is explicitly placed in grid row/column 4
+// This is the middle "max-content" slot in the 7-slot grid template
+[data-d-scroll~="view"][data-d-scroll~="axis-y"] [data-d-scroll~="content"] {
+  grid-row: 4 !important;
+}
+
+[data-d-scroll~="view"][data-d-scroll~="axis-x"] [data-d-scroll~="content"] {
+  grid-column: 4 !important;
+}
+
+// ============================================================================
+// c5 - Sentinel elements (for scroll observation)
+// Silk: 1px x 1px invisible elements at start/end
+// ============================================================================
+
+[data-d-scroll~="sentinel"] {
+  width: 1px;
+  height: 1px;
+  margin-bottom: -1px;
+  margin-right: -1px;
+}
+
+// Sentinel positioning for y-axis
+[data-d-scroll~="sentinel"][data-d-scroll~="sentinel-start"][data-d-scroll~="axis-y"] {
+  grid-row: 1;
+}
+
+[data-d-scroll~="sentinel"][data-d-scroll~="sentinel-end"][data-d-scroll~="axis-y"] {
+  grid-row: -1;
+  margin-top: -2px;
+}
+
+// Sentinel positioning for x-axis
+[data-d-scroll~="sentinel"][data-d-scroll~="sentinel-start"][data-d-scroll~="axis-x"] {
+  grid-column: 1;
+}
+
+[data-d-scroll~="sentinel"][data-d-scroll~="sentinel-end"][data-d-scroll~="axis-x"] {
+  grid-column: -1;
+  margin-left: -2px;
+}
+
+// ============================================================================
+// c6 - Start spacer
+// ============================================================================
+
+[data-d-scroll~="spacer"][data-d-scroll~="spacer-start"][data-d-scroll~="axis-y"] {
+  width: 1px;
+  height: 0;
+  grid-row: 2;
+}
+
+[data-d-scroll~="spacer"][data-d-scroll~="spacer-start"][data-d-scroll~="axis-x"] {
+  width: 0;
+  height: 1px;
+  grid-column: 2;
+}
+
+// ============================================================================
+// c7 - End spacer (safe area inset)
+// ============================================================================
+
+[data-d-scroll~="spacer"][data-d-scroll~="spacer-end"][data-d-scroll~="axis-y"] {
+  width: 1px;
+  // height is set dynamically via inline style
+  grid-row: 6;
+}
+
+[data-d-scroll~="spacer"][data-d-scroll~="spacer-end"][data-d-scroll~="axis-x"] {
+  height: 1px;
+  // width is set dynamically via inline style
+  grid-column: 6;
+}
+
+// ============================================================================
+// Trigger button
+// ============================================================================
+
 [data-d-scroll~="trigger"] {
   appearance: none;
   background: transparent;
@@ -105,4 +235,3 @@
     outline-offset: 2px;
   }
 }
-

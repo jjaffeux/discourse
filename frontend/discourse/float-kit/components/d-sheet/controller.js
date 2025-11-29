@@ -139,12 +139,26 @@ export default class Controller {
 
     // Apply tracks/placement options (like Silk's tracks/contentPlacement)
     // Mutual defaulting: if one is set, the other defaults to match
-    if (options.tracks && options.placement) {
-      this.tracks = options.tracks;
+    // Normalize array tracks: ["top", "bottom"] -> "vertical", ["left", "right"] -> "horizontal"
+    let normalizedTracks = options.tracks;
+    if (Array.isArray(options.tracks)) {
+      const sorted = [...options.tracks].sort();
+      if (sorted.includes("top") && sorted.includes("bottom")) {
+        normalizedTracks = "vertical";
+      } else if (sorted.includes("left") && sorted.includes("right")) {
+        normalizedTracks = "horizontal";
+      } else {
+        // Single-element array or other combination - use first element
+        normalizedTracks = options.tracks[0];
+      }
+    }
+
+    if (normalizedTracks && options.placement) {
+      this.tracks = normalizedTracks;
       this.placement = options.placement;
-    } else if (options.tracks) {
-      this.tracks = options.tracks;
-      this.placement = options.tracks;
+    } else if (normalizedTracks) {
+      this.tracks = normalizedTracks;
+      this.placement = normalizedTracks;
     } else if (options.placement) {
       this.placement = options.placement;
       this.tracks = options.placement;
@@ -1038,6 +1052,18 @@ export default class Controller {
     this.resetViewStyles();
     this.calculateDimensionsIfReady();
     this.setupIntersectionObserver();
+  }
+
+  /**
+   * Focus the view element to dismiss on-screen keyboard.
+   * Used by SheetWithKeyboard during travel to dismiss keyboard when user starts dragging.
+   * Like Silk's pattern: focus view when progress < 0.999 to blur any focused input.
+   */
+  @bind
+  focusView() {
+    if (this.view) {
+      this.view.focus();
+    }
   }
 
   /**

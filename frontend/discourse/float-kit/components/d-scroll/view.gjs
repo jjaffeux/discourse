@@ -6,6 +6,7 @@ import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import willDestroy from "@ember/render-modifiers/modifiers/will-destroy";
 import { modifier } from "ember-modifier";
 import concatClass from "discourse/helpers/concat-class";
+import nativeFocusScrollPrevention from "./native-focus-scroll-prevention";
 
 /**
  * View component for scroll container
@@ -60,6 +61,7 @@ export default class View extends Component {
   _touchStartY = 0;
   _touchStartX = 0;
   _visualViewportListener = null;
+  _scrollContainerElement = null;
 
   // =========================================================================
   // Props with defaults (following Silk exactly)
@@ -254,6 +256,9 @@ export default class View extends Component {
   // =========================================================================
 
   setupModifier = modifier((element) => {
+    // Store element reference for visual viewport calculations
+    this._scrollContainerElement = element;
+
     // Register with controller (if available)
     if (this.args.scroll?.registerView) {
       this.args.scroll.registerView(element);
@@ -268,16 +273,27 @@ export default class View extends Component {
         "resize",
         this._visualViewportListener
       );
+      window.visualViewport.addEventListener(
+        "scroll",
+        this._visualViewportListener
+      );
+      // Calculate initial spacer height
+      this._handleVisualViewportChange();
     }
 
     // Cleanup function
     return () => {
+      this._scrollContainerElement = null;
       if (this.scrollTimeout) {
         clearTimeout(this.scrollTimeout);
       }
       if (this._visualViewportListener && window.visualViewport) {
         window.visualViewport.removeEventListener(
           "resize",
+          this._visualViewportListener
+        );
+        window.visualViewport.removeEventListener(
+          "scroll",
           this._visualViewportListener
         );
       }
@@ -288,19 +304,42 @@ export default class View extends Component {
   // Visual Viewport Handling (for safeArea)
   // =========================================================================
 
+  /**
+   * Calculate spacer height following Silk's formula exactly (lines 13171-13184).
+   *
+   * Silk calculates:
+   *   y = visualViewport.offsetTop + visualViewport.height (visual viewport bottom)
+   *   n = scroll container's bottom (from getBoundingClientRect)
+   *   S = Math.max(n - y, 0)
+   *
+   * This gives the distance from the visual viewport bottom to the scroll container bottom.
+   * When keyboard opens, visual viewport shrinks (y decreases), so S increases.
+   */
   _handleVisualViewportChange() {
     if (!window.visualViewport || this.safeArea !== "visual-viewport") {
       this._safeAreaInset = 0;
       return;
     }
 
-    // Calculate the difference between layout viewport and visual viewport
-    // This accounts for on-screen keyboard
-    const layoutHeight = window.innerHeight;
-    const visualHeight = window.visualViewport.height;
-    const inset = layoutHeight - visualHeight;
+    if (!this._scrollContainerElement) {
+      this._safeAreaInset = 0;
+      return;
+    }
 
-    this._safeAreaInset = Math.max(0, inset);
+    // Silk's nJ() function: get visual viewport top and bottom
+    const visualViewportTop = window.visualViewport.offsetTop;
+    const visualViewportHeight = window.visualViewport.height;
+    const visualViewportBottom = visualViewportTop + visualViewportHeight;
+
+    // Get scroll container's bottom position
+    const scrollContainerBottom =
+      this._scrollContainerElement.getBoundingClientRect().bottom;
+
+    // Silk's formula: S = Math.max(n - y, 0)
+    // Where n = scroll container bottom, y = visual viewport bottom
+    const spacerHeight = Math.max(scrollContainerBottom - visualViewportBottom, 0);
+
+    this._safeAreaInset = spacerHeight;
   }
 
   // =========================================================================
@@ -559,12 +598,41 @@ export default class View extends Component {
     return Boolean(skipValue);
   }
 
+  /**
+   * Whether to render sentinel elements.
+   * Silk: Only renders when swipeTrapObserverRequired is true (when scrollGestureTrap is set)
+   */
+  get shouldRenderSentinels() {
+    return Boolean(this.scrollGestureTrap);
+  }
+
+  /**
+   * Whether to render spacer elements.
+   * Silk: Only renders spacers for y-axis scrolling
+   */
+  get shouldRenderSpacers() {
+    return this.axis === "y";
+  }
+
+  /**
+   * Get the bottom spacer height for safe area.
+   * This is like Silk's c7 element.
+   */
+  get bottomSpacerStyle() {
+    if (this._safeAreaInset > 0) {
+      return `height: ${this._safeAreaInset}px`;
+    }
+    return "height: 0px";
+  }
+
   <template>
     <div
       class="d-scroll-view"
       data-d-scroll={{this.dataAttributes}}
       style={{this.inlineStyles}}
+      tabindex="-1"
       {{this.setupModifier}}
+      {{nativeFocusScrollPrevention this.nativeFocusScrollPrevention}}
       {{on "wheel" this.handleWheel passive=false}}
       {{on "touchstart" this.handleTouchStart passive=true}}
       {{on "touchmove" this.handleTouchMove passive=false}}
@@ -572,7 +640,28 @@ export default class View extends Component {
       {{on "focusin" this.handleFocusIn}}
       ...attributes
     >
+      {{! Silk c5: Top sentinel - conditional on scrollGestureTrap }}
+      {{#if this.shouldRenderSentinels}}
+        <div data-d-scroll="sentinel sentinel-start axis-{{this.axis}}"></div>
+      {{/if}}
+
+      {{! Silk c6: Top spacer - conditional on y-axis }}
+      {{#if this.shouldRenderSpacers}}
+        <div data-d-scroll="spacer spacer-start axis-{{this.axis}}" style="height: 0px"></div>
+      {{/if}}
+
+      {{! Content (c3 equivalent is rendered via yield) }}
       {{yield}}
+
+      {{! Silk c7: Bottom spacer for safe area inset - conditional on y-axis }}
+      {{#if this.shouldRenderSpacers}}
+        <div data-d-scroll="spacer spacer-end axis-{{this.axis}}" style={{this.bottomSpacerStyle}}></div>
+      {{/if}}
+
+      {{! Silk c5: Bottom sentinel - conditional on scrollGestureTrap }}
+      {{#if this.shouldRenderSentinels}}
+        <div data-d-scroll="sentinel sentinel-end axis-{{this.axis}}"></div>
+      {{/if}}
     </div>
   </template>
 }

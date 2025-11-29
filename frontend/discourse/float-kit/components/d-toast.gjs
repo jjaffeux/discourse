@@ -91,7 +91,8 @@ class Root extends Component {
 
   @action
   closeSheet() {
-    this.presented = false;
+    // Like Silk: close the sheet which will trigger idleOutside -> cleanup
+    this.sheet?.close();
   }
 
   @action
@@ -146,7 +147,8 @@ class Root extends Component {
   startAutoCloseTimeout() {
     this.cancelAutoCloseTimeout();
     this.autoCloseTimeout = later(() => {
-      this.presented = false;
+      // Like Silk: close the sheet which will trigger idleOutside -> cleanup
+      this.sheet?.close();
     }, this.autoCloseDelay);
   }
 

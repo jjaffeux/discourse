@@ -15,6 +15,7 @@ export default class View extends Component {
         (if (eq @sheet.currentState "closed") "closed")
         (if (not @sheet.inertOutside) "no-pointer-events")
       }}
+      tabindex="-1"
       {{didInsert @sheet.registerView}}
       ...attributes
     >
