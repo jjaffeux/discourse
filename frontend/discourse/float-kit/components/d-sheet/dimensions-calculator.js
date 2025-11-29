@@ -12,10 +12,10 @@ export default class SheetDimensionCalculator {
    * @param {string} placement - Content placement within the sheet
    * @param {Array} detents - Array of detent positions
    * @param {Object} options - Additional options
-   * @param {boolean} options.swipeOvershoot - Whether swipe overshoot is enabled (default true)
+   * @param {boolean} options.swipeOutDisabled - Whether swipe out is disabled (from controller)
    */
   calculateDimensions(track, placement, detents, options = {}) {
-    const { swipeOvershoot = true } = options;
+    const { swipeOutDisabled = false } = options;
     const viewElement = this.elements.view;
     const contentElement = this.elements.content;
     const detentMarkers = this.elements.detentMarkers;
@@ -48,9 +48,9 @@ export default class SheetDimensionCalculator {
 
     // Like Silk (line 7882-7884): swipeOutDisabledWithDetent when:
     // 1. Track is edge-aligned (not horizontal/vertical)
-    // 2. AND swipeOvershoot is false
+    // 2. AND swipeOutDisabled is true (already computed by controller based on swipeOvershoot AND detents)
     const isCenteredTrack = track === "horizontal" || track === "vertical";
-    const swipeOutDisabledWithDetent = !isCenteredTrack && !swipeOvershoot;
+    const swipeOutDisabledWithDetent = !isCenteredTrack && swipeOutDisabled;
 
     // Like Silk (line 7936-7941): edge padding when swipeOutDisabledWithDetent
     // snapToEndDetentsAcceleration defaults to "auto", which gives edgePadding = 10

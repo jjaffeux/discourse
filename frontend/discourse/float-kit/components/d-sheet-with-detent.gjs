@@ -4,6 +4,7 @@ import { hash } from "@ember/helper";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
 import DScrollContent from "./d-scroll/content";
+import DScrollRoot from "./d-scroll/root";
 import DScrollView from "./d-scroll/view";
 import DSheetBackdrop from "./d-sheet/backdrop";
 import DSheetContent from "./d-sheet/content";
@@ -213,9 +214,9 @@ const Handle = <template>
  * Wrapper around scroll container. Following Silk's SheetWithDetent.ScrollRoot pattern.
  */
 const ScrollRoot = <template>
-  <div class="SheetWithDetent-scrollRoot" ...attributes>
+  <DScrollRoot class="SheetWithDetent-scrollRoot" ...attributes>
     {{yield}}
-  </div>
+  </DScrollRoot>
 </template>;
 
 // ================================================================================================

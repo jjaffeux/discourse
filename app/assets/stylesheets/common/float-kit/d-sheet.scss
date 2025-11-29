@@ -515,15 +515,25 @@ html[data-d-sheet-native-scroll-locked="true"] {
   align-items: center;
 }
 
-// Like Silk (line 623-625): left track with overshoot inactive
+// Like Silk (line 625-627): left track with overshoot inactive
+// Silk sets BOTH left (base) and right: 0, not left: 0
 [data-d-sheet~="content-wrapper"][data-d-sheet~="overshoot-inactive"][data-d-sheet~="left"] {
+  right: 0;
+}
+
+// Like Silk (line 629-631): right track with overshoot inactive
+// Silk sets BOTH right (base) and left: 0
+[data-d-sheet~="content-wrapper"][data-d-sheet~="overshoot-inactive"][data-d-sheet~="right"] {
   left: 0;
 }
 
-// Like Silk (line 627-629): right track with overshoot inactive
-[data-d-sheet~="content-wrapper"][data-d-sheet~="overshoot-inactive"][data-d-sheet~="right"] {
-  right: auto; // Unset right
-  left: 0;
+// Like Silk (line 621-623): swipe-out-disabled with overshoot-inactive
+// Changes the offset calculation to use first-detent-size instead of minimum-snap-distance
+[data-d-sheet~="content-wrapper"][data-d-sheet~="overshoot-inactive"][data-d-sheet~="swipe-out-disabled"] {
+  --d-sheet-content-wrapper-offset: calc(
+    var(--d-sheet-travel-size) - var(--d-sheet-content-travel-axis) +
+      var(--d-sheet-first-detent-size)
+  );
 }
 
 // Like Silk (line 639-641): left track with snap-type
@@ -727,16 +737,56 @@ html[data-d-sheet-native-scroll-locked="true"] {
   }
 }
 
-// Silk sets scroll-snap-align: none for :only-child ONLY on certain tracks (left, right, top)
-// but NOT on bottom sheets. For bottom sheets, detent markers always keep their snap alignment.
-// So we DON'T set scroll-snap-align: none for bottom sheets.
-// This ensures that when at the first detent, the scroll doesn't snap back to 0 (front-spacer).
-[data-d-sheet~="detent-marker"]:not(
-    [data-d-sheet~="bottom"],
-    :only-child
-  ):last-child,
-[data-d-sheet~="detent-marker"]:not([data-d-sheet~="bottom"]):only-child {
+// Like Silk (source.css lines 901-908): scroll-snap-align: none for certain cases
+// - :not(:only-child):last-child - applies to ALL tracks
+// - :only-child for each track type (top, bottom, left, right)
+// - swipe-out-disabled first-child
+[data-d-sheet~="detent-marker"]:not(:only-child):last-child,
+[data-d-sheet~="detent-marker"][data-d-sheet~="top"]:only-child,
+[data-d-sheet~="detent-marker"][data-d-sheet~="bottom"]:only-child,
+[data-d-sheet~="detent-marker"][data-d-sheet~="left"]:only-child,
+[data-d-sheet~="detent-marker"][data-d-sheet~="right"]:only-child,
+[data-d-sheet~="detent-marker"][data-d-sheet~="swipe-out-disabled"]:first-child {
   scroll-snap-align: none;
+}
+
+// ============================================================================
+// Edge-marker (a15/leftEdge) - iOS swipe-from-edge-to-go-back prevention
+// ============================================================================
+// Like Silk (source.css lines 588-619): This element prevents "swipe from edge
+// to go back" on iOS by capturing touch events at the left edge.
+
+[data-d-sheet~="edge-marker"] {
+  pointer-events: auto;
+  user-select: none;
+  will-change: transform;
+  width: 30px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -2px;
+}
+
+// Like Silk (lines 604-608): Vertical tracks (top, bottom, vertical) extend height
+// to cover front-spacer and back-spacer areas
+[data-d-sheet~="edge-marker"][data-d-sheet~="top"],
+[data-d-sheet~="edge-marker"][data-d-sheet~="bottom"],
+[data-d-sheet~="edge-marker"][data-d-sheet~="vertical"] {
+  height: calc(100% + var(--d-sheet-front-spacer) + var(--d-sheet-back-spacer));
+}
+
+// Like Silk (lines 610-614): bottom and vertical tracks offset top/bottom
+[data-d-sheet~="edge-marker"][data-d-sheet~="bottom"],
+[data-d-sheet~="edge-marker"][data-d-sheet~="vertical"] {
+  top: calc(-1 * var(--d-sheet-front-spacer));
+  bottom: calc(-1 * var(--d-sheet-back-spacer));
+}
+
+// Like Silk (lines 616-619): top track has inverted offsets
+[data-d-sheet~="edge-marker"][data-d-sheet~="top"] {
+  top: calc(-1 * var(--d-sheet-back-spacer));
+  bottom: calc(-1 * var(--d-sheet-front-spacer));
 }
 
 .my-view {

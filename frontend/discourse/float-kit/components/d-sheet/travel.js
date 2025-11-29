@@ -73,21 +73,28 @@ export function calculateScrollPositionForDetent(config) {
 
   let scrollPosition = 0;
 
-  console.log("Scroll calc:", JSON.stringify({
-    trackToTravelOn,
-    hasOppositeTracks,
-    isBackTrack,
-    isLastDetent,
-    isFirstDetent,
-    isClosedDetent,
-    swipeOutDisabled,
-    destinationDetent,
-    markerCount,
-    detentOffset,
-    acceleratorSize,
-    contentSize,
-    viewSize,
-  }, null, 2));
+  console.log(
+    "Scroll calc:",
+    JSON.stringify(
+      {
+        trackToTravelOn,
+        hasOppositeTracks,
+        isBackTrack,
+        isLastDetent,
+        isFirstDetent,
+        isClosedDetent,
+        swipeOutDisabled,
+        destinationDetent,
+        markerCount,
+        detentOffset,
+        acceleratorSize,
+        contentSize,
+        viewSize,
+      },
+      null,
+      2
+    )
+  );
 
   if (hasOppositeTracks) {
     if (isLastDetent) {
@@ -149,7 +156,8 @@ export function calculateScrollPositionForDetent(config) {
       console.log(
         "Middle detent scroll position:",
         scrollPosition,
-        "swipeOutDisabled:", swipeOutDisabled
+        "swipeOutDisabled:",
+        swipeOutDisabled
       );
     }
   } else if (trackToTravelOn === "left" || trackToTravelOn === "top") {
@@ -159,49 +167,48 @@ export function calculateScrollPositionForDetent(config) {
       elementsDimensions.snapOutAccelerator?.travelAxis?.unitless ??
       acceleratorSize;
 
-    // For top/left tracks opening to first detent (from closed), we want to scroll
-    // to bring content into view. The accelerator helps with scroll-snap.
-    // For closing (isClosedDetent), we want to scroll content out of view.
+    // Like Silk (line 6828): Calculate accelerator adjustment
+    // n = swipeOutDisabled && isFirstDetent ? 2 * u : isLastDetent ? 0 : u
     const acceleratorAdjustment =
       swipeOutDisabled && isFirstDetent
         ? 2 * effectiveAcceleratorSize
-        : isClosedDetent
+        : isLastDetent
           ? 0
           : effectiveAcceleratorSize;
-
-    // For top/left tracks, when opening to first detent, detentOffset should be 0
-    // (we're opening to content's natural position, not a specific offset)
-    const effectiveDetentOffset = isFirstDetent && !isClosedDetent ? 0 : detentOffset;
 
     console.log("TOP/LEFT track branch:", {
       effectiveAcceleratorSize,
       acceleratorAdjustment,
-      effectiveDetentOffset,
+      detentOffset,
       contentPlacement,
       isClosedDetent,
       isFirstDetent,
+      isLastDetent,
+      swipeOutDisabled,
     });
 
     if (contentPlacement === "center") {
+      // Like Silk (line 6830-6832): center placement formula
       scrollPosition = isClosedDetent
         ? contentSize +
           (viewSize - contentSize) / 2 -
-          effectiveDetentOffset +
+          detentOffset +
           acceleratorAdjustment
         : 0;
     } else {
-      // For top/left tracks:
-      // - Closed: scroll to maxScroll (contentSize + accelerator) to hide content above/left of viewport
-      // - Open: scroll to 0 (or near it) to show content at top/left
-      if (isClosedDetent) {
-        scrollPosition = contentSize + acceleratorAdjustment;
-        console.log("TOP/LEFT CLOSED scroll position:", scrollPosition, "= contentSize", contentSize, "+ acceleratorAdjustment", acceleratorAdjustment);
-      } else {
-        // For opening, we want scroll near 0 to show content
-        // The detentOffset determines how far to offset from fully open
-        scrollPosition = effectiveDetentOffset;
-        console.log("TOP/LEFT OPEN scroll position:", scrollPosition, "= effectiveDetentOffset", effectiveDetentOffset);
-      }
+      // Like Silk (line 6833-6834): non-center formula
+      // y = contentSize - accumulatedOffset + accelerator
+      scrollPosition = contentSize - detentOffset + acceleratorAdjustment;
+      console.log(
+        "TOP/LEFT scroll position:",
+        scrollPosition,
+        "= contentSize",
+        contentSize,
+        "- detentOffset",
+        detentOffset,
+        "+ acceleratorAdjustment",
+        acceleratorAdjustment
+      );
     }
   }
 
@@ -590,28 +597,24 @@ export function executeSheetTravel(config, sheet) {
           stackingAnimations[i].callback(progress);
         }
 
-        // Update segment - but check if dimensions still exist
-        // (sheet might be cleaning up if user closed it quickly)
-        // Skip segment updates during closing (destinationDetent === 0)
-        // to avoid intermediate state updates
-        if (destinationDetent !== 0) {
-          if (progress < 0) {
-            setSegment([0, 0]);
-          } else if (progress > 1) {
-            setSegment([1, 1]);
-          } else if (sheet.dimensions?.progressValueAtDetents) {
-            const detents = sheet.dimensions.progressValueAtDetents;
-            for (let i = 0; i < detents.length; i++) {
-              const detent = detents[i];
-              if (
-                progress > detent.after &&
-                i + 1 < detents.length &&
-                progress < detents[i + 1].before
-              ) {
-                setSegment([i, i + 1]);
-              } else if (progress > detent.before && progress < detent.after) {
-                setSegment([i, i]);
-              }
+        // Like Silk (lines 6697-6705): Update segment throughout animation
+        // Check if dimensions still exist (sheet might be cleaning up if user closed it quickly)
+        if (progress < 0) {
+          setSegment([0, 0]);
+        } else if (progress > 1) {
+          setSegment([1, 1]);
+        } else if (sheet.dimensions?.progressValueAtDetents) {
+          const detents = sheet.dimensions.progressValueAtDetents;
+          for (let i = 0; i < detents.length; i++) {
+            const detent = detents[i];
+            if (
+              progress > detent.after &&
+              i + 1 < detents.length &&
+              progress < detents[i + 1].before
+            ) {
+              setSegment([i, i + 1]);
+            } else if (progress > detent.before && progress < detent.after) {
+              setSegment([i, i]);
             }
           }
         }
@@ -650,7 +653,9 @@ export function executeSheetTravel(config, sheet) {
       // Like Silk: Remove "hidden" class (aAc → aAa) to make view visible
       // This happens right before animation starts, after layout is stable
       if (sheet.view?.dataset?.dSheet?.includes("hidden")) {
-        sheet.view.dataset.dSheet = sheet.view.dataset.dSheet.replace(/\s*hidden\s*/g, " ").trim();
+        sheet.view.dataset.dSheet = sheet.view.dataset.dSheet
+          .replace(/\s*hidden\s*/g, " ")
+          .trim();
         console.log("Removed hidden class from view (like Silk aAa)");
       }
 

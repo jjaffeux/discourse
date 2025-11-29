@@ -167,6 +167,7 @@ export default class Content extends Component {
           "content-wrapper"
           @sheet.placement
           (if @sheet.swipeOvershoot "overshoot-active" "overshoot-inactive")
+          (if @sheet.swipeOutDisabled "swipe-out-disabled")
           (if
             @sheet.isHorizontalTrack
             "snap-type-x-mandatory"
@@ -206,7 +207,11 @@ export default class Content extends Component {
       <div data-d-sheet={{concatClass "back-spacer" @sheet.tracks}}>
         {{#each @sheet.detents as |detent index|}}
           <div
-            data-d-sheet={{concatClass "detent-marker" @sheet.tracks}}
+            data-d-sheet={{concatClass
+              "detent-marker"
+              @sheet.tracks
+              (if @sheet.swipeOutDisabled "swipe-out-disabled")
+            }}
             style={{this.stylesForDetentMarker @sheet.detents index}}
             {{didInsert @sheet.registerDetentMarker}}
           ></div>

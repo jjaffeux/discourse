@@ -29,7 +29,61 @@ export default class Controller {
 
   dimensions = null;
 
-  detents = null;
+  // Internal storage for detents value
+  _detents = null;
+
+  /**
+   * Like Silk: detents can be changed dynamically (e.g., set to undefined at full height).
+   * When detents changes, we recalculate dimensions so the front spacer is sized correctly.
+   */
+  get detents() {
+    return this._detents;
+  }
+
+  set detents(value) {
+    const oldValue = this._detents;
+    this._detents = value;
+
+    // Like Silk: When detents changes, recalculate dimensions.
+    // This is important because swipeOutDisabled is based on whether detents is defined,
+    // and the front spacer size depends on swipeOutDisabled.
+    if (oldValue !== value && this.dimensions) {
+      console.log(
+        `📐 detents changed from ${JSON.stringify(oldValue)} to ${JSON.stringify(value)}, recalculating dimensions`
+      );
+      this.recalculateDimensions();
+    }
+  }
+
+  /**
+   * Recalculate dimensions when detents changes dynamically.
+   * Like Silk: When detents becomes undefined (at full height), swipeOutDisabled becomes false,
+   * which changes the front spacer size to allow swiping out.
+   */
+  recalculateDimensions() {
+    if (!this.view || !this.content || !this.scrollContainer) {
+      return;
+    }
+
+    const calculator = new DimensionCalculator({
+      view: this.view,
+      content: this.content,
+      scrollContainer: this.scrollContainer,
+      detentMarkers: this.detentMarkers,
+    });
+
+    // Recalculate with current swipeOutDisabled state
+    this.dimensions = calculator.calculateDimensions(
+      this.tracks,
+      this.placement,
+      this.detents,
+      { swipeOutDisabled: this.swipeOutDisabled }
+    );
+
+    console.log(
+      `📐 Dimensions recalculated: swipeOutDisabled=${this.swipeOutDisabled}`
+    );
+  }
 
   currentPosition = "out";
 
@@ -87,6 +141,24 @@ export default class Controller {
   // Configuration options
   swipeOvershoot = true;
 
+  /**
+   * Like Silk's `swipeOutDisabledWithDetent` (lines 7885-7912):
+   * Dynamically computed based on swipeOvershoot AND whether detents exist.
+   * When detents is undefined, user can swipe out (content can scroll offscreen).
+   * When detents is defined, user is limited to the detent positions.
+   */
+  get swipeOutDisabled() {
+    // Like Silk: swipeOutDisabledWithDetent = true ONLY when:
+    // - swipeOvershoot is false, AND
+    // - detents is defined (not null/undefined)
+    // When detents becomes undefined (e.g., at full height), swipeOut is ENABLED.
+    return (
+      !this.swipeOvershoot &&
+      this.detents !== null &&
+      this.detents !== undefined
+    );
+  }
+
   nativeEdgeSwipePrevention = false;
 
   inertOutside = true;
@@ -124,6 +196,9 @@ export default class Controller {
   // Only used when swipeOvershoot:false to prevent swiping beyond full height
   _frontStuck = false;
 
+  // Like Silk (line 8567): backStuck when swipeOutDisabled AND at first detent [1,1]
+  _backStuck = false;
+
   // during stepToStuckPosition. Set to false before travel starts.
   _stuckDetectionEnabled = true;
 
@@ -135,7 +210,8 @@ export default class Controller {
 
   // Set by setSegment when segment becomes [lastDetent, lastDetent]
   constructor(detents, options = {}) {
-    this.detents = detents ?? ["var(--d-sheet-content-travel-axis)"];
+    // Use _detents directly to avoid triggering recalculation before elements are registered
+    this._detents = detents ?? ["var(--d-sheet-content-travel-axis)"];
 
     // Apply tracks/placement options (like Silk's tracks/contentPlacement)
     // Mutual defaulting: if one is set, the other defaults to match
@@ -528,11 +604,10 @@ export default class Controller {
     // Notify travel range change (segment[0] and segment[1] are detent indices)
     this.updateTravelRange(segment[0], segment[1]);
 
-    // Like Silk (lines 8854-8885): Update stuck flags when segment changes
-    // swipeOvershoot:false means user can't swipe BEYOND the last detent (full height)
-    // This ONLY enables frontStuck detection - NOT backStuck!
-    // backStuck would be controlled by a separate flag (like Silk's `to` variable)
-    if (!this.swipeOvershoot) {
+    // Like Silk (lines 8566-8586): Update stuck flags when segment changes
+    // swipeOutDisabled enables BOTH frontStuck AND backStuck detection
+    // Like Silk: swipeOutDisabled is dynamic - it's FALSE when detents is undefined
+    if (this.swipeOutDisabled) {
       const [start, end] = segment;
       const prevStart = prevSegment?.[0];
       const prevEnd = prevSegment?.[1];
@@ -544,14 +619,36 @@ export default class Controller {
       console.log(
         `📍 SEGMENT: [${prevStart},${prevEnd}] → [${start},${end}] | ` +
           `lastDetent=${lastDetent} | touchActive=${this._touchGestureActive} | ` +
-          `state=${this.currentState} | frontStuck=${this._frontStuck}`
+          `state=${this.currentState} | frontStuck=${this._frontStuck} | backStuck=${this._backStuck}`
       );
 
       // Only process if segment actually changed
       if (start !== prevStart || end !== prevEnd) {
-        // Like Silk: If at last detent [lastDetent, lastDetent], set frontStuck
-        // This is the ONLY stuck behavior controlled by swipeOvershoot:false
-        if (start === lastDetent && end === lastDetent) {
+        // Like Silk (line 8567-8571): If swipeOutDisabled AND at first detent [1, 1], set backStuck
+        // This prevents user from swiping to closed when swipeOutDisabled is true
+        if (start === 1 && end === 1) {
+          console.log(
+            `🎯 backStuck: STUCK_START (segment [${start},${end}] = first detent with swipeOutDisabled)`
+          );
+          this._backStuck = true;
+
+          // Like Silk: trigger auto-step if touch has ended
+          console.log(
+            `🔍 Check immediate auto-step (back): !touchActive=${!this._touchGestureActive} && state=open? ${this.currentState === "open"} && stuckEnabled=${this._stuckDetectionEnabled}`
+          );
+          if (
+            this._stuckDetectionEnabled &&
+            !this._touchGestureActive &&
+            this.currentState === "open"
+          ) {
+            console.log(
+              "🚀 AUTO-STEP TRIGGERED: back (STUCK_START while touch ended)"
+            );
+            this.stepToStuckPosition("back");
+          }
+        }
+        // Like Silk (line 8572-8576): If at last detent [lastDetent, lastDetent], set frontStuck
+        else if (start === lastDetent && end === lastDetent) {
           console.log(
             `🎯 frontStuck: STUCK_START (segment [${start},${end}] = lastDetent ${lastDetent})`
           );
@@ -563,7 +660,7 @@ export default class Controller {
           // Like Silk: Only when sheet is "open", NOT during "opening"
           // Like Silk: Check _stuckDetectionEnabled to prevent re-triggering during stepToStuckPosition
           console.log(
-            `🔍 Check immediate auto-step: !touchActive=${!this._touchGestureActive} && state=open? ${this.currentState === "open"} && stuckEnabled=${this._stuckDetectionEnabled}`
+            `🔍 Check immediate auto-step (front): !touchActive=${!this._touchGestureActive} && state=open? ${this.currentState === "open"} && stuckEnabled=${this._stuckDetectionEnabled}`
           );
           if (
             this._stuckDetectionEnabled &&
@@ -576,10 +673,16 @@ export default class Controller {
             this.stepToStuckPosition("front");
           }
         }
-        // Clear frontStuck if we move away from last detent
-        else if (this._frontStuck) {
-          console.log(`🎯 frontStuck: STUCK_END (moved to [${start},${end}])`);
-          this._frontStuck = false;
+        // Clear stuck flags if we move away from boundary detents
+        else {
+          if (this._frontStuck) {
+            console.log(`🎯 frontStuck: STUCK_END (moved to [${start},${end}])`);
+            this._frontStuck = false;
+          }
+          if (this._backStuck) {
+            console.log(`🎯 backStuck: STUCK_END (moved to [${start},${end}])`);
+            this._backStuck = false;
+          }
         }
       }
     }
@@ -744,6 +847,7 @@ export default class Controller {
         this._touchGestureActive = false;
         this._stuckDetectionEnabled = true; // Reset for next open
         this._frontStuck = false;
+        this._backStuck = false;
 
         // Full cleanup - event listeners, observers, theme color, scroll lock
         this.cleanup();
@@ -863,12 +967,13 @@ export default class Controller {
         detentMarkers: this.detentMarkers,
       });
 
-      // Like Silk: Pass track, placement, detents, and swipeOvershoot options
+      // Like Silk: Pass track, placement, detents, and swipeOutDisabled
+      // swipeOutDisabled is dynamic - it's FALSE when detents is undefined (at full height)
       this.dimensions = calculator.calculateDimensions(
         this.tracks,
         this.placement,
         this.detents,
-        { swipeOvershoot: this.swipeOvershoot }
+        { swipeOutDisabled: this.swipeOutDisabled }
       );
 
       // Note: applyDimensionVariables is called twice inside calculateDimensions
@@ -1299,21 +1404,40 @@ export default class Controller {
       const detents = this.dimensions.progressValueAtDetents;
       const n = detents.length;
 
+      // Like Silk: Calculate segment progress based on scroll position
+      // When swipeOutDisabled is true, we need to map scroll position directly
+      // to segment indices using the scroll range [0, maxScroll] → [firstDetent, lastDetent]
+      let segmentProgress;
+      if (this.dimensions.swipeOutDisabledWithDetent) {
+        // With swipeOutDisabled:
+        // - scrollTop = 0 corresponds to first detent (index 1)
+        // - scrollTop = maxScroll corresponds to last detent (index n-1)
+        // Map scroll position to progress range [firstDetentProgress, 1.0]
+        const maxScroll =
+          this.scrollContainer.scrollHeight - this.scrollContainer.clientHeight;
+        const scrollRatio = maxScroll > 0 ? scrollTop / maxScroll : 0;
+        const firstDetentProg = detents[1]?.exact ?? 0;
+        segmentProgress = firstDetentProg + scrollRatio * (1 - firstDetentProg);
+      } else {
+        // Normal case: use rawProgress directly
+        segmentProgress = rawProgress;
+      }
+
       for (let i = 0; i < n; i++) {
         const detent = detents[i];
         // Between detents: segment [i, i+1]
         if (
-          clampedProgress > detent.after &&
+          segmentProgress > detent.after &&
           i + 1 < n &&
-          clampedProgress < detents[i + 1].before
+          segmentProgress < detents[i + 1].before
         ) {
           this.setSegment([i, i + 1]);
           break;
         }
         // At a detent: segment [i, i]
         else if (
-          clampedProgress > detent.before &&
-          clampedProgress < detent.after
+          segmentProgress > detent.before &&
+          segmentProgress < detent.after
         ) {
           this.setSegment([i, i]);
           break;
@@ -1354,43 +1478,53 @@ export default class Controller {
   @bind
   onTouchGestureEnd() {
     console.log(
-      `👆 TOUCH END - setting _touchGestureActive = false | frontStuck=${this._frontStuck}`
+      `👆 TOUCH END - setting _touchGestureActive = false | frontStuck=${this._frontStuck} | backStuck=${this._backStuck}`
     );
     this._touchGestureActive = false;
 
     // Like Silk (lines 10500-10517): When touch ends, check stuck state
     // and auto-step if we're stuck at a detent boundary
-    // swipeOvershoot:false ONLY controls frontStuck (last detent / full height)
+    // swipeOutDisabled controls BOTH frontStuck (last detent) AND backStuck (first detent)
     // Like Silk: Only run when sheet is "open", NOT during "opening" animation
-    if (!this.swipeOvershoot && this.currentState === "open") {
+    // Like Silk: swipeOutDisabled is dynamic - it's FALSE when detents is undefined
+    if (this.swipeOutDisabled && this.currentState === "open") {
       console.log("⏰ Scheduling 80ms delayed stuck check...");
       // Like Silk: Use setTimeout + RAF to let scroll settle first
       setTimeout(() => {
         requestAnimationFrame(() => {
           console.log(
-            `⏰ DELAYED CHECK (80ms+RAF): state=${this.currentState} | frontStuck=${this._frontStuck} | stuckEnabled=${this._stuckDetectionEnabled}`
+            `⏰ DELAYED CHECK (80ms+RAF): state=${this.currentState} | frontStuck=${this._frontStuck} | backStuck=${this._backStuck} | stuckEnabled=${this._stuckDetectionEnabled}`
           );
           // Like Silk: Check _stuckDetectionEnabled (like Silk's nn.current check at line 10505)
-          // Only check frontStuck - swipeOvershoot:false only affects last detent behavior
           if (
             this.currentState === "open" &&
-            this._stuckDetectionEnabled &&
-            this._frontStuck
+            this._stuckDetectionEnabled
           ) {
-            console.log(
-              "🚀 AUTO-STEP TRIGGERED (delayed): front - touch ended while frontStuck"
-            );
-            this.stepToStuckPosition("front");
+            if (this._frontStuck) {
+              console.log(
+                "🚀 AUTO-STEP TRIGGERED (delayed): front - touch ended while frontStuck"
+              );
+              this.stepToStuckPosition("front");
+            } else if (this._backStuck) {
+              console.log(
+                "🚀 AUTO-STEP TRIGGERED (delayed): back - touch ended while backStuck"
+              );
+              this.stepToStuckPosition("back");
+            } else {
+              console.log(
+                `❌ DELAYED CHECK: No auto-step (neither frontStuck nor backStuck)`
+              );
+            }
           } else {
             console.log(
-              `❌ DELAYED CHECK: No auto-step (state=${this.currentState}, stuckEnabled=${this._stuckDetectionEnabled}, frontStuck=${this._frontStuck})`
+              `❌ DELAYED CHECK: No auto-step (state=${this.currentState}, stuckEnabled=${this._stuckDetectionEnabled})`
             );
           }
         });
       }, 80); // Like Silk: 80ms delay
     } else {
       console.log(
-        `❌ TOUCH END: Skipping stuck check (swipeOvershoot=${this.swipeOvershoot} [need false], state=${this.currentState} [need open])`
+        `❌ TOUCH END: Skipping stuck check (swipeOutDisabled=${this.swipeOutDisabled} [need true], state=${this.currentState} [need open])`
       );
     }
   }
@@ -1398,8 +1532,7 @@ export default class Controller {
   /**
    * Like Silk's nO function (lines 8939-8962):
    * Auto-step to a stuck position without animation
-   * Currently only supports "front" (last detent) for swipeOvershoot:false
-   * @param {string} direction - "front" (last detent)
+   * @param {string} direction - "front" (last detent) or "back" (first detent)
    */
   @bind
   stepToStuckPosition(direction) {
@@ -1410,7 +1543,7 @@ export default class Controller {
     // Like Silk (line 8644-8645): Use dimensions.detentMarkers.length, not detents config
     // This is stable even when detents prop changes to undefined
     const lastDetent = this.dimensions.detentMarkers.length;
-    // For now, only "front" is used with swipeOvershoot:false
+    // "front" = last detent, "back" = first detent (1)
     const destinationDetent = direction === "front" ? lastDetent : 1;
 
     console.log(
@@ -1421,8 +1554,13 @@ export default class Controller {
     // This prevents setSegment from re-triggering auto-step when travel completes
     this._stuckDetectionEnabled = false;
 
-    // Clear stuck flag immediately (like Silk's nn.current = !1)
+    // Clear stuck flags immediately (like Silk's nn.current = !1)
     this._frontStuck = false;
+    this._backStuck = false;
+
+    // Like Silk: Treat this as a mini travel - notify status transitions
+    // so downstream callbacks (SheetWithDetent) can react consistently.
+    this.updateTravelStatus("travellingIn");
 
     // Like Silk: Travel to detent with behavior "instant" (just set scroll position)
     // runTravelCallbacksAndAnimations: false in Silk defaults to behavior: "instant"
@@ -1441,6 +1579,8 @@ export default class Controller {
           console.log("stepToStuckPosition travel complete");
           // Re-enable stuck detection after travel completes
           this._stuckDetectionEnabled = true;
+          // Like Silk: travel finished, notify idleInside so pending detent changes apply
+          this.updateTravelStatus("idleInside");
         },
       },
       this

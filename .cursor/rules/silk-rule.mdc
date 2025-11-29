@@ -34,8 +34,7 @@ You have access to the following reference information:
 
 - ../../silk/source.css -> the silk css
 - ../../silk/source.js -> the silk js
-- ../../silk/architecture.md -> overview of silk architecure
-- ../../silk/sheet-with-detent-structure.md -> an explanation of the DOM structure
+- ../../silk/dom-examples -> DOM of silk examples
 - ../../silk/silk-documentation -> the full silk documentation
 
 We use data-d-sheet instead of data-silk.
