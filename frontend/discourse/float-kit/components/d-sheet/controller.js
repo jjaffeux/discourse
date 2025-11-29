@@ -199,13 +199,17 @@ export default class Controller {
   // Like Silk (line 8567): backStuck when swipeOutDisabled AND at first detent [1,1]
   _backStuck = false;
 
-  // during stepToStuckPosition. Set to false before travel starts.
-  _stuckDetectionEnabled = true;
+  // Like Silk's n2.current: Tracks if scroll is currently ongoing (openness:open.scroll:ongoing)
+  _scrollOngoing = false;
+
+  // Like Silk's nn.current: Set to true when scroll becomes ongoing, set to false after stepToStuckPosition
+  // This guards the delayed stuck check - only run if scroll was happening
+  _scrollWasOngoing = false;
 
   // Current travel status for callbacks
   _travelStatus = "idleOutside";
 
-  // Like Silk's nn.current: Guard to prevent re-triggering stuck detection
+  // Travel range for callbacks
   _travelRange = { start: 0, end: 0 };
 
   // Set by setSegment when segment becomes [lastDetent, lastDetent]
@@ -634,10 +638,10 @@ export default class Controller {
 
           // Like Silk: trigger auto-step if touch has ended
           console.log(
-            `🔍 Check immediate auto-step (back): !touchActive=${!this._touchGestureActive} && state=open? ${this.currentState === "open"} && stuckEnabled=${this._stuckDetectionEnabled}`
+            `🔍 Check immediate auto-step (back): !touchActive=${!this._touchGestureActive} && state=open? ${this.currentState === "open"} && scrollWasOngoing=${this._scrollWasOngoing}`
           );
           if (
-            this._stuckDetectionEnabled &&
+            this._scrollWasOngoing &&
             !this._touchGestureActive &&
             this.currentState === "open"
           ) {
@@ -658,12 +662,12 @@ export default class Controller {
           // if touch has already ended. This catches the case where scroll-snap
           // lands on the detent AFTER touch ends.
           // Like Silk: Only when sheet is "open", NOT during "opening"
-          // Like Silk: Check _stuckDetectionEnabled to prevent re-triggering during stepToStuckPosition
+          // Like Silk: Check _scrollWasOngoing (Silk's nn.current) to prevent re-triggering during stepToStuckPosition
           console.log(
-            `🔍 Check immediate auto-step (front): !touchActive=${!this._touchGestureActive} && state=open? ${this.currentState === "open"} && stuckEnabled=${this._stuckDetectionEnabled}`
+            `🔍 Check immediate auto-step (front): !touchActive=${!this._touchGestureActive} && state=open? ${this.currentState === "open"} && scrollWasOngoing=${this._scrollWasOngoing}`
           );
           if (
-            this._stuckDetectionEnabled &&
+            this._scrollWasOngoing &&
             !this._touchGestureActive &&
             this.currentState === "open"
           ) {
@@ -845,7 +849,8 @@ export default class Controller {
         this._needsInitialScroll = true;
         this._viewHiddenByObserver = false;
         this._touchGestureActive = false;
-        this._stuckDetectionEnabled = true; // Reset for next open
+        this._scrollOngoing = false; // Reset for next open
+        this._scrollWasOngoing = false; // Reset for next open
         this._frontStuck = false;
         this._backStuck = false;
 
@@ -1348,6 +1353,14 @@ export default class Controller {
       return;
     }
 
+    // Like Silk (lines 9187-9190, 10234-10237): Track scroll ongoing state
+    // Send SCROLL_START equivalent when scroll begins (sets nn.current = true)
+    if (!this._scrollOngoing) {
+      console.log("📜 SCROLL_START: Setting _scrollOngoing and _scrollWasOngoing to true");
+      this._scrollOngoing = true;
+      this._scrollWasOngoing = true;
+    }
+
     const scrollTop = this.scrollContainer.scrollTop;
     const contentSize = this.dimensions.content?.travelAxis?.unitless ?? 1;
     const snapAccelerator =
@@ -1471,45 +1484,49 @@ export default class Controller {
 
   @bind
   onTouchGestureStart() {
-    console.log("👆 TOUCH START - setting _touchGestureActive = true");
+    console.log("👆 TOUCH START - setting _touchGestureActive = true, resetting _scrollOngoing");
     this._touchGestureActive = true;
+    // Like Silk: Reset scroll ongoing state at start of new gesture
+    this._scrollOngoing = false;
   }
 
   @bind
   onTouchGestureEnd() {
     console.log(
-      `👆 TOUCH END - setting _touchGestureActive = false | frontStuck=${this._frontStuck} | backStuck=${this._backStuck}`
+      `👆 TOUCH END - setting _touchGestureActive = false | frontStuck=${this._frontStuck} | backStuck=${this._backStuck} | scrollWasOngoing=${this._scrollWasOngoing}`
     );
     this._touchGestureActive = false;
 
-    // Like Silk (lines 10500-10517): When touch ends, check stuck state
+    // Like Silk (lines 10200-10217): When touch ends, check stuck state
     // and auto-step if we're stuck at a detent boundary
     // swipeOutDisabled controls BOTH frontStuck (last detent) AND backStuck (first detent)
     // Like Silk: Only run when sheet is "open", NOT during "opening" animation
     // Like Silk: swipeOutDisabled is dynamic - it's FALSE when detents is undefined
-    if (this.swipeOutDisabled && this.currentState === "open") {
+    // Like Silk: Check _scrollWasOngoing (nn.current) BEFORE scheduling setTimeout
+    if (
+      this.swipeOutDisabled &&
+      this.currentState === "open" &&
+      this._scrollWasOngoing
+    ) {
       console.log("⏰ Scheduling 80ms delayed stuck check...");
       // Like Silk: Use setTimeout + RAF to let scroll settle first
       setTimeout(() => {
         requestAnimationFrame(() => {
           console.log(
-            `⏰ DELAYED CHECK (80ms+RAF): state=${this.currentState} | frontStuck=${this._frontStuck} | backStuck=${this._backStuck} | stuckEnabled=${this._stuckDetectionEnabled}`
+            `⏰ DELAYED CHECK (80ms+RAF): state=${this.currentState} | frontStuck=${this._frontStuck} | backStuck=${this._backStuck}`
           );
-          // Like Silk: Check _stuckDetectionEnabled (like Silk's nn.current check at line 10505)
-          if (
-            this.currentState === "open" &&
-            this._stuckDetectionEnabled
-          ) {
-            if (this._frontStuck) {
-              console.log(
-                "🚀 AUTO-STEP TRIGGERED (delayed): front - touch ended while frontStuck"
-              );
-              this.stepToStuckPosition("front");
-            } else if (this._backStuck) {
+          // Like Silk: Only check state inside (stuck flags are checked inside)
+          if (this.currentState === "open") {
+            if (this._backStuck) {
               console.log(
                 "🚀 AUTO-STEP TRIGGERED (delayed): back - touch ended while backStuck"
               );
               this.stepToStuckPosition("back");
+            } else if (this._frontStuck) {
+              console.log(
+                "🚀 AUTO-STEP TRIGGERED (delayed): front - touch ended while frontStuck"
+              );
+              this.stepToStuckPosition("front");
             } else {
               console.log(
                 `❌ DELAYED CHECK: No auto-step (neither frontStuck nor backStuck)`
@@ -1517,20 +1534,20 @@ export default class Controller {
             }
           } else {
             console.log(
-              `❌ DELAYED CHECK: No auto-step (state=${this.currentState}, stuckEnabled=${this._stuckDetectionEnabled})`
+              `❌ DELAYED CHECK: No auto-step (state=${this.currentState} [need open])`
             );
           }
         });
       }, 80); // Like Silk: 80ms delay
     } else {
       console.log(
-        `❌ TOUCH END: Skipping stuck check (swipeOutDisabled=${this.swipeOutDisabled} [need true], state=${this.currentState} [need open])`
+        `❌ TOUCH END: Skipping stuck check (swipeOutDisabled=${this.swipeOutDisabled}, state=${this.currentState}, scrollWasOngoing=${this._scrollWasOngoing})`
       );
     }
   }
 
   /**
-   * Like Silk's nO function (lines 8939-8962):
+   * Like Silk's nO function (lines 8640-8664):
    * Auto-step to a stuck position without animation
    * @param {string} direction - "front" (last detent) or "back" (first detent)
    */
@@ -1550,17 +1567,22 @@ export default class Controller {
       `🎯 stepToStuckPosition: ${direction} -> detent ${destinationDetent}`
     );
 
-    // Like Silk (line 8960): Clear stuck detection BEFORE travel starts
-    // This prevents setSegment from re-triggering auto-step when travel completes
-    this._stuckDetectionEnabled = false;
-
-    // Clear stuck flags immediately (like Silk's nn.current = !1)
+    // Clear stuck flags immediately
     this._frontStuck = false;
     this._backStuck = false;
 
     // Like Silk: Treat this as a mini travel - notify status transitions
     // so downstream callbacks (SheetWithDetent) can react consistently.
     this.updateTravelStatus("travellingIn");
+
+    // Like Silk (lines 8648-8660): Temporarily set overflow: hidden to prevent
+    // overscroll interference during instant travel
+    const scrollContainer = this.scrollContainer;
+    scrollContainer.style.setProperty("overflow", "hidden");
+    const overflowTimeout = CSS.supports("overscroll-behavior", "none") ? 1 : 10;
+    setTimeout(() => {
+      scrollContainer.style.removeProperty("overflow");
+    }, overflowTimeout);
 
     // Like Silk: Travel to detent with behavior "instant" (just set scroll position)
     // runTravelCallbacksAndAnimations: false in Silk defaults to behavior: "instant"
@@ -1577,8 +1599,8 @@ export default class Controller {
         swipeOutDisabledWithDetent: this.dimensions?.swipeOutDisabledWithDetent ?? false,
         onTravelEnd: () => {
           console.log("stepToStuckPosition travel complete");
-          // Re-enable stuck detection after travel completes
-          this._stuckDetectionEnabled = true;
+          // Like Silk (line 8661): Set nn.current = false after travel completes
+          this._scrollWasOngoing = false;
           // Like Silk: travel finished, notify idleInside so pending detent changes apply
           this.updateTravelStatus("idleInside");
         },
