@@ -1644,8 +1644,10 @@ export default class Controller {
   @bind
   registerBackdrop(backdrop) {
     this.backdrop = backdrop;
-    // Set initial opacity to 0
+    // Like Silk: Set initial styles - opacity and will-change
+    // will-change stays on while sheet is visible (element is unmounted on close)
     backdrop.style.opacity = 0;
+    backdrop.style.willChange = "opacity";
 
     // Register travel animation callback for backdrop opacity
     // Silk does this via travelAnimation prop on Backdrop component
