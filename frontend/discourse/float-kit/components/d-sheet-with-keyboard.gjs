@@ -159,7 +159,7 @@ class Root extends Component {
           Content sheet=this.sheet contentPlacement=this.contentPlacement
         )
         ScrollView=(component
-          ScrollView largeViewport=this._largeViewport
+          ScrollView largeViewport=this._largeViewport sheet=this.sheet
         )
         ScrollContent=(component ScrollContent)
       )
@@ -255,6 +255,9 @@ const Content = <template>
  *
  * The class="SheetWithKeyboard-scrollView" goes on the ROOT (c1),
  * matching Silk's ExampleSheetWithKeyboard-scrollView placement.
+ *
+ * @param {Object} sheet - The sheet controller (provides content element for bounding)
+ * @param {boolean} largeViewport - Whether viewport is large (>= 800px)
  */
 const ScrollView = <template>
   <DScrollRoot class="SheetWithKeyboard-scrollView" ...attributes>
@@ -262,6 +265,7 @@ const ScrollView = <template>
       @scrollGestureTrap={{hash yEnd=(not @largeViewport)}}
       @safeArea="visual-viewport"
       @onScrollStart={{hash dismissKeyboard=true}}
+      @boundingContainer={{@sheet.content}}
     >
       {{yield}}
     </DScrollView>

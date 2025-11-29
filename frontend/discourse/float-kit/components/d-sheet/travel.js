@@ -99,13 +99,23 @@ export function calculateScrollPositionForDetent(config) {
       scrollPosition = isBackTrack ? 0 : 10000;
     }
   } else if (isBackTrack) {
-    // Special case: first detent (which may also be last detent)
-    if (isFirstDetent && !isClosedDetent) {
-      // Like Silk: For bottom sheets, scroll position = detentOffset + snapAccelerator
-      // The detentOffset for first detent is 0, so y = 0 + acceleratorSize
-      // This relies on scroll-snap to snap to the correct position
+    // Like Silk (line 6815-6826): Order of checks is important!
+    if (isLastDetent) {
+      // Like Silk (line 6816-6817): Full height = scroll to max
+      scrollPosition = 10000;
+      console.log("Last detent: scroll to 10000");
+    } else if ((swipeOutDisabled && isFirstDetent) || isClosedDetent) {
+      // Like Silk (line 6818-6819): swipeOutDisabled+firstDetent OR closed = scroll to 0
+      // When swipeOutDisabled, front spacer is smaller so scroll=0 shows first detent
+      scrollPosition = 0;
+      console.log(
+        "Setting scroll to 0 because (swipeOutDisabled && isFirstDetent) || isClosedDetent",
+        { swipeOutDisabled, isFirstDetent, isClosedDetent }
+      );
+    } else if (isFirstDetent && !isClosedDetent) {
+      // Like Silk (line 6826): Normal first detent: scroll = accumulatedOffset + accelerator
+      // For first detent, detentOffset is 0, so scroll = 0 + accelerator
       scrollPosition = detentOffset + acceleratorSize;
-
       console.log(
         "First detent scroll (like Silk):",
         JSON.stringify(
@@ -121,38 +131,25 @@ export function calculateScrollPositionForDetent(config) {
           2
         )
       );
-    } else if (isLastDetent && !isFirstDetent) {
-      // Like Silk: Full height
-      scrollPosition = 10000;
-    } else if ((swipeOutDisabled && isFirstDetent) || isClosedDetent) {
-      scrollPosition = 0;
-      console.log(
-        "Setting scroll to 0 because swipeOutDisabled && isFirstDetent or isClosedDetent"
-      );
-    } else if (
-      !isLastDetent &&
-      !(swipeOutDisabled && isFirstDetent) &&
-      !isClosedDetent
-    ) {
+    } else {
+      // Like Silk (line 6823-6826): Middle detent
       if (swipeOutDisabled) {
+        // Like Silk (line 6823-6825): swipeOutDisabled middle = accumulatedOffset - firstMarkerSize
         const marker = detentMarkers[markerIndex];
         scrollPosition =
           (marker?.accumulatedOffsets?.travelAxis?.unitless ?? 0) -
           (detentMarkers[0]?.travelAxis?.unitless ?? 0);
       } else {
-        // For bottom sheets, to open to a detent we need to scroll past the front spacer
+        // Like Silk (line 6826): Normal middle = accumulatedOffset + accelerator
         const frontSpacerSize =
           elementsDimensions.frontSpacer?.travelAxis?.unitless ??
           scrollContainerClientHeight - viewSize;
         scrollPosition = frontSpacerSize + detentOffset;
       }
       console.log(
-        "Calculated scroll position:",
+        "Middle detent scroll position:",
         scrollPosition,
-        "from detentOffset:",
-        detentOffset,
-        "frontSpacer (clientHeight - viewSize):",
-        scrollContainerClientHeight - viewSize
+        "swipeOutDisabled:", swipeOutDisabled
       );
     }
   } else if (trackToTravelOn === "left" || trackToTravelOn === "top") {
@@ -649,6 +646,13 @@ export function executeSheetTravel(config, sheet) {
         "RAF 2 - starting animation",
         `elapsed: ${(performance.now() - rafStartTime).toFixed(1)}ms`
       );
+
+      // Like Silk: Remove "hidden" class (aAc → aAa) to make view visible
+      // This happens right before animation starts, after layout is stable
+      if (sheet.view?.dataset?.dSheet?.includes("hidden")) {
+        sheet.view.dataset.dSheet = sheet.view.dataset.dSheet.replace(/\s*hidden\s*/g, " ").trim();
+        console.log("Removed hidden class from view (like Silk aAa)");
+      }
 
       // Set scroll position right before starting animation
       setScroll();

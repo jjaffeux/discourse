@@ -536,7 +536,9 @@ export default class Controller {
       const [start, end] = segment;
       const prevStart = prevSegment?.[0];
       const prevEnd = prevSegment?.[1];
-      const lastDetent = (this.detents?.length ?? 0) + 1; // +1 for implicit full-height detent
+      // Like Silk (line 8566): Use dimensions.detentMarkers.length, not detents config
+      // This is stable even when detents prop changes to undefined
+      const lastDetent = this.dimensions?.detentMarkers?.length ?? 1;
 
       // DEBUG: Log every segment change with full context
       console.log(
@@ -806,10 +808,8 @@ export default class Controller {
         trackToTravelOn: this.tracks,
         animationConfig: animationConfig || SPRING_PRESETS.smooth,
         setSegment: this.setSegment,
-        // dimensions: { current: this.dimensions },
-        // viewRef: { current: this.elements.view },
-        // scrollContainerRef: { current: this.elements.scrollContainer },
-        // contentWrapperRef: { current: this.elements.contentWrapper },
+        // Like Silk: pass swipeOutDisabledWithDetent from dimensions
+        swipeOutDisabledWithDetent: this.dimensions?.swipeOutDisabledWithDetent ?? false,
         onTravelEnd: () => {
           console.log("ON TRAVEL END", {
             detentIndex,
@@ -863,19 +863,28 @@ export default class Controller {
         detentMarkers: this.detentMarkers,
       });
 
-      this.dimensions = calculator.calculateDimensions(this.tracks);
-
-      // Apply CSS custom properties AGAIN after dimensions are fully calculated
-      // (calculateDimensions does a preliminary pass, this is the final pass)
-      calculator.applyDimensionVariables(
-        this.dimensions,
-        this.view,
-        this.placement
+      // Like Silk: Pass track, placement, detents, and swipeOvershoot options
+      this.dimensions = calculator.calculateDimensions(
+        this.tracks,
+        this.placement,
+        this.detents,
+        { swipeOvershoot: this.swipeOvershoot }
       );
+
+      // Note: applyDimensionVariables is called twice inside calculateDimensions
+      // (once for preliminary pass, once for final pass with detent markers)
 
       // Like Silk: Set initial scroll position SYNCHRONOUSLY (before browser paint)
       // This keeps content naturally offscreen via scroll-based positioning
       this.setInitialScrollPosition();
+
+      // Like Silk (aAc class): Hide view with opacity: 0 during preparation
+      // This prevents any flash of content at wrong position during the RAF wait
+      // The "hidden" attribute is removed when the animation starts (in travel.js)
+      if (this.view) {
+        this.view.dataset.dSheet = this.view.dataset.dSheet + " hidden";
+        console.log("Applied hidden class to view (like Silk aAc)");
+      }
 
       console.log("Dimensions calculated:", this.dimensions);
 
@@ -1398,7 +1407,9 @@ export default class Controller {
       return;
     }
 
-    const lastDetent = (this.detents?.length ?? 0) + 1;
+    // Like Silk (line 8644-8645): Use dimensions.detentMarkers.length, not detents config
+    // This is stable even when detents prop changes to undefined
+    const lastDetent = this.dimensions.detentMarkers.length;
     // For now, only "front" is used with swipeOvershoot:false
     const destinationDetent = direction === "front" ? lastDetent : 1;
 
@@ -1424,6 +1435,8 @@ export default class Controller {
         trackToTravelOn: this.tracks,
         animationConfig: { skip: true }, // No animation, instant scroll
         setSegment: this.setSegment,
+        // Like Silk: pass swipeOutDisabledWithDetent from dimensions
+        swipeOutDisabledWithDetent: this.dimensions?.swipeOutDisabledWithDetent ?? false,
         onTravelEnd: () => {
           console.log("stepToStuckPosition travel complete");
           // Re-enable stuck detection after travel completes

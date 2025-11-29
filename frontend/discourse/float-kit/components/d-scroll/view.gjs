@@ -305,15 +305,24 @@ export default class View extends Component {
   // =========================================================================
 
   /**
-   * Calculate spacer height following Silk's formula exactly (lines 13171-13184).
+   * Get the bounding container element (passed from Sheet context).
+   * This is used to calculate spacer height based on Sheet's content area.
+   */
+  get boundingContainer() {
+    return this.args.boundingContainer ?? null;
+  }
+
+  /**
+   * Calculate spacer height following Silk's formula exactly (lines 13157-13184).
    *
    * Silk calculates:
    *   y = visualViewport.offsetTop + visualViewport.height (visual viewport bottom)
-   *   n = scroll container's bottom (from getBoundingClientRect)
+   *   n = bounding container's bottom (or scroll container if no bounding container)
    *   S = Math.max(n - y, 0)
    *
-   * This gives the distance from the visual viewport bottom to the scroll container bottom.
-   * When keyboard opens, visual viewport shrinks (y decreases), so S increases.
+   * When inside a Sheet, the bounding container (Sheet.Content) extends to the bottom
+   * of the screen, so the spacer accounts for the full Sheet content area, not just
+   * the scroll container. This ensures proper spacing BEFORE the keyboard opens.
    */
   _handleVisualViewportChange() {
     if (!window.visualViewport || this.safeArea !== "visual-viewport") {
@@ -331,13 +340,15 @@ export default class View extends Component {
     const visualViewportHeight = window.visualViewport.height;
     const visualViewportBottom = visualViewportTop + visualViewportHeight;
 
-    // Get scroll container's bottom position
-    const scrollContainerBottom =
-      this._scrollContainerElement.getBoundingClientRect().bottom;
+    // Silk's formula uses bounding container's bottom when available (lines 13157-13164)
+    // This allows the spacer to account for the full Sheet content area
+    const boundingBottom = this.boundingContainer
+      ? this.boundingContainer.getBoundingClientRect().bottom
+      : this._scrollContainerElement.getBoundingClientRect().bottom;
 
     // Silk's formula: S = Math.max(n - y, 0)
-    // Where n = scroll container bottom, y = visual viewport bottom
-    const spacerHeight = Math.max(scrollContainerBottom - visualViewportBottom, 0);
+    // Where n = bounding container bottom (or scroll container), y = visual viewport bottom
+    const spacerHeight = Math.max(boundingBottom - visualViewportBottom, 0);
 
     this._safeAreaInset = spacerHeight;
   }

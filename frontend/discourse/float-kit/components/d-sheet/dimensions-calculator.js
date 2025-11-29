@@ -8,8 +8,14 @@ export default class SheetDimensionCalculator {
 
   /**
    * Calculate all dimensions needed for sheet positioning
+   * @param {string} track - Track direction (bottom, top, left, right, horizontal, vertical)
+   * @param {string} placement - Content placement within the sheet
+   * @param {Array} detents - Array of detent positions
+   * @param {Object} options - Additional options
+   * @param {boolean} options.swipeOvershoot - Whether swipe overshoot is enabled (default true)
    */
-  calculateDimensions(track, placement, detents) {
+  calculateDimensions(track, placement, detents, options = {}) {
+    const { swipeOvershoot = true } = options;
     const viewElement = this.elements.view;
     const contentElement = this.elements.content;
     const detentMarkers = this.elements.detentMarkers;
@@ -40,6 +46,16 @@ export default class SheetDimensionCalculator {
       crossAxis: parseDimension(contentStyle.getPropertyValue(crossProp)),
     };
 
+    // Like Silk (line 7882-7884): swipeOutDisabledWithDetent when:
+    // 1. Track is edge-aligned (not horizontal/vertical)
+    // 2. AND swipeOvershoot is false
+    const isCenteredTrack = track === "horizontal" || track === "vertical";
+    const swipeOutDisabledWithDetent = !isCenteredTrack && !swipeOvershoot;
+
+    // Like Silk (line 7936-7941): edge padding when swipeOutDisabledWithDetent
+    // snapToEndDetentsAcceleration defaults to "auto", which gives edgePadding = 10
+    const edgePadding = swipeOutDisabledWithDetent ? 10 : 0;
+
     // TWO-PASS APPROACH (like Silk):
     // Pass 1: Apply view/content dimensions as CSS variables so detent markers can resolve
     const preliminaryDimensions = {
@@ -47,7 +63,12 @@ export default class SheetDimensionCalculator {
       content: contentDimensions,
       detentMarkers: [], // Empty for now
     };
-    this.applyDimensionVariables(preliminaryDimensions, viewElement, placement);
+    this.applyDimensionVariables(
+      preliminaryDimensions,
+      viewElement,
+      placement,
+      { track, swipeOutDisabledWithDetent, edgePadding }
+    );
 
     // Pass 2: NOW read detent markers (they can resolve var(--d-sheet-content-travel-axis))
     // Like Silk (lines 8827-8882): For each marker, add its size to n, then set accumulatedOffsets = n
@@ -144,13 +165,29 @@ export default class SheetDimensionCalculator {
       after: (contentSize + 2.1) / contentSize,
     });
 
-    return {
+    // Build final dimensions object
+    const finalDimensions = {
       view: viewDimensions,
       content: contentDimensions,
       detentMarkers: detentMarkerDimensions,
       progressValueAtDetents: progressAtDetents,
       exactProgressValueAtDetents: progressAtDetents.map((p) => p.exact),
+      // Store swipeOutDisabledWithDetent and edgePadding for use in travel.js
+      swipeOutDisabledWithDetent,
+      edgePadding,
     };
+
+    // Pass 2: Re-apply dimension variables now that we have detent markers
+    // This is needed because the front spacer calculation for swipeOutDisabled
+    // requires knowing the first detent marker size
+    this.applyDimensionVariables(
+      finalDimensions,
+      viewElement,
+      placement,
+      { track, swipeOutDisabledWithDetent, edgePadding }
+    );
+
+    return finalDimensions;
   }
 
   /**
@@ -158,14 +195,22 @@ export default class SheetDimensionCalculator {
    * @param {Object} dimensions - The calculated dimensions
    * @param {HTMLElement} viewElement - The view element
    * @param {string} contentPlacement - The content placement ("start", "center", "end")
+   * @param {Object} options - Additional options
+   * @param {string} options.track - Track direction
+   * @param {boolean} options.swipeOutDisabledWithDetent - Whether swipe out is disabled
+   * @param {number} options.edgePadding - Edge padding value (0 or 10)
    */
-  applyDimensionVariables(dimensions, viewElement, contentPlacement = "end") {
+  applyDimensionVariables(dimensions, viewElement, contentPlacement = "end", options = {}) {
+    const { track, swipeOutDisabledWithDetent = false, edgePadding = 0 } = options;
+
     console.log("applyDimensionVariables called with:", {
       hasView: !!dimensions.view,
       hasContent: !!dimensions.content,
       viewElement,
       viewTravel: dimensions.view?.travelAxis?.unitless,
       contentTravel: dimensions.content?.travelAxis?.unitless,
+      swipeOutDisabledWithDetent,
+      edgePadding,
     });
 
     // Set the CSS variables that the SCSS expects (using descriptive names)
@@ -192,11 +237,8 @@ export default class SheetDimensionCalculator {
     }
 
     // Calculate front spacer size (space before content for closed position)
-    // Like Silk (line 8936-8959): frontSpacer = contentSize + snapAccelerator
-    // This is the same regardless of whether there are detents or not
+    // Like Silk (line 8936-8961)
     if (dimensions.view && dimensions.content) {
-      // Calculate snap accelerator like Silk's nj function
-      // This ensures scroll position doesn't snap back to 0 with mandatory scroll-snap
       const viewSize = dimensions.view.travelAxis.unitless;
       const contentSize = dimensions.content.travelAxis.unitless;
       const snapOutAccelerator = this.calculateSnapOutAccelerator(
@@ -205,16 +247,34 @@ export default class SheetDimensionCalculator {
         contentPlacement
       );
 
-      // Like Silk: frontSpacer = contentSize + snapAccelerator
-      const frontSpacerSize = contentSize + snapOutAccelerator;
-      console.log(
-        "Setting front spacer (like Silk):",
-        frontSpacerSize,
-        "= contentSize + snapAccelerator =",
-        contentSize,
-        "+",
-        snapOutAccelerator
-      );
+      let frontSpacerSize;
+
+      if (swipeOutDisabledWithDetent) {
+        // Like Silk (line 8940-8943): when swipeOutDisabledWithDetent (to),
+        // frontSpacer = contentSize - detentMarkers[0].size + edgePadding
+        // We use the first detent marker size if available, otherwise default to contentSize
+        const firstDetentSize = dimensions.detentMarkers?.[0]?.travelAxis?.unitless ?? 0;
+        frontSpacerSize = contentSize - firstDetentSize + edgePadding;
+        console.log(
+          "Setting front spacer (Silk swipeOutDisabled):",
+          frontSpacerSize,
+          "= contentSize - firstDetentSize + edgePadding =",
+          contentSize, "-", firstDetentSize, "+", edgePadding
+        );
+      } else {
+        // Like Silk (line 8957-8960): normal case for edge-aligned tracks
+        // frontSpacer = viewSize - (viewSize - contentSize) + snapAccelerator
+        // = contentSize + snapAccelerator
+        frontSpacerSize = contentSize + snapOutAccelerator;
+        console.log(
+          "Setting front spacer (like Silk normal):",
+          frontSpacerSize,
+          "= contentSize + snapAccelerator =",
+          contentSize,
+          "+",
+          snapOutAccelerator
+        );
+      }
 
       // Store frontSpacer in dimensions for use in scroll calculations
       dimensions.frontSpacer = {
@@ -230,15 +290,32 @@ export default class SheetDimensionCalculator {
       );
     }
 
-    // Back spacer size should equal view travel size (not sum of detent markers)
-    // This is needed for proper scroll snapping to work correctly
+    // Back spacer size calculation
+    // Like Silk (line 8963-8977)
     if (dimensions.view) {
-      const backSpacerSize = dimensions.view.travelAxis.unitless;
+      let backSpacerSize;
+      const viewSize = dimensions.view.travelAxis.unitless;
+
+      if (swipeOutDisabledWithDetent && edgePadding > 0) {
+        // Like Silk (line 8964-8965): when swipeOutDisabledWithDetent (tn) AND auto acceleration
+        // backSpacer = viewSize + edgePadding (tk)
+        backSpacerSize = viewSize + edgePadding;
+        console.log(
+          "Setting back spacer (Silk swipeOutDisabled):",
+          backSpacerSize,
+          "= viewSize + edgePadding =",
+          viewSize, "+", edgePadding
+        );
+      } else {
+        // Normal case: backSpacer = viewSize
+        backSpacerSize = viewSize;
+        console.log("Setting back spacer:", backSpacerSize);
+      }
+
       viewElement.style.setProperty(
         "--d-sheet-back-spacer",
         `${backSpacerSize}px`
       );
-      console.log("Setting back spacer:", backSpacerSize);
 
       // Verify the variables were set
       const frontSpacerCheck = window
