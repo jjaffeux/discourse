@@ -1,3 +1,5 @@
+import { isWebKit } from "./browser-detection";
+
 export function createCubicBezierEasing(x1, y1, x2, y2) {
   if (!(0 <= x1 && x1 <= 1 && 0 <= x2 && x2 <= 1)) {
     throw new Error("bezier x values must be in [0, 1] range");
@@ -171,7 +173,6 @@ export function createTweenFunction(progress) {
 
 export function supportsLinearEasing() {
   return (
-    CSS.supports("transition-timing-function", "linear(0, 1)") &&
-    !detectPlatform().browserEngine === "webkit"
+    CSS.supports("transition-timing-function", "linear(0, 1)") && !isWebKit()
   );
 }

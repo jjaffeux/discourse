@@ -23,15 +23,15 @@ export default class ScrollController {
   axis = "y";
   scrollAnimationSettings = { skip: "auto" };
 
-  // Scroll state
-  _isScrolling = false;
-  _scrollStartTime = null;
-  _scrollEndTimeout = null;
-
   // Callbacks (set by View component)
   onScroll = null;
   onScrollStart = null;
   onScrollEnd = null;
+
+  // Scroll state
+  _isScrolling = false;
+  _scrollStartTime = null;
+  _scrollEndTimeout = null;
 
   constructor(options = {}) {
     if (options.axis) {
@@ -305,4 +305,3 @@ export default class ScrollController {
     this.onScrollEnd = null;
   }
 }
-
