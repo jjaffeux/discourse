@@ -1,4 +1,4 @@
-import { generateAnimationConfig } from "./animation";
+import { generateAnimationConfig, supportsLinearEasing } from "./animation";
 
 export function resolveDestinationDetent(desiredDetent, currentDetent) {
   return typeof desiredDetent === "number" ? desiredDetent : currentDetent;
@@ -467,10 +467,24 @@ export function executeSheetTravel(config, sheet) {
     shouldAnimateContent &&
     !isNaN(transformDistance) &&
     transformDistance !== 0;
+
+  // Like Silk: Use optimized linear() easing when supported
+  // This uses just 2 keyframes with a custom easing function instead of N keyframes
+  const useLinearEasing = supportsLinearEasing();
+
   transformKeyframes = needsTransform
-    ? progressValuesArray.map((progressValue) => ({
-        transform: `translate${transformAxis}(${transformDistance * (1 - progressValue)}px)`,
-      }))
+    ? useLinearEasing
+      ? [
+          {
+            transform: `translate${transformAxis}(${transformDistance * (1 - progressValuesArray[0])}px)`,
+          },
+          {
+            transform: `translate${transformAxis}(${transformDistance * (1 - progressValuesArray[progressValuesArray.length - 1])}px)`,
+          },
+        ]
+      : progressValuesArray.map((progressValue) => ({
+          transform: `translate${transformAxis}(${transformDistance * (1 - progressValue)}px)`,
+        }))
     : [{ transform: "translateY(0px)" }, { transform: "translateY(0px)" }];
 
   console.log("Transform keyframes:", {
@@ -531,10 +545,17 @@ export function executeSheetTravel(config, sheet) {
       return;
     }
 
+    // Like Silk: When linear() easing is supported, use it with sampled progress values
+    // This is more efficient than generating a keyframe for every progress value
+    const easingValue = useLinearEasing
+      ? `linear(${progressValuesArray.filter((_, i) => i % 8 === 0 || i === progressValuesArray.length - 1).join(",")})`
+      : "linear";
+
     console.log("Starting Web Animations API animation", {
       duration,
-      easing: "linear",
+      easing: easingValue,
       delay,
+      useLinearEasing,
     });
 
     // Use fill: "backwards" so the first keyframe (initial transform) is applied
@@ -542,7 +563,7 @@ export function executeSheetTravel(config, sheet) {
     // This prevents a flash of content at the wrong position during the 2 RAF wait.
     const contentAnimation = sheet.contentWrapper.animate(transformKeyframes, {
       duration,
-      easing: "linear",
+      easing: easingValue,
       delay,
       fill: "backwards",
     });
