@@ -44,18 +44,25 @@ export default class Controller {
     const oldValue = this._detents;
     this._detents = value;
 
-    // Like Silk: When detents changes, dimension recalculation is handled by
-    // ResizeObserver watching the view and content elements. When the DOM updates
-    // (spacers resize due to CSS variable changes), ResizeObserver fires and
-    // calls recalculateDimensionsFromResize().
-    //
-    // ResizeObserver callbacks fire as microtasks after DOM mutations, which is
-    // earlier than Ember's afterRender - this is critical for correcting scroll
-    // position before scroll momentum can continue.
-    if (oldValue !== value && this.dimensions) {
+    // Like Silk (lines 11983-11986): Clear detent markers synchronously when detents change.
+    // This ensures the markers array is updated BEFORE any dimension recalculation runs.
+    // Silk does this in the ref callback during render; we do it here in the setter.
+    if (oldValue !== value) {
+      this.detentMarkers = [];
       console.log(
-        `📐 detents changed from ${JSON.stringify(oldValue)} to ${JSON.stringify(value)}, ResizeObserver will handle dimension recalculation`
+        `📐 detents changed from ${JSON.stringify(oldValue)} to ${JSON.stringify(value)}`
       );
+
+      // Like Silk: Recalculate dimensions when detents changes.
+      // This is critical because swipeOutDisabled depends on whether detents is defined.
+      // When detents becomes undefined (at last detent), swipeOutDisabled becomes false,
+      // which changes the front spacer formula from:
+      //   contentSize - firstDetentSize + edgePadding
+      // to:
+      //   contentSize + snapAccelerator
+      if (this.view && this.content && this.scrollContainer) {
+        this.recalculateDimensionsFromResize();
+      }
     }
   }
 
@@ -123,6 +130,8 @@ export default class Controller {
    * Dynamically computed based on swipeOvershoot AND whether detents exist.
    * When detents is undefined, user can swipe out (content can scroll offscreen).
    * When detents is defined, user is limited to the detent positions.
+   *
+   * Used for FRONT SPACER calculation - changes when detents becomes undefined.
    */
   get swipeOutDisabled() {
     // Like Silk: swipeOutDisabledWithDetent = true ONLY when:
@@ -134,6 +143,19 @@ export default class Controller {
       this.detents !== null &&
       this.detents !== undefined
     );
+  }
+
+  /**
+   * Like Silk's `tn` variable (line 7882-7884):
+   * Computed based ONLY on track alignment and swipeOvershoot.
+   * Does NOT check if detents is defined - this is intentional!
+   *
+   * Used for BACK SPACER calculation - stays constant even when detents becomes undefined.
+   * This matches Silk's behavior where back spacer always uses edgePadding for
+   * edge-aligned tracks with swipeOvershoot: false.
+   */
+  get edgeAlignedNoOvershoot() {
+    return !this.isCenteredTrack && !this.swipeOvershoot;
   }
 
   nativeEdgeSwipePrevention = false;
@@ -951,11 +973,15 @@ export default class Controller {
 
       // Like Silk: Pass track, placement, detents, and swipeOutDisabled
       // swipeOutDisabled is dynamic - it's FALSE when detents is undefined (at full height)
+      // edgeAlignedNoOvershoot is stable - stays TRUE for edge-aligned tracks with swipeOvershoot: false
       this.dimensions = calculator.calculateDimensions(
         this.tracks,
         this.placement,
         this.detents,
-        { swipeOutDisabled: this.swipeOutDisabled }
+        {
+          swipeOutDisabled: this.swipeOutDisabled,
+          edgeAlignedNoOvershoot: this.edgeAlignedNoOvershoot,
+        }
       );
 
       // Note: applyDimensionVariables is called twice inside calculateDimensions
@@ -1217,11 +1243,15 @@ export default class Controller {
     });
 
     // Recalculate with current swipeOutDisabled state
+    // edgeAlignedNoOvershoot is stable - stays TRUE for edge-aligned tracks with swipeOvershoot: false
     this.dimensions = calculator.calculateDimensions(
       this.tracks,
       this.placement,
       this.detents,
-      { swipeOutDisabled: this.swipeOutDisabled }
+      {
+        swipeOutDisabled: this.swipeOutDisabled,
+        edgeAlignedNoOvershoot: this.edgeAlignedNoOvershoot,
+      }
     );
 
     console.log(

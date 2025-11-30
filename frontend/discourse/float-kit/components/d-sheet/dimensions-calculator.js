@@ -12,10 +12,11 @@ export default class SheetDimensionCalculator {
    * @param {string} placement - Content placement within the sheet
    * @param {Array} detents - Array of detent positions
    * @param {Object} options - Additional options
-   * @param {boolean} options.swipeOutDisabled - Whether swipe out is disabled (from controller)
+   * @param {boolean} options.swipeOutDisabled - Whether swipe out is disabled (dynamic, depends on detents)
+   * @param {boolean} options.edgeAlignedNoOvershoot - Whether edge-aligned with no overshoot (stable, for back spacer)
    */
   calculateDimensions(track, placement, detents, options = {}) {
-    const { swipeOutDisabled = false } = options;
+    const { swipeOutDisabled = false, edgeAlignedNoOvershoot = false } = options;
     const viewElement = this.elements.view;
     const contentElement = this.elements.content;
     const detentMarkers = this.elements.detentMarkers;
@@ -52,9 +53,16 @@ export default class SheetDimensionCalculator {
     const isCenteredTrack = track === "horizontal" || track === "vertical";
     const swipeOutDisabledWithDetent = !isCenteredTrack && swipeOutDisabled;
 
-    // Like Silk (line 7936-7941): edge padding when swipeOutDisabledWithDetent
+    // Like Silk's tn variable (line 7882-7884): for back spacer, use edgeAlignedNoOvershoot
+    // This is stable and doesn't depend on whether detents is defined
+    const backSpacerEdgeAligned = !isCenteredTrack && edgeAlignedNoOvershoot;
+
+    // Like Silk (line 7936-7941): edge padding when backSpacerEdgeAligned
     // snapToEndDetentsAcceleration defaults to "auto", which gives edgePadding = 10
-    const edgePadding = swipeOutDisabledWithDetent ? 10 : 0;
+    // For front spacer, use swipeOutDisabledWithDetent (dynamic)
+    // For back spacer, use backSpacerEdgeAligned (stable)
+    const frontSpacerEdgePadding = swipeOutDisabledWithDetent ? 10 : 0;
+    const backSpacerEdgePadding = backSpacerEdgeAligned ? 10 : 0;
 
     // TWO-PASS APPROACH (like Silk):
     // Pass 1: Apply view/content dimensions as CSS variables so detent markers can resolve
@@ -67,7 +75,12 @@ export default class SheetDimensionCalculator {
       preliminaryDimensions,
       viewElement,
       placement,
-      { track, swipeOutDisabledWithDetent, edgePadding }
+      {
+        track,
+        swipeOutDisabledWithDetent,
+        frontSpacerEdgePadding,
+        backSpacerEdgePadding,
+      }
     );
 
     // Pass 2: NOW read detent markers (they can resolve var(--d-sheet-content-travel-axis))
@@ -174,7 +187,8 @@ export default class SheetDimensionCalculator {
       exactProgressValueAtDetents: progressAtDetents.map((p) => p.exact),
       // Store swipeOutDisabledWithDetent and edgePadding for use in travel.js
       swipeOutDisabledWithDetent,
-      edgePadding,
+      frontSpacerEdgePadding,
+      backSpacerEdgePadding,
     };
 
     // Pass 2: Re-apply dimension variables now that we have detent markers
@@ -184,7 +198,12 @@ export default class SheetDimensionCalculator {
       finalDimensions,
       viewElement,
       placement,
-      { track, swipeOutDisabledWithDetent, edgePadding }
+      {
+        track,
+        swipeOutDisabledWithDetent,
+        frontSpacerEdgePadding,
+        backSpacerEdgePadding,
+      }
     );
 
     return finalDimensions;
@@ -197,11 +216,17 @@ export default class SheetDimensionCalculator {
    * @param {string} contentPlacement - The content placement ("start", "center", "end")
    * @param {Object} options - Additional options
    * @param {string} options.track - Track direction
-   * @param {boolean} options.swipeOutDisabledWithDetent - Whether swipe out is disabled
-   * @param {number} options.edgePadding - Edge padding value (0 or 10)
+   * @param {boolean} options.swipeOutDisabledWithDetent - Whether swipe out is disabled (for front spacer)
+   * @param {number} options.frontSpacerEdgePadding - Edge padding for front spacer (0 or 10)
+   * @param {number} options.backSpacerEdgePadding - Edge padding for back spacer (0 or 10)
    */
   applyDimensionVariables(dimensions, viewElement, contentPlacement = "end", options = {}) {
-    const { track, swipeOutDisabledWithDetent = false, edgePadding = 0 } = options;
+    const {
+      track,
+      swipeOutDisabledWithDetent = false,
+      frontSpacerEdgePadding = 0,
+      backSpacerEdgePadding = 0,
+    } = options;
 
     console.log("applyDimensionVariables called with:", {
       hasView: !!dimensions.view,
@@ -210,7 +235,8 @@ export default class SheetDimensionCalculator {
       viewTravel: dimensions.view?.travelAxis?.unitless,
       contentTravel: dimensions.content?.travelAxis?.unitless,
       swipeOutDisabledWithDetent,
-      edgePadding,
+      frontSpacerEdgePadding,
+      backSpacerEdgePadding,
     });
 
     // Set the CSS variables that the SCSS expects (using descriptive names)
@@ -251,15 +277,15 @@ export default class SheetDimensionCalculator {
 
       if (swipeOutDisabledWithDetent) {
         // Like Silk (line 8940-8943): when swipeOutDisabledWithDetent (to),
-        // frontSpacer = contentSize - detentMarkers[0].size + edgePadding
+        // frontSpacer = contentSize - detentMarkers[0].size + frontSpacerEdgePadding
         // We use the first detent marker size if available, otherwise default to contentSize
         const firstDetentSize = dimensions.detentMarkers?.[0]?.travelAxis?.unitless ?? 0;
-        frontSpacerSize = contentSize - firstDetentSize + edgePadding;
+        frontSpacerSize = contentSize - firstDetentSize + frontSpacerEdgePadding;
         console.log(
           "Setting front spacer (Silk swipeOutDisabled):",
           frontSpacerSize,
-          "= contentSize - firstDetentSize + edgePadding =",
-          contentSize, "-", firstDetentSize, "+", edgePadding
+          "= contentSize - firstDetentSize + frontSpacerEdgePadding =",
+          contentSize, "-", firstDetentSize, "+", frontSpacerEdgePadding
         );
       } else {
         // Like Silk (line 8957-8960): normal case for edge-aligned tracks
@@ -292,19 +318,21 @@ export default class SheetDimensionCalculator {
 
     // Back spacer size calculation
     // Like Silk (line 8963-8977)
+    // Note: Uses backSpacerEdgePadding which is based on edgeAlignedNoOvershoot (stable)
+    // NOT swipeOutDisabledWithDetent (which changes when detents becomes undefined)
     if (dimensions.view) {
       let backSpacerSize;
       const viewSize = dimensions.view.travelAxis.unitless;
 
-      if (swipeOutDisabledWithDetent && edgePadding > 0) {
-        // Like Silk (line 8964-8965): when swipeOutDisabledWithDetent (tn) AND auto acceleration
-        // backSpacer = viewSize + edgePadding (tk)
-        backSpacerSize = viewSize + edgePadding;
+      if (backSpacerEdgePadding > 0) {
+        // Like Silk (line 8964-8965): when tn (edgeAlignedNoOvershoot) AND auto acceleration
+        // backSpacer = viewSize + backSpacerEdgePadding (tk)
+        backSpacerSize = viewSize + backSpacerEdgePadding;
         console.log(
-          "Setting back spacer (Silk swipeOutDisabled):",
+          "Setting back spacer (Silk edgeAlignedNoOvershoot):",
           backSpacerSize,
-          "= viewSize + edgePadding =",
-          viewSize, "+", edgePadding
+          "= viewSize + backSpacerEdgePadding =",
+          viewSize, "+", backSpacerEdgePadding
         );
       } else {
         // Normal case: backSpacer = viewSize
