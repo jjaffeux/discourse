@@ -38,8 +38,6 @@ class Root extends Component {
 
   @tracked reachedLastDetent = false;
   @tracked sheet = null;
-  // Track pending detent change to apply after animation completes
-  _pendingFullHeight = false;
 
   /**
    * Like Silk: Create a fresh Controller when opening.
@@ -65,16 +63,9 @@ class Root extends Component {
 
   @action
   handleTravelStatusChange(status) {
-    // When sheet becomes idle after stepping to full height, apply the detent change
-    if (status === "idleInside" && this._pendingFullHeight) {
-      this._pendingFullHeight = false;
-      this.reachedLastDetent = true;
-      this.sheet.detents = undefined;
-    }
     // Like Silk: Destroy Controller when sheet is dismissed
     // This ensures clean state for next open cycle
     if (status === "idleOutside") {
-      this._pendingFullHeight = false;
       this.reachedLastDetent = false;
 
       // Unregister and destroy the Controller
@@ -88,10 +79,11 @@ class Root extends Component {
 
   @action
   handleTravelRangeChange(range) {
-    // Mark that we're stepping to full height (detent 2)
-    // But don't change detents yet - wait for animation to complete
+    // Like Silk: Set reachedLastDetent immediately when range.start reaches 2 (full height)
+    // This triggers detent change DURING travel, not after
     if (range.start === 2 && !this.reachedLastDetent) {
-      this._pendingFullHeight = true;
+      this.reachedLastDetent = true;
+      this.sheet.detents = undefined;
     }
     this.args.onTravelRangeChange?.(range);
   }

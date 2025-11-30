@@ -44,45 +44,19 @@ export default class Controller {
     const oldValue = this._detents;
     this._detents = value;
 
-    // Like Silk: When detents changes, recalculate dimensions.
-    // This is important because swipeOutDisabled is based on whether detents is defined,
-    // and the front spacer size depends on swipeOutDisabled.
+    // Like Silk: When detents changes, dimension recalculation is handled by
+    // ResizeObserver watching the view and content elements. When the DOM updates
+    // (spacers resize due to CSS variable changes), ResizeObserver fires and
+    // calls recalculateDimensionsFromResize().
+    //
+    // ResizeObserver callbacks fire as microtasks after DOM mutations, which is
+    // earlier than Ember's afterRender - this is critical for correcting scroll
+    // position before scroll momentum can continue.
     if (oldValue !== value && this.dimensions) {
       console.log(
-        `📐 detents changed from ${JSON.stringify(oldValue)} to ${JSON.stringify(value)}, recalculating dimensions`
+        `📐 detents changed from ${JSON.stringify(oldValue)} to ${JSON.stringify(value)}, ResizeObserver will handle dimension recalculation`
       );
-      this.recalculateDimensions();
     }
-  }
-
-  /**
-   * Recalculate dimensions when detents changes dynamically.
-   * Like Silk: When detents becomes undefined (at full height), swipeOutDisabled becomes false,
-   * which changes the front spacer size to allow swiping out.
-   */
-  recalculateDimensions() {
-    if (!this.view || !this.content || !this.scrollContainer) {
-      return;
-    }
-
-    const calculator = new DimensionCalculator({
-      view: this.view,
-      content: this.content,
-      scrollContainer: this.scrollContainer,
-      detentMarkers: this.detentMarkers,
-    });
-
-    // Recalculate with current swipeOutDisabled state
-    this.dimensions = calculator.calculateDimensions(
-      this.tracks,
-      this.placement,
-      this.detents,
-      { swipeOutDisabled: this.swipeOutDisabled }
-    );
-
-    console.log(
-      `📐 Dimensions recalculated: swipeOutDisabled=${this.swipeOutDisabled}`
-    );
   }
 
   currentPosition = "out";
@@ -99,6 +73,9 @@ export default class Controller {
   travelAnimations = [];
 
   intersectionObserver = null;
+
+  // ResizeObserver for watching view/content size changes (like Silk)
+  _resizeObserver = null;
 
   wheelListener = null;
 
@@ -1171,6 +1148,108 @@ export default class Controller {
     this.resetViewStyles();
     this.calculateDimensionsIfReady();
     this.setupIntersectionObserver();
+    this.setupResizeObserver();
+  }
+
+  /**
+   * Like Silk: Set up ResizeObserver to watch view and content elements.
+   * When they resize (e.g., when detents change and spacers resize),
+   * recalculate dimensions and correct scroll position.
+   *
+   * ResizeObserver callbacks fire as microtasks after DOM mutations,
+   * which is earlier than Ember's afterRender - this is critical for
+   * correcting scroll position before scroll momentum can continue.
+   */
+  setupResizeObserver() {
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
+    }
+
+    // Track if this is the first observation (skip initial callback)
+    let viewFirstObservation = true;
+    let contentFirstObservation = true;
+
+    const handleResize = () => {
+      // Like Silk's c() function: recalculate dimensions and travel to correct position
+      if (this.view && this.content && this.scrollContainer && this.dimensions) {
+        console.log("📐 ResizeObserver: element resized, recalculating dimensions");
+        this.recalculateDimensionsFromResize();
+      }
+    };
+
+    this._resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === this.view) {
+          if (viewFirstObservation) {
+            viewFirstObservation = false;
+            continue;
+          }
+          handleResize();
+        } else if (entry.target === this.content) {
+          if (contentFirstObservation) {
+            // Like Silk: First content observation just recalculates dimensions
+            contentFirstObservation = false;
+            continue;
+          }
+          handleResize();
+        }
+      }
+    });
+
+    if (this.view) {
+      this._resizeObserver.observe(this.view, { box: "border-box" });
+    }
+    if (this.content) {
+      this._resizeObserver.observe(this.content, { box: "border-box" });
+    }
+  }
+
+  /**
+   * Recalculate dimensions triggered by ResizeObserver.
+   * This is like Silk's c() function that's called when view/content resize.
+   */
+  recalculateDimensionsFromResize() {
+    const calculator = new DimensionCalculator({
+      view: this.view,
+      content: this.content,
+      scrollContainer: this.scrollContainer,
+      detentMarkers: this.detentMarkers,
+    });
+
+    // Recalculate with current swipeOutDisabled state
+    this.dimensions = calculator.calculateDimensions(
+      this.tracks,
+      this.placement,
+      this.detents,
+      { swipeOutDisabled: this.swipeOutDisabled }
+    );
+
+    console.log(
+      `📐 Dimensions recalculated (ResizeObserver): swipeOutDisabled=${this.swipeOutDisabled}`
+    );
+
+    // Like Silk: After dimension change, immediately travel to current detent
+    // with instant behavior to correct scroll position.
+    if (this.currentDetent > 0 && this.currentState === "open") {
+      travelToDetent(
+        {
+          sheet: this,
+          destinationDetent: this.currentDetent,
+          behavior: "instant",
+          runTravelCallbacksAndAnimations: false,
+          runOnTravelStart: false,
+          currentDetent: this.currentDetent,
+          setSegment: this.setSegment,
+          swipeOutDisabledWithDetent: this.swipeOutDisabled,
+          contentPlacement: this.placement,
+          hasOppositeTracks:
+            this.tracks === "horizontal" || this.tracks === "vertical",
+          snapBackAcceleratorTravelAxisSize:
+            this.dimensions?.snapOutAccelerator?.travelAxis?.unitless || 0,
+        },
+        this
+      );
+    }
   }
 
   /**
@@ -1198,6 +1277,12 @@ export default class Controller {
 
     // Cleanup intersection observer
     this.cleanupIntersectionObserver();
+
+    // Cleanup resize observer
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
+      this._resizeObserver = null;
+    }
 
     // Remove scroll prevention listeners
     this.removeScrollPrevention();

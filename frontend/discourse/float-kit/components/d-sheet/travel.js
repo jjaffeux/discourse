@@ -832,11 +832,21 @@ export function travelToDetent(config, sheet) {
       onTravelStart();
     }
 
+    // Use scrollTo with { behavior: 'instant' } to cancel any ongoing scroll animation
+    // This is critical for stopping native scroll momentum before setting the position
     if (scrollAxis === "x") {
-      scrollContainer.scrollTo(positionToScrollTo, 0);
+      scrollContainer.scrollTo({
+        left: positionToScrollTo,
+        top: 0,
+        behavior: "instant",
+      });
       scrollContainer.scrollLeft = positionToScrollTo;
     } else {
-      scrollContainer.scrollTo(0, positionToScrollTo);
+      scrollContainer.scrollTo({
+        left: 0,
+        top: positionToScrollTo,
+        behavior: "instant",
+      });
       scrollContainer.scrollTop = positionToScrollTo;
     }
 
