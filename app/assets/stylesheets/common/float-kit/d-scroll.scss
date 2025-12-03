@@ -1,0 +1,237 @@
+// ============================================================================
+// d-scroll component styles
+// Following Silk's Scroll component CSS from source.css exactly
+// ============================================================================
+
+// ============================================================================
+// c1 - Root wrapper (Scroll.Root)
+// From Silk source.css lines 1044-1074
+// ============================================================================
+
+[data-d-scroll~="root"] {
+  // Silk: --NOTE: "`display` can only be set to `none` or `grid`"
+  display: grid;
+  position: relative;
+  overflow: hidden;
+}
+
+// Silk: All direct children are positioned absolutely to fill the grid cell
+[data-d-scroll~="root"] > * {
+  position: absolute !important;
+}
+
+// ============================================================================
+// c2 - Scroll container (scrollable element)
+// ============================================================================
+
+[data-d-scroll~="view"] {
+  scrollbar-color: inherit;
+  scrollbar-gutter: inherit;
+  outline: none !important;
+  padding: 0 !important;
+  display: grid !important;
+  position: relative !important;
+}
+
+[data-d-scroll~="view"]:focus {
+  outline: none;
+}
+
+// Grid template for sentinel/spacer structure
+// Silk: --grid-template: 0px max-content 0px max-content 0px max-content 0px
+[data-d-scroll~="view"] {
+  --grid-template: 0px max-content 0px max-content 0px max-content 0px !important;
+}
+
+[data-d-scroll~="view"][data-d-scroll~="axis-y"] {
+  grid-template-rows: var(--grid-template);
+}
+
+[data-d-scroll~="view"][data-d-scroll~="axis-x"] {
+  grid-template-columns: var(--grid-template);
+}
+
+// Overflow handling - Silk c2 cAd / cAc
+[data-d-scroll~="view"][data-d-scroll~="axis-y"] {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+[data-d-scroll~="view"][data-d-scroll~="axis-x"] {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
+// Overscroll behavior - Silk c2 cCa / cDa
+[data-d-scroll~="view"][data-d-scroll~="axis-x"] {
+  overscroll-behavior-x: contain !important;
+}
+
+[data-d-scroll~="view"][data-d-scroll~="axis-y"] {
+  overscroll-behavior-y: contain !important;
+}
+
+// ============================================================================
+// Scrollbar visibility
+// ============================================================================
+
+[data-d-scroll~="view"][data-d-scroll~="no-scrollbar"] {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// ============================================================================
+// Scroll anchoring
+// ============================================================================
+
+[data-d-scroll~="view"][data-d-scroll~="no-anchoring"] {
+  overflow-anchor: none;
+}
+
+// ============================================================================
+// Scroll snap
+// ============================================================================
+
+[data-d-scroll~="view"][data-d-scroll~="snap-proximity"][data-d-scroll~="axis-y"] {
+  scroll-snap-type: y proximity;
+}
+
+[data-d-scroll~="view"][data-d-scroll~="snap-proximity"][data-d-scroll~="axis-x"] {
+  scroll-snap-type: x proximity;
+}
+
+[data-d-scroll~="view"][data-d-scroll~="snap-mandatory"][data-d-scroll~="axis-y"] {
+  scroll-snap-type: y mandatory;
+}
+
+[data-d-scroll~="view"][data-d-scroll~="snap-mandatory"][data-d-scroll~="axis-x"] {
+  scroll-snap-type: x mandatory;
+}
+
+// ============================================================================
+// Overshoot prevention
+// ============================================================================
+
+[data-d-scroll~="view"][data-d-scroll~="no-overshoot"] {
+  overscroll-behavior: none !important;
+}
+
+// ============================================================================
+// Page scroll replacement
+// ============================================================================
+
+[data-d-scroll~="view"][data-d-scroll~="page-scroll-replacement"] {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// ============================================================================
+// c3 - Content wrapper
+// ============================================================================
+
+[data-d-scroll~="content"] {
+  position: relative !important;
+}
+
+// Content is explicitly placed in grid row/column 4
+// This is the middle "max-content" slot in the 7-slot grid template
+[data-d-scroll~="view"][data-d-scroll~="axis-y"] [data-d-scroll~="content"] {
+  grid-row: 4 !important;
+}
+
+[data-d-scroll~="view"][data-d-scroll~="axis-x"] [data-d-scroll~="content"] {
+  grid-column: 4 !important;
+}
+
+// ============================================================================
+// c5 - Sentinel elements (for scroll observation)
+// Silk: 1px x 1px invisible elements at start/end
+// ============================================================================
+
+[data-d-scroll~="sentinel"] {
+  width: 1px;
+  height: 1px;
+  margin-bottom: -1px;
+  margin-right: -1px;
+}
+
+// Sentinel positioning for y-axis
+[data-d-scroll~="sentinel"][data-d-scroll~="sentinel-start"][data-d-scroll~="axis-y"] {
+  grid-row: 1;
+}
+
+[data-d-scroll~="sentinel"][data-d-scroll~="sentinel-end"][data-d-scroll~="axis-y"] {
+  grid-row: -1;
+  margin-top: -2px;
+}
+
+// Sentinel positioning for x-axis
+[data-d-scroll~="sentinel"][data-d-scroll~="sentinel-start"][data-d-scroll~="axis-x"] {
+  grid-column: 1;
+}
+
+[data-d-scroll~="sentinel"][data-d-scroll~="sentinel-end"][data-d-scroll~="axis-x"] {
+  grid-column: -1;
+  margin-left: -2px;
+}
+
+// ============================================================================
+// c6 - Start spacer
+// ============================================================================
+
+[data-d-scroll~="spacer"][data-d-scroll~="spacer-start"][data-d-scroll~="axis-y"] {
+  width: 1px;
+  height: 0;
+  grid-row: 2;
+}
+
+[data-d-scroll~="spacer"][data-d-scroll~="spacer-start"][data-d-scroll~="axis-x"] {
+  width: 0;
+  height: 1px;
+  grid-column: 2;
+}
+
+// ============================================================================
+// c7 - End spacer (safe area inset)
+// ============================================================================
+
+[data-d-scroll~="spacer"][data-d-scroll~="spacer-end"][data-d-scroll~="axis-y"] {
+  width: 1px;
+  // height is set dynamically via inline style
+  grid-row: 6;
+}
+
+[data-d-scroll~="spacer"][data-d-scroll~="spacer-end"][data-d-scroll~="axis-x"] {
+  height: 1px;
+  // width is set dynamically via inline style
+  grid-column: 6;
+}
+
+// ============================================================================
+// Trigger button
+// ============================================================================
+
+[data-d-scroll~="trigger"] {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--tertiary);
+    outline-offset: 2px;
+  }
+}

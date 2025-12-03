@@ -1,0 +1,1684 @@
+// No global CSS variables needed for Silk-style scroll prevention
+
+// Silk reference mappings:
+// a1 = view (root fixed container)
+// a2 = backdrop (overlay behind sheet)
+// a4 = primary-scroll-trap
+// a5 = secondary-scroll-trap
+// a6 = scroll-container
+// a7 = front-spacer
+// a8 = back-spacer
+// a9 = detent-marker
+// a10 = content-wrapper
+// a11 = content
+// a12 = bleeding-background
+// a15 = edge-marker (iOS swipe prevention)
+// a16 = touch-target-expander
+// a17 = handle
+// a18 = focusable-text
+// b0 = scroll-trap-root
+// b1 = scroll-trap-stabilizer
+// bBf = scroll-vertical
+// bBg = scroll-horizontal
+// aGf = top track (edge-aligned)
+// aGg / bottom = bottom track (edge-aligned)
+// aGh = left track (edge-aligned)
+// aGi = right track (edge-aligned)
+// aGj = horizontal track (centered)
+// aGk = vertical track (centered)
+// aFg = end alignment
+// aFf = start alignment
+// aFr = center alignment
+// aHp = snap-align-start
+// aJp = snap-type-y-mandatory
+// aBaj = user-select-text (JS state tracking, CSS applied directly on content-wrapper)
+// aNo = scrollContainerShouldBePassThrough (view/backdrop/scroll-container pointer-events: none)
+// aNp = pointer-events control for secondary-scroll-trap
+// aMk = overscroll-contain-y
+// 0ac = scroll-trap-marker
+// aIp = scroll-behavior-smooth (JS state tracking, no CSS in Silk)
+// aDl = overshoot-active (JS state tracking, no CSS in Silk)
+// 0af = no-bleeding-background
+* {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+  text-size-adjust: 100%;
+}
+
+// Use :where() for track-specific positioning to allow component overrides (like Toast)
+// This matches Silk's approach where base styles have 0 specificity
+:where([data-d-sheet~="view"][data-d-sheet~="bottom"]) {
+  --d-sheet-default-bottom: 0;
+  --d-sheet-default-left: 0;
+}
+
+// Top track: content slides in from top
+:where([data-d-sheet~="view"][data-d-sheet~="top"]) {
+  --d-sheet-default-top: 0;
+  --d-sheet-default-left: 0;
+}
+
+// Left track: content slides in from left
+:where([data-d-sheet~="view"][data-d-sheet~="left"]) {
+  --d-sheet-default-top: 0;
+  --d-sheet-default-left: 0;
+  height: 100%;
+  width: 100vw;
+}
+
+// Right track: content slides in from right
+:where([data-d-sheet~="view"][data-d-sheet~="right"]) {
+  --d-sheet-default-top: 0;
+  --d-sheet-default-right: 0;
+  height: 100%;
+  width: 100vw;
+}
+
+// --d-sheet-snap-accelerator: 221.047px; /* snap-accelerator (rubber band effect distance) */
+[data-d-sheet~="view"] {
+  --d-sheet-minimum-snap-distance: var(
+    --d-sheet-minimum-snap-distance-from-props,
+    1px
+  );
+  --d-sheet-viewport-height: 100vh;
+  --d-sheet-snap-accelerator: 1px;
+  --d-sheet-edge-padding: 10px;
+  --d-sheet-view-travel-axis: initial; // aD
+  --d-sheet-view-cross-axis: initial; // aE
+  --d-sheet-content-travel-axis: initial; // aF
+  --d-sheet-content-cross-axis: initial; // aG
+  --d-sheet-front-spacer: initial; // aH
+  --d-sheet-back-spacer: initial; // aI
+  --d-sheet-first-detent-size: initial; // aK
+  --d-sheet-travel-size: var(--d-sheet-view-travel-axis, 100%);
+  --d-sheet-cross-size: var(--d-sheet-view-cross-axis, 100%);
+  --d-sheet-max-overshoot-distance: min(300px, var(--d-sheet-travel-size));
+  --d-sheet-snap-margin: 2px;
+  --d-sheet-content-wrapper-overshoot-offset: calc(
+    -1 * (var(--d-sheet-max-overshoot-distance) - var(--d-sheet-snap-margin))
+  );
+  border-width: 0 !important;
+  overflow: clip !important;
+}
+
+// All direct children of view must be absolutely positioned
+[data-d-sheet~="view"] > * {
+  position: absolute;
+}
+
+[data-d-sheet~="view"][data-d-sheet~="hidden"] {
+  opacity: 0 !important;
+}
+
+[data-d-sheet~="view"][data-d-sheet~="closed"] {
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  overflow: hidden !important;
+}
+
+// Scroll prevention (like Silk) - keep scrollbars visible but prevent scrolling
+html[data-d-sheet-native-scroll-locked="true"] {
+  & > body {
+    // Prevent touch scrolling
+    touch-action: none !important;
+
+    // Prevent overscroll effects
+    overscroll-behavior: none !important;
+  }
+}
+
+.SheetWithDepth-stackBackground {
+  position: fixed;
+  inset: 0;
+  background-color: #000;
+  opacity: 0;
+  will-change: opacity;
+  z-index: 1;
+}
+
+.SheetWithDepth-stackEdge {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 0;
+  border-top: 1px solid rgb(0 0 0 / 0.066);
+  z-index: 12001;
+  opacity: 0;
+  will-change: opacity;
+}
+
+:where([data-d-sheet~="view"]) {
+  --d-sheet-defaults: initial;
+  position: var(--d-sheet-defaults, fixed);
+  top: var(--d-sheet-defaults, var(--d-sheet-default-top, initial));
+  bottom: var(--d-sheet-defaults, var(--d-sheet-default-bottom, initial));
+  left: var(--d-sheet-defaults, var(--d-sheet-default-left, initial));
+  right: var(--d-sheet-defaults, var(--d-sheet-default-right, initial));
+  height: var(--d-sheet-defaults, 100%);
+  width: var(--d-sheet-defaults, 100%);
+
+  --x-collapsed-scrollbar-thickness: 0px;
+  --y-collapsed-scrollbar-thickness: 0px;
+}
+
+// Like Silk (aNo): view with no-pointer-events allows clicks to pass through
+// to page content behind the sheet. Content inside re-enables pointer-events.
+[data-d-sheet~="view"][data-d-sheet~="no-pointer-events"] {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+[data-d-sheet~="snap-align-start"] {
+  scroll-snap-align: start !important;
+}
+
+:where([data-d-sheet~="view"] > *) {
+  --d-sheet-default-top: initial;
+  --d-sheet-default-bottom: initial;
+  --d-sheet-default-left: initial;
+  --d-sheet-default-right: initial;
+}
+
+// Backdrop (a2) - overlay behind sheet
+[data-d-sheet~="backdrop"] {
+  z-index: -1 !important;
+  position: absolute !important;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: #000;
+  opacity: 0.5;
+  user-select: none;
+}
+
+// Like Silk (a2 + aNo)
+[data-d-sheet~="backdrop"][data-d-sheet~="no-pointer-events"] {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+// Like Silk (b0): scroll-trap-root
+:where([data-d-sheet~="scroll-trap-root"]:not([data-d-sheet~="fixed"])) {
+  --d-sheet-defaults: initial;
+  position: var(--d-sheet-defaults, relative);
+}
+
+[data-d-sheet~="scroll-trap-root"] {
+  scrollbar-width: none !important;
+}
+
+[data-d-sheet~="scroll-trap-root"]::-webkit-scrollbar {
+  display: none !important;
+}
+
+// Like Silk (a4): primary-scroll-trap has position: absolute
+[data-d-sheet~="primary-scroll-trap"] {
+  position: absolute;
+}
+
+// Like Silk (a5): secondary-scroll-trap with no-pointer-events
+[data-d-sheet~="secondary-scroll-trap"][data-d-sheet~="no-pointer-events"] {
+  pointer-events: none !important;
+}
+
+// Vertical tracks (top/bottom/vertical): width = cross-size, height = travel-size
+[data-d-sheet~="primary-scroll-trap"][data-d-sheet~="top"],
+[data-d-sheet~="primary-scroll-trap"][data-d-sheet~="bottom"],
+[data-d-sheet~="primary-scroll-trap"][data-d-sheet~="vertical"] {
+  width: var(--d-sheet-cross-size);
+  height: var(--d-sheet-travel-size);
+}
+
+// Horizontal tracks (left/right/horizontal): height = cross-size, width = travel-size
+[data-d-sheet~="primary-scroll-trap"][data-d-sheet~="left"],
+[data-d-sheet~="primary-scroll-trap"][data-d-sheet~="right"],
+[data-d-sheet~="primary-scroll-trap"][data-d-sheet~="horizontal"] {
+  height: var(--d-sheet-cross-size);
+  width: var(--d-sheet-travel-size);
+}
+
+[data-d-sheet~="scroll-trap-root"][data-d-sheet~="scroll-vertical"] {
+  overscroll-behavior-y: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+[data-d-sheet~="scroll-trap-root"][data-d-sheet~="scroll-horizontal"] {
+  overscroll-behavior-x: none !important;
+  overflow-y: hidden !important;
+  overflow-x: auto !important;
+}
+
+// Like Silk: ::before creates 600x600px scrollable area for scroll trapping.
+// BUT: Don't apply to content elements - Toast uses scroll-trap-root on content
+// to absorb scroll events, not for scroll-travel. The ::before is only needed
+// for standalone scroll-trap wrappers (like SpecialWrapper.Root when separate).
+[data-d-sheet~="scroll-trap-root"]:not([data-d-sheet~="content"])::before {
+  content: "" !important;
+  width: calc(100% + 600px) !important;
+  height: calc(100% + 600px) !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+
+[data-d-sheet~="scroll-trap-stabilizer"] {
+  width: 100% !important;
+  height: 100% !important;
+  position: sticky !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+
+[data-d-sheet~="scroll-container"] {
+  --d-sheet-scroll-container-height: calc(2 * var(--d-sheet-travel-size));
+  z-index: 1;
+  flex-wrap: nowrap;
+  place-items: center;
+  display: flex;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  scrollbar-width: none;
+}
+
+// Like Silk (aNo on a6): scroll-container with no-pointer-events allows clicks to pass
+// through to page content while content inside re-enables pointer-events
+[data-d-sheet~="scroll-container"][data-d-sheet~="no-pointer-events"] {
+  pointer-events: none;
+  user-select: none;
+}
+
+[data-d-sheet~="scroll-container"][data-d-sheet~="overscroll-contain"] {
+  overscroll-behavior-y: contain;
+}
+
+// aGg style: content placed at bottom, scroll extends below viewport (Silk line 352-354)
+[data-d-sheet~="scroll-container"][data-d-sheet~="bottom"] {
+  bottom: calc(-1 * var(--d-sheet-travel-size));
+}
+
+// Like Silk (line 348-350): top track - scroll extends above viewport
+[data-d-sheet~="scroll-container"][data-d-sheet~="top"] {
+  top: calc(-1 * var(--d-sheet-travel-size));
+}
+
+// Like Silk (line 329-337): vertical tracks use column layout with y scroll
+[data-d-sheet~="scroll-container"][data-d-sheet~="top"],
+[data-d-sheet~="scroll-container"][data-d-sheet~="bottom"],
+[data-d-sheet~="scroll-container"][data-d-sheet~="vertical"] {
+  height: var(--d-sheet-scroll-container-height);
+  scroll-snap-type: y mandatory;
+  flex-direction: column;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+// Like Silk (aGk line 360-361): vertical centered - half offset positioning
+[data-d-sheet~="scroll-container"][data-d-sheet~="vertical"] {
+  top: calc(-0.5 * var(--d-sheet-travel-size));
+}
+
+// Center content on main axis for centered tracks
+[data-d-sheet~="scroll-container"][data-d-sheet~="vertical"][data-d-sheet~="center"],
+[data-d-sheet~="scroll-container"][data-d-sheet~="horizontal"][data-d-sheet~="center"] {
+  justify-content: center;
+}
+
+// Like Silk (aGh, aGi, aGj): horizontal tracks use row layout with x scroll
+[data-d-sheet~="scroll-container"][data-d-sheet~="left"],
+[data-d-sheet~="scroll-container"][data-d-sheet~="right"],
+[data-d-sheet~="scroll-container"][data-d-sheet~="horizontal"] {
+  width: var(--d-sheet-scroll-container-height);
+  scroll-snap-type: x mandatory;
+  flex-direction: row;
+  height: 100%;
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+// Like Silk (aGj line 356-358): horizontal centered - half offset positioning
+[data-d-sheet~="scroll-container"][data-d-sheet~="horizontal"] {
+  left: calc(-0.5 * var(--d-sheet-travel-size));
+}
+
+// Like Silk (line 340-342): left track - scroll extends left of viewport
+[data-d-sheet~="scroll-container"][data-d-sheet~="left"] {
+  left: calc(-1 * var(--d-sheet-travel-size));
+}
+
+// Like Silk (line 344-346): right track - scroll extends right of viewport
+[data-d-sheet~="scroll-container"][data-d-sheet~="right"] {
+  right: calc(-1 * var(--d-sheet-travel-size));
+}
+
+[data-d-sheet~="scroll-container"] > * {
+  --d-sheet-travel-size: var(--d-sheet-view-travel-axis, 50%);
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+// Like Silk (aGf, aGh): top and left use end snap and order: 3
+[data-d-sheet~="front-spacer"][data-d-sheet~="top"],
+[data-d-sheet~="front-spacer"][data-d-sheet~="left"] {
+  scroll-snap-align: end;
+  order: 3;
+}
+
+// Like Silk (aGg, aGi, aGj, aGk): bottom, right, horizontal, vertical use start snap and order: 1
+[data-d-sheet~="front-spacer"][data-d-sheet~="bottom"],
+[data-d-sheet~="front-spacer"][data-d-sheet~="right"],
+[data-d-sheet~="front-spacer"][data-d-sheet~="horizontal"],
+[data-d-sheet~="front-spacer"][data-d-sheet~="vertical"] {
+  scroll-snap-align: start;
+  order: 1;
+}
+
+// Like Silk: edge tracks (top, bottom) have spacer height from CSS variable
+[data-d-sheet~="front-spacer"][data-d-sheet~="top"],
+[data-d-sheet~="front-spacer"][data-d-sheet~="bottom"] {
+  height: var(--d-sheet-front-spacer);
+  width: 1px;
+}
+
+// Like Silk: edge tracks (left, right) have spacer width from CSS variable
+[data-d-sheet~="front-spacer"][data-d-sheet~="left"],
+[data-d-sheet~="front-spacer"][data-d-sheet~="right"] {
+  width: var(--d-sheet-front-spacer);
+  height: 1px;
+}
+
+// Like Silk (cAd): centered tracks (horizontal, vertical) have 0-size spacers
+// The scroll range comes from content-wrapper positioning, not spacer size
+[data-d-sheet~="front-spacer"][data-d-sheet~="vertical"] {
+  height: 0;
+  width: 1px;
+}
+
+[data-d-sheet~="front-spacer"][data-d-sheet~="horizontal"] {
+  width: 0;
+  height: 1px;
+}
+
+[data-d-sheet~="front-spacer"] {
+  user-select: none !important;
+  pointer-events: none !important;
+}
+
+[data-d-sheet~="back-spacer"] {
+  position: relative;
+  user-select: none !important;
+  pointer-events: none !important;
+}
+
+// Like Silk (aGf, aGh): top and left use start snap and order: 1
+[data-d-sheet~="back-spacer"][data-d-sheet~="top"],
+[data-d-sheet~="back-spacer"][data-d-sheet~="left"] {
+  scroll-snap-align: start;
+  order: 1;
+}
+
+// Like Silk (aGg, aGi, aGj, aGk): bottom, right, horizontal, vertical use end snap and order: 3
+[data-d-sheet~="back-spacer"][data-d-sheet~="bottom"],
+[data-d-sheet~="back-spacer"][data-d-sheet~="right"],
+[data-d-sheet~="back-spacer"][data-d-sheet~="horizontal"],
+[data-d-sheet~="back-spacer"][data-d-sheet~="vertical"] {
+  scroll-snap-align: end;
+  order: 3;
+}
+
+// Like Silk: edge tracks (top, bottom) have spacer height from CSS variable
+[data-d-sheet~="back-spacer"][data-d-sheet~="top"],
+[data-d-sheet~="back-spacer"][data-d-sheet~="bottom"] {
+  height: var(--d-sheet-back-spacer);
+  width: 1px;
+}
+
+// Like Silk: edge tracks (left, right) have spacer width from CSS variable
+[data-d-sheet~="back-spacer"][data-d-sheet~="left"],
+[data-d-sheet~="back-spacer"][data-d-sheet~="right"] {
+  width: var(--d-sheet-back-spacer);
+  height: 1px;
+}
+
+// Like Silk (cAd): centered tracks (horizontal, vertical) have 0-size spacers
+// The scroll range comes from content-wrapper positioning, not spacer size
+[data-d-sheet~="back-spacer"][data-d-sheet~="vertical"] {
+  height: 0;
+  width: 1px;
+}
+
+[data-d-sheet~="back-spacer"][data-d-sheet~="horizontal"] {
+  width: 0;
+  height: 1px;
+}
+
+// Like Silk (line 651-653): aJp for bottom track - uses top with overshoot offset
+[data-d-sheet~="content-wrapper"][data-d-sheet~="snap-type-y-mandatory"][data-d-sheet~="bottom"] {
+  top: var(--d-sheet-content-wrapper-overshoot-offset);
+}
+
+// Like Silk (line 647-649): aJp for top track - uses bottom with overshoot offset
+[data-d-sheet~="content-wrapper"][data-d-sheet~="snap-type-y-mandatory"][data-d-sheet~="top"] {
+  bottom: var(--d-sheet-content-wrapper-overshoot-offset);
+}
+
+// Like Silk (line 635-637): aJo for bottom track - top: 0
+[data-d-sheet~="content-wrapper"][data-d-sheet~="overshoot-inactive"][data-d-sheet~="bottom"] {
+  top: 0;
+}
+
+// Like Silk (line 631-633): aJo for top track - bottom: 0
+[data-d-sheet~="content-wrapper"][data-d-sheet~="overshoot-inactive"][data-d-sheet~="top"] {
+  bottom: 0;
+}
+
+// Like Silk (line 572-573): bottom track uses bottom positioning
+[data-d-sheet~="content-wrapper"][data-d-sheet~="bottom"] {
+  bottom: var(--d-sheet-content-wrapper-offset);
+  align-items: flex-end;
+}
+
+// Like Silk (line 568-570): top track uses top positioning
+[data-d-sheet~="content-wrapper"][data-d-sheet~="top"] {
+  top: var(--d-sheet-content-wrapper-offset);
+  align-items: flex-start;
+}
+
+// Like Silk (line 539-544): Common offset variable for edge-aligned tracks
+// Like Silk (aGf, aGg, aGk): includes vertical (centered) track
+[data-d-sheet~="content-wrapper"][data-d-sheet~="top"],
+[data-d-sheet~="content-wrapper"][data-d-sheet~="bottom"],
+[data-d-sheet~="content-wrapper"][data-d-sheet~="vertical"] {
+  --d-sheet-content-wrapper-offset: calc(
+    var(--d-sheet-travel-size) - var(--d-sheet-content-travel-axis) - var(
+        --d-sheet-minimum-snap-distance
+      )
+  );
+  height: var(--d-sheet-travel-size);
+  justify-content: center;
+  width: 100%;
+}
+
+// Like Silk (line 502-508): horizontal tracks have width = travel size
+// Like Silk (aGh, aGi, aGj): includes horizontal (centered) track
+[data-d-sheet~="content-wrapper"][data-d-sheet~="left"],
+[data-d-sheet~="content-wrapper"][data-d-sheet~="right"],
+[data-d-sheet~="content-wrapper"][data-d-sheet~="horizontal"] {
+  --d-sheet-content-wrapper-offset: calc(
+    var(--d-sheet-travel-size) - var(--d-sheet-content-travel-axis) - var(
+        --d-sheet-minimum-snap-distance
+      )
+  );
+  width: var(--d-sheet-travel-size);
+  align-items: center;
+  height: 100%;
+}
+
+// Like Silk aFh: left placement justifies content to flex-start
+[data-d-sheet~="content-wrapper"][data-d-sheet~="left"] {
+  justify-content: flex-start;
+  left: var(--d-sheet-content-wrapper-offset);
+}
+
+// Like Silk aFi: right placement justifies content to flex-end
+[data-d-sheet~="content-wrapper"][data-d-sheet~="right"] {
+  justify-content: flex-end;
+  right: var(--d-sheet-content-wrapper-offset);
+}
+
+// Like Silk aFr: center placement centers both axes
+[data-d-sheet~="content-wrapper"][data-d-sheet~="center"] {
+  justify-content: center;
+  align-items: center;
+}
+
+// Like Silk (line 555-560): centering offset variable for centered tracks
+// --d-sheet-view-travel-axis = view size in travel direction (--silk-aO)
+// --d-sheet-content-travel-axis = content size (--silk-aF)
+// --d-sheet-minimum-snap-distance = minimum snap distance (--silk-aL)
+[data-d-sheet~="content-wrapper"][data-d-sheet~="horizontal"],
+[data-d-sheet~="content-wrapper"][data-d-sheet~="vertical"] {
+  --d-sheet-content-wrapper-centered-offset: calc(
+    (var(--d-sheet-view-travel-axis) - var(--d-sheet-content-travel-axis)) /
+      2 - var(--d-sheet-view-travel-axis) /
+      2 - var(--d-sheet-minimum-snap-distance)
+  );
+}
+
+// Like Silk (line 583-586): top/bottom positioning for vertical track without center placement
+[data-d-sheet~="content-wrapper"][data-d-sheet~="vertical"]:not(
+    [data-d-sheet~="center"]
+  ) {
+  top: var(--d-sheet-content-wrapper-centered-offset);
+  bottom: var(--d-sheet-content-wrapper-centered-offset);
+}
+
+// Like Silk: left/right positioning for horizontal track without center placement
+[data-d-sheet~="content-wrapper"][data-d-sheet~="horizontal"]:not(
+    [data-d-sheet~="center"]
+  ) {
+  left: var(--d-sheet-content-wrapper-centered-offset);
+  right: var(--d-sheet-content-wrapper-centered-offset);
+}
+
+// Like Silk (line 625-627): left track with overshoot inactive
+// Silk sets BOTH left (base) and right: 0, not left: 0
+[data-d-sheet~="content-wrapper"][data-d-sheet~="overshoot-inactive"][data-d-sheet~="left"] {
+  right: 0;
+}
+
+// Like Silk (line 629-631): right track with overshoot inactive
+// Silk sets BOTH right (base) and left: 0
+[data-d-sheet~="content-wrapper"][data-d-sheet~="overshoot-inactive"][data-d-sheet~="right"] {
+  left: 0;
+}
+
+// Like Silk (line 621-623): swipe-out-disabled with overshoot-inactive
+// Changes the offset calculation to use first-detent-size instead of minimum-snap-distance
+[data-d-sheet~="content-wrapper"][data-d-sheet~="overshoot-inactive"][data-d-sheet~="swipe-out-disabled"] {
+  --d-sheet-content-wrapper-offset: calc(
+    var(--d-sheet-travel-size) - var(--d-sheet-content-travel-axis) +
+      var(--d-sheet-first-detent-size)
+  );
+}
+
+// Like Silk (line 639-641): left track with snap-type
+[data-d-sheet~="content-wrapper"][data-d-sheet~="snap-type-x-mandatory"][data-d-sheet~="left"] {
+  left: auto; // Unset left
+  right: var(--d-sheet-content-wrapper-overshoot-offset);
+}
+
+// Like Silk (line 643-645): right track with snap-type
+[data-d-sheet~="content-wrapper"][data-d-sheet~="snap-type-x-mandatory"][data-d-sheet~="right"] {
+  right: auto; // Unset right
+  left: var(--d-sheet-content-wrapper-overshoot-offset);
+}
+
+[data-d-sheet~="content-wrapper"] {
+  z-index: 1;
+  pointer-events: none;
+  user-select: text;
+  order: 2;
+  display: flex;
+  position: sticky;
+}
+
+// Like Silk (line 500-502): position relative for centered tracks with center placement
+// Must come AFTER the default position: sticky rule to ensure proper override
+[data-d-sheet~="content-wrapper"][data-d-sheet~="center"][data-d-sheet~="horizontal"],
+[data-d-sheet~="content-wrapper"][data-d-sheet~="center"][data-d-sheet~="vertical"] {
+  position: relative;
+}
+
+// Like Silk (line 655-661): default dimensions for vertical tracks (top/bottom)
+// Like Silk (aGf, aGg): edge-aligned vertical tracks
+[data-d-sheet~="content"][data-d-sheet~="top"],
+[data-d-sheet~="content"][data-d-sheet~="bottom"],
+[data-d-sheet~="content"][data-d-sheet~="center"][data-d-sheet~="top"],
+[data-d-sheet~="content"][data-d-sheet~="center"][data-d-sheet~="bottom"] {
+  --d-sheet-default-width: 100%;
+  --d-sheet-default-height: 50%;
+}
+
+// Like Silk (aGk): centered vertical track with center placement
+[data-d-sheet~="content"][data-d-sheet~="center"][data-d-sheet~="vertical"] {
+  --d-sheet-default-width: 100%;
+  --d-sheet-default-height: 50%;
+}
+
+// Like Silk (line 664-668): default dimensions for horizontal tracks (left/right)
+// Like Silk (aGh, aGi): edge-aligned horizontal tracks
+[data-d-sheet~="content"][data-d-sheet~="left"],
+[data-d-sheet~="content"][data-d-sheet~="right"],
+[data-d-sheet~="content"][data-d-sheet~="center"][data-d-sheet~="left"],
+[data-d-sheet~="content"][data-d-sheet~="center"][data-d-sheet~="right"] {
+  --d-sheet-default-width: 50%;
+  --d-sheet-default-height: 100%;
+}
+
+// Like Silk (aGj): centered horizontal track with center placement
+[data-d-sheet~="content"][data-d-sheet~="center"][data-d-sheet~="horizontal"] {
+  --d-sheet-default-width: 50%;
+  --d-sheet-default-height: 100%;
+}
+
+:where([data-d-sheet~="content"]) {
+  --d-sheet-defaults: initial;
+  width: var(--d-sheet-defaults, var(--d-sheet-default-width, initial));
+  height: var(--d-sheet-defaults, var(--d-sheet-default-height, initial));
+  background-color: var(--d-sheet-defaults, #fff);
+}
+
+// Like Silk: content always has pointer-events: auto, even with no-pointer-events
+[data-d-sheet~="content"],
+[data-d-sheet~="content"][data-d-sheet~="no-pointer-events"] {
+  pointer-events: auto;
+}
+
+// Match Silk's a11 exactly
+[data-d-sheet~="content"] {
+  user-select: initial;
+  user-select: auto;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  position: relative !important;
+  overflow: visible !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
+}
+
+[data-d-sheet~="content"] > * {
+  --d-sheet-default-width: initial;
+  --d-sheet-default-height: initial;
+}
+
+// SpecialWrapper now uses scroll-trap-root and scroll-trap-stabilizer
+// which already have the necessary styles (position: sticky, etc.)
+// This rule ensures children have pointer-events enabled
+[data-d-sheet~="special-wrapper-content"] > * {
+  pointer-events: auto;
+}
+
+[data-d-sheet~="no-bleeding-background"] {
+  background-color: initial;
+}
+
+[data-d-sheet~="content"]:has(:where([data-d-sheet~="a12"])) {
+  background-color: initial;
+}
+
+// Like Silk (line 803-805): Common variables for detent markers
+// --silk-aW = position variable (100% + contentSize - accumulatedOffset)
+// --silk-aX = scroll-margin variable (viewSize - accumulatedOffset + prevAccumulatedOffset)
+[data-d-sheet~="detent-marker"] {
+  --d-sheet-detent-marker-position: calc(
+    100% + var(--d-sheet-content-travel-axis) - var(--d-sheet-marker-current)
+  );
+  --d-sheet-detent-marker-scroll-margin: calc(
+    var(--d-sheet-travel-size) - var(--d-sheet-marker-current) +
+      var(--d-sheet-marker-prev)
+  );
+  place-items: center;
+  display: grid;
+  position: absolute;
+}
+
+// Like Silk (line 820-825): Height for vertical tracks (top, bottom, vertical)
+[data-d-sheet~="detent-marker"][data-d-sheet~="top"],
+[data-d-sheet~="detent-marker"][data-d-sheet~="bottom"],
+[data-d-sheet~="detent-marker"][data-d-sheet~="vertical"] {
+  height: calc(var(--d-sheet-marker-current) - var(--d-sheet-marker-prev));
+  width: 1px;
+}
+
+// Like Silk (aGh, aGi, aGj): horizontal tracks have width, 1px height
+[data-d-sheet~="detent-marker"][data-d-sheet~="left"],
+[data-d-sheet~="detent-marker"][data-d-sheet~="right"],
+[data-d-sheet~="detent-marker"][data-d-sheet~="horizontal"] {
+  width: calc(var(--d-sheet-marker-current) - var(--d-sheet-marker-prev));
+  height: 1px;
+}
+
+// Like Silk (aGf, aGh): top and left use end snap
+[data-d-sheet~="detent-marker"][data-d-sheet~="top"],
+[data-d-sheet~="detent-marker"][data-d-sheet~="left"] {
+  scroll-snap-align: end;
+}
+
+// Like Silk (aGg, aGi): bottom and right use start snap
+[data-d-sheet~="detent-marker"][data-d-sheet~="bottom"],
+[data-d-sheet~="detent-marker"][data-d-sheet~="right"] {
+  scroll-snap-align: start;
+}
+
+// Like Silk (aGj, aGk): horizontal and vertical centered use center snap
+[data-d-sheet~="detent-marker"][data-d-sheet~="horizontal"],
+[data-d-sheet~="detent-marker"][data-d-sheet~="vertical"] {
+  scroll-snap-align: center;
+}
+
+// Like Silk (line 874-878): Top track positioning
+[data-d-sheet~="detent-marker"][data-d-sheet~="top"] {
+  top: var(--d-sheet-detent-marker-position);
+  scroll-margin-bottom: var(--d-sheet-detent-marker-scroll-margin);
+  left: calc(var(--d-sheet-marker-index) * 10px);
+}
+
+// Like Silk (line 886-890): Bottom track positioning
+[data-d-sheet~="detent-marker"][data-d-sheet~="bottom"] {
+  bottom: var(--d-sheet-detent-marker-position);
+  scroll-margin-top: var(--d-sheet-detent-marker-scroll-margin);
+  left: calc(var(--d-sheet-marker-index) * 10px);
+}
+
+// Like Silk (line 852-857): Left track positioning
+[data-d-sheet~="detent-marker"][data-d-sheet~="left"] {
+  left: var(--d-sheet-detent-marker-position);
+  scroll-margin-right: var(--d-sheet-detent-marker-scroll-margin);
+  top: calc(var(--d-sheet-marker-index) * 10px);
+}
+
+// Like Silk (line 860-865): Right track positioning
+[data-d-sheet~="detent-marker"][data-d-sheet~="right"] {
+  right: var(--d-sheet-detent-marker-position);
+  scroll-margin-left: var(--d-sheet-detent-marker-scroll-margin);
+  top: calc(var(--d-sheet-marker-index) * 10px);
+}
+
+// Like Silk (aGj line 842-843): Horizontal centered positioning
+[data-d-sheet~="detent-marker"][data-d-sheet~="horizontal"] {
+  right: calc(
+    100% + (var(--d-sheet-travel-size) - var(--d-sheet-marker-current)) / 2
+  );
+  top: calc(var(--d-sheet-marker-index) * 10px);
+}
+
+// Like Silk (aGk line 846): Vertical centered positioning
+[data-d-sheet~="detent-marker"][data-d-sheet~="vertical"] {
+  bottom: calc(
+    100% + (var(--d-sheet-travel-size) - var(--d-sheet-marker-current)) / 2
+  );
+  left: calc(var(--d-sheet-marker-index) * 10px);
+}
+
+@supports not (scroll-margin-bottom: 1px) {
+  [data-d-sheet~="detent-marker"][data-d-sheet~="top"] {
+    scroll-snap-margin-bottom: var(--d-sheet-detent-marker-scroll-margin);
+  }
+}
+
+@supports not (scroll-margin-top: 1px) {
+  [data-d-sheet~="detent-marker"][data-d-sheet~="bottom"] {
+    scroll-snap-margin-top: var(--d-sheet-detent-marker-scroll-margin);
+  }
+}
+
+@supports not (scroll-margin-right: 1px) {
+  [data-d-sheet~="detent-marker"][data-d-sheet~="left"] {
+    scroll-snap-margin-right: var(--d-sheet-detent-marker-scroll-margin);
+  }
+}
+
+@supports not (scroll-margin-left: 1px) {
+  [data-d-sheet~="detent-marker"][data-d-sheet~="right"] {
+    scroll-snap-margin-left: var(--d-sheet-detent-marker-scroll-margin);
+  }
+}
+
+// Like Silk (source.css lines 901-908): scroll-snap-align: none for certain cases
+// - :not(:only-child):last-child - applies to ALL tracks
+// - :only-child for each track type (top, bottom, left, right)
+// - swipe-out-disabled first-child
+[data-d-sheet~="detent-marker"]:not(:only-child):last-child,
+[data-d-sheet~="detent-marker"][data-d-sheet~="top"]:only-child,
+[data-d-sheet~="detent-marker"][data-d-sheet~="bottom"]:only-child,
+[data-d-sheet~="detent-marker"][data-d-sheet~="left"]:only-child,
+[data-d-sheet~="detent-marker"][data-d-sheet~="right"]:only-child,
+[data-d-sheet~="detent-marker"][data-d-sheet~="swipe-out-disabled"]:first-child {
+  scroll-snap-align: none;
+}
+
+// ============================================================================
+// Edge-marker (a15/leftEdge) - iOS swipe-from-edge-to-go-back prevention
+// ============================================================================
+// Like Silk (source.css lines 588-619): This element prevents "swipe from edge
+// to go back" on iOS by capturing touch events at the left edge.
+[data-d-sheet~="edge-marker"] {
+  pointer-events: auto;
+  user-select: none;
+  will-change: transform;
+  width: 30px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -2px;
+}
+
+// Like Silk (lines 604-608): Vertical tracks (top, bottom, vertical) extend height
+// to cover front-spacer and back-spacer areas
+[data-d-sheet~="edge-marker"][data-d-sheet~="top"],
+[data-d-sheet~="edge-marker"][data-d-sheet~="bottom"],
+[data-d-sheet~="edge-marker"][data-d-sheet~="vertical"] {
+  height: calc(100% + var(--d-sheet-front-spacer) + var(--d-sheet-back-spacer));
+}
+
+// Like Silk (lines 610-614): bottom and vertical tracks offset top/bottom
+[data-d-sheet~="edge-marker"][data-d-sheet~="bottom"],
+[data-d-sheet~="edge-marker"][data-d-sheet~="vertical"] {
+  top: calc(-1 * var(--d-sheet-front-spacer));
+  bottom: calc(-1 * var(--d-sheet-back-spacer));
+}
+
+// Like Silk (lines 616-619): top track has inverted offsets
+[data-d-sheet~="edge-marker"][data-d-sheet~="top"] {
+  top: calc(-1 * var(--d-sheet-back-spacer));
+  bottom: calc(-1 * var(--d-sheet-front-spacer));
+}
+
+.my-view {
+  z-index: 2000;
+  height: calc(max(100dvh, 100lvh) + 60px);
+}
+
+.ExampleBottomSheet-content {
+  max-width: 700px;
+  min-width: 500px;
+  padding-inline: var(--size-10);
+  padding-bottom: max(
+    calc(env(safe-area-inset-bottom, 0px) + 12px),
+    var(--size-10)
+  );
+  display: grid;
+  justify-items: center;
+}
+
+.BottomSheet-content {
+  box-sizing: border-box;
+  height: auto;
+  min-height: 500px;
+  background: var(--secondary);
+}
+
+// ============================================================================
+// SheetWithDetent styles
+// ============================================================================
+
+// Like Silk: SheetWithDetent view is positioned at top with extra height
+// The content-wrapper's sticky positioning handles showing content at the bottom
+.SheetWithDetent-view {
+  // SELF-LAYOUT
+  z-index: 9999;
+  top: 0;
+  bottom: initial;
+
+  // Adding 60px to make it fully visible below iOS Safari's bottom UI
+  height: calc(max(100dvh, 100lvh) + 60px);
+}
+
+.SheetWithDetent-content {
+  // SELF-LAYOUT
+  box-sizing: border-box;
+  height: calc(100% - max(env(safe-area-inset-top), 6px));
+  max-width: 800px;
+
+  // APPEARANCE
+  border-radius: 24px 24px 0 0;
+  overflow: hidden;
+  background-color: var(--secondary);
+}
+
+@media (width >= 800px) {
+  .SheetWithDetent-content {
+    // SELF-LAYOUT
+    height: calc(100% - max(env(safe-area-inset-top), 5vh));
+
+    // APPEARANCE
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 10%),
+      0 4px 6px -4px rgb(0 0 0 / 10%);
+    border-radius: 24px;
+  }
+}
+
+.SheetWithDetent-handle {
+  // SELF-LAYOUT
+  width: 50px;
+  height: 6px;
+  margin: 12px auto;
+
+  // APPEARANCE
+  border: 0;
+  border-radius: 9999px;
+  background-color: var(--primary-low-mid);
+
+  // INTERACTIVITY
+  cursor: pointer;
+}
+
+.SheetWithDetent-backdrop {
+  // Use dark color for backdrop overlay (like the base d-sheet backdrop)
+  background-color: #000;
+}
+
+// Handle component base styling
+[data-d-sheet~="handle"] {
+  // SELF-LAYOUT
+  width: 50px;
+  height: 6px;
+  margin: 12px auto;
+
+  // APPEARANCE
+  border: 0;
+  border-radius: 9999px;
+  background-color: var(--primary-low-mid);
+
+  // INTERACTIVITY
+  cursor: pointer;
+  user-select: none;
+}
+
+// Example content styling for styleguide
+.sheet-with-detent-example-content {
+  padding: 1.5rem;
+
+  h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    margin-bottom: 1rem;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.5rem;
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
+// SheetWithDetent scroll styling
+.SheetWithDetent-scrollRoot {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.SheetWithDetent-scrollView {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+
+  &[data-scroll-gesture="false"] {
+    overflow: hidden;
+    touch-action: none;
+  }
+}
+
+.SheetWithDetent-scrollContent {
+  // Allow content to expand
+}
+
+// ============================================================================
+// Toast styles (following Silk's Toast.css)
+// ============================================================================
+
+// Toast container - fixed positioning for the wrapper
+.Toast-container {
+  position: fixed;
+  z-index: 1000;
+}
+
+// Toast view - CSS variables and sizing
+// On small screens (top track): NO explicit height - use d-sheet's default (full viewport)
+// On large screens (right track): constrain height to content
+.Toast-view {
+  --toast-padding-x: 0.75rem;
+  --toast-padding-top: 0.75rem;
+  --toast-padding-bottom: 2.75rem;
+  --toast-max-height: 90px;
+  --toast-content-height: calc(
+    max(env(safe-area-inset-top, 0px), var(--toast-padding-top)) +
+      var(--toast-max-height) + var(--toast-padding-bottom)
+  );
+
+  // NOTE: Do NOT set height here - on small screens, the view should be full viewport height
+  // This matches Silk's Toast.css where height is only set in the media query
+}
+
+@media (width >= 1000px) {
+  .Toast-view {
+    --toast-padding-x: 0.875rem;
+    --toast-padding-top: 0.875rem;
+
+    // SELF-LAYOUT - only constrain height on large screens (right track)
+    height: var(--toast-content-height);
+  }
+}
+
+.Toast-content {
+  // SELF-LAYOUT
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 560px;
+  height: var(--toast-content-height);
+
+  // APPEARANCE
+  background-color: transparent;
+
+  // INNER-LAYOUT
+  padding: var(--toast-padding-x);
+  padding-top: max(env(safe-area-inset-top), var(--toast-padding-top));
+  padding-bottom: var(--toast-padding-bottom);
+  display: grid;
+}
+
+@media (width >= 1000px) {
+  .Toast-content {
+    // SELF-LAYOUT
+    max-width: 400px;
+
+    // INNER-LAYOUT
+    padding-top: var(--toast-padding-top);
+  }
+}
+
+.Toast-innerContent {
+  // SELF-LAYOUT
+  max-height: var(--toast-max-height);
+
+  // APPEARANCE
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 10%),
+    0 4px 6px -4px rgb(0 0 0 / 10%);
+  border-radius: 24px;
+  border: 1px solid rgb(240 240 240);
+  background-color: rgb(255 255 255 / 95%);
+  backdrop-filter: saturate(5) blur(20px);
+}
+
+.Toast-title {
+  // SELF-LAYOUT
+  margin: 0;
+
+  // TEXT
+  font-size: 1rem;
+  line-height: 1.25;
+  font-weight: 700;
+  color: rgb(31 41 55);
+  user-select: none;
+}
+
+.Toast-description {
+  // SELF-LAYOUT
+  margin: 0;
+
+  // APPEARANCE
+  color: rgb(107 114 128);
+
+  // TEXT
+  font-size: 1rem;
+  line-height: 1.2;
+  font-weight: 500;
+  user-select: none;
+
+  // Ellipsis
+  display: -webkit-box;
+  max-width: 100%;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Example Toast styling for styleguide (following Silk's ExampleToast.css)
+.ExampleToast-root {
+  // INNER-LAYOUT
+  padding-inline: 1rem;
+  padding-block: 0.875rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.125rem 0.875rem;
+}
+
+.ExampleToast-illustration {
+  // SELF-LAYOUT
+  grid-row: 1 / 3;
+  align-self: center;
+  width: 2.75rem;
+  height: 2.75rem;
+
+  // APPEARANCE
+  border-radius: 16px;
+  background-image: conic-gradient(
+    from -140deg at 100% 100%,
+    rgb(36, 239, 215, 1),
+    rgb(179, 250, 241, 1) 120deg,
+    rgb(36, 239, 215, 1)
+  );
+  background-origin: border-box;
+  border: 1px solid rgb(0, 0, 0, 0.05);
+
+  // INTERACTIVITY
+  user-select: none;
+}
+
+.ExampleToast-title {
+  // SELF-LAYOUT
+  margin: 0;
+  grid-column: 2;
+
+  // TEXT
+  font-size: 1rem;
+  line-height: 1.25;
+  font-weight: 700;
+  color: rgb(31 41 55);
+  user-select: none;
+}
+
+.ExampleToast-description {
+  // SELF-LAYOUT
+  margin: 0;
+  grid-column: 2;
+
+  // APPEARANCE
+  color: rgb(107 114 128);
+
+  // TEXT
+  font-size: 1rem;
+  line-height: 1.2;
+  font-weight: 500;
+  user-select: none;
+
+  // Ellipsis
+  display: -webkit-box;
+  max-width: 100%;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ============================================================================
+// SheetWithStacking styles (following Silk's SheetWithStacking.css)
+// ============================================================================
+.SheetWithStacking-view {
+  // SELF-LAYOUT
+  z-index: 9999;
+
+  // Adding 60px to make it fully visible below iOS Safari's bottom UI
+  height: calc(max(100dvh, 100lvh) + 60px);
+}
+
+.SheetWithStacking-view.contentPlacement-right {
+  // SELF-LAYOUT
+  height: 100%;
+}
+
+.SheetWithStacking-content {
+  // SELF-LAYOUT
+  box-sizing: border-box;
+  height: calc(min(500px, 90svh) + env(safe-area-inset-bottom, 0px));
+
+  // APPEARANCE
+  background-color: transparent;
+
+  // INNER-LAYOUT
+  padding-inline: 0.5rem;
+  padding-block: 0.5rem max(env(safe-area-inset-bottom, 0px), 0.5rem);
+  display: grid;
+}
+
+.SheetWithStacking-content.contentPlacement-right {
+  // SELF-LAYOUT
+  height: 100%;
+  width: min(80%, 700px);
+
+  // INNER-LAYOUT
+  padding: 0.75rem;
+}
+
+.SheetWithStacking-innerContent {
+  // SELF-LAYOUT
+  height: 100%;
+  min-height: 0;
+
+  // APPEARANCE
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 10%),
+    0 4px 6px -4px rgb(0 0 0 / 10%);
+  overflow: hidden;
+  overflow: clip;
+  border-radius: 24px;
+  background-color: var(--secondary);
+}
+
+.SheetWithStacking-backdrop {
+  // Use dark color for backdrop overlay
+  background-color: #000;
+}
+
+// Example content styling for SheetWithStacking styleguide
+.sheet-with-stacking-example-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  height: 100%;
+
+  h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  ul {
+    margin: 0 0 1.5rem;
+    padding-left: 1.5rem;
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
+// ============================================================================
+// SheetWithKeyboard styles (following Silk's SheetWithKeyboard.css)
+// ============================================================================
+.SheetWithKeyboard-view {
+  --sheetWithKeyboard-radius: 24px;
+
+  // SELF-LAYOUT
+  z-index: 9999;
+  top: 0;
+  bottom: initial;
+
+  // Adding 60px to make it fully visible below iOS Safari's bottom UI
+  height: calc(max(100dvh, 100lvh) + 60px);
+}
+
+@media (width >= 800px) {
+  .SheetWithKeyboard-view {
+    // SELF-LAYOUT
+    height: 100%;
+  }
+}
+
+.SheetWithKeyboard-content {
+  // SELF-LAYOUT
+  box-sizing: border-box;
+  height: calc(100% - max(env(safe-area-inset-top), 6px));
+
+  // APPEARANCE
+  border-radius: var(--sheetWithKeyboard-radius) var(--sheetWithKeyboard-radius)
+    0 0;
+  overflow: clip;
+  overflow: hidden;
+  background-color: var(--secondary);
+}
+
+@media (width >= 800px) {
+  .SheetWithKeyboard-content {
+    // SELF-LAYOUT
+    width: calc(800px - 1.25rem);
+    height: calc(100% - 2rem * 2);
+
+    // APPEARANCE
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 10%),
+      0 4px 6px -4px rgb(0 0 0 / 10%);
+    border-radius: var(--sheetWithKeyboard-radius);
+  }
+}
+
+.SheetWithKeyboard-backdrop {
+  // Use dark color for backdrop overlay
+  background-color: #000;
+}
+
+// Silk's ExampleSheetWithKeyboard-scrollView
+.SheetWithKeyboard-scrollView {
+  // SELF-LAYOUT
+  min-height: 0;
+
+  // APPEARANCE
+  border-radius: 0 0 var(--sheetWithKeyboard-radius)
+    var(--sheetWithKeyboard-radius);
+  background-color: var(--primary-very-low);
+}
+
+.SheetWithKeyboard-scrollContent {
+  --padding: 1.25rem;
+
+  // INNER-LAYOUT
+  display: grid;
+  align-content: start;
+}
+
+@container (width >= 780px) {
+  .SheetWithKeyboard-scrollContent {
+    --padding: 1.5rem;
+  }
+}
+
+// ============================================================================
+// SheetWithKeyboard Example styles (following Silk's ExampleSheetWithKeyboard.css)
+// ============================================================================
+.ExampleSheetWithKeyboard-presentTrigger {
+  // SELF-LAYOUT
+  height: 2.75rem;
+
+  // APPEARANCE
+  border-radius: 9999px;
+  appearance: none;
+  border: none;
+  background-color: rgb(31 41 55);
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 10%),
+    0 4px 6px -4px rgb(0 0 0 / 10%);
+
+  // INTERACTIVITY
+  cursor: pointer;
+
+  // INNER-LAYOUT
+  padding-inline: 1.25rem;
+
+  // TEXT
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.ExampleSheetWithKeyboard-content {
+  // INNER-LAYOUT
+  container-type: size;
+  display: grid;
+  grid-template-rows: min-content 1fr min-content;
+}
+
+.ExampleSheetWithKeyboard-header {
+  // SELF-LAYOUT
+  height: 57px;
+
+  // APPEARANCE
+  border-bottom: 1px solid var(--primary-low);
+
+  // INNER-LAYOUT
+  position: relative;
+  padding-inline: 1.25rem;
+  display: grid;
+  grid-template-columns: 80px 1fr 80px;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (width >= 800px) {
+  .ExampleSheetWithKeyboard-header {
+    // SELF-LAYOUT
+    height: 53px;
+  }
+}
+
+.ExampleSheetWithKeyboard-cancelButton {
+  // SELF-LAYOUT
+  justify-self: start;
+
+  // APPEARANCE
+  border-radius: 6px;
+  outline-offset: 5px;
+  border: none;
+  appearance: none;
+  background-color: transparent;
+
+  // INTERACTIVITY
+  cursor: pointer;
+
+  // INNER-LAYOUT
+  padding: 0;
+
+  // TEXT
+  font-size: 17.25px;
+  font-weight: 500;
+  color: var(--tertiary);
+}
+
+.ExampleSheetWithKeyboard-title {
+  // SELF-LAYOUT
+  margin: 0;
+  justify-self: center;
+
+  // TEXT
+  font-size: 17.25px;
+  font-weight: 620;
+  color: var(--primary);
+}
+
+.ExampleSheetWithKeyboard-saveButton {
+  // SELF-LAYOUT
+  justify-self: end;
+
+  // APPEARANCE
+  border-radius: 6px;
+  outline-offset: 5px;
+  border: none;
+  appearance: none;
+  background-color: transparent;
+
+  // INTERACTIVITY
+  cursor: pointer;
+
+  // INNER-LAYOUT
+  padding: 0;
+
+  // TEXT
+  font-size: 17.25px;
+  font-weight: 600;
+  color: var(--tertiary);
+}
+
+.ExampleSheetWithKeyboard-info {
+  // APPEARANCE
+  border-top: 1px solid var(--primary-low);
+
+  // INNER-LAYOUT
+  padding-top: 1.25rem;
+  padding-bottom: 2rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+@container (width >= 780px) {
+  .ExampleSheetWithKeyboard-info {
+    // INNER-LAYOUT
+    padding-bottom: var(--padding);
+    gap: 1.5rem;
+  }
+}
+
+.ExampleSheetWithKeyboard-details {
+  // SELF-LAYOUT
+  margin: 0;
+
+  // INNER-LAYOUT
+  padding-inline: var(--padding);
+
+  // TEXT
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+@container (width >= 780px) {
+  .ExampleSheetWithKeyboard-details {
+    // TEXT
+    font-size: 2.25rem;
+  }
+}
+
+.ExampleSheetWithKeyboard-form {
+  // INNER-LAYOUT
+  padding-inline: var(--padding);
+  display: grid;
+  gap: 1.25rem;
+}
+
+@container (width >= 780px) {
+  .ExampleSheetWithKeyboard-form {
+    // SELF-LAYOUT
+    box-sizing: border-box;
+
+    // INNER-LAYOUT
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.ExampleSheetWithKeyboard-field {
+  // INNER-LAYOUT
+  display: grid;
+
+  // TEXT
+  user-select: none;
+}
+
+@container (width >= 780px) {
+  .ExampleSheetWithKeyboard-field.fieldType-color {
+    // SELF-LAYOUT
+    order: 1;
+  }
+}
+
+@container (width >= 780px) {
+  .ExampleSheetWithKeyboard-field.fieldType-description {
+    // SELF-LAYOUT
+    order: 2;
+    grid-column: 1 / -1;
+  }
+}
+
+.ExampleSheetWithKeyboard-label {
+  // SELF-LAYOUT
+  margin-bottom: 0.25rem;
+
+  // TEXT
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--primary-high);
+
+  // INTERACTIVITY
+  pointer-events: none;
+}
+
+.ExampleSheetWithKeyboard-labelDescription {
+  // SELF-LAYOUT
+  margin-top: 0;
+  margin-bottom: 0.625rem;
+
+  // TEXT
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--primary-medium);
+}
+
+.ExampleSheetWithKeyboard-input {
+  // SELF-LAYOUT
+  height: 2.75rem;
+
+  // APPEARANCE
+  border-radius: 12px;
+  border: 1px solid var(--primary-low);
+  background-color: var(--secondary);
+
+  // INNER-LAYOUT
+  padding: 0 0.75rem;
+
+  // TEXT
+  appearance: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--primary-high);
+
+  // FIELD
+  caret-color: var(--tertiary);
+}
+
+.ExampleSheetWithKeyboard-input::placeholder {
+  // TEXT
+  color: var(--primary-medium);
+}
+
+.ExampleSheetWithKeyboard-colorInputWrapper {
+  // SELF-LAYOUT
+  height: min-content;
+  width: min-content;
+
+  // INNER-LAYOUT
+  position: relative;
+}
+
+.ExampleSheetWithKeyboard-colorInputs {
+  // SELF-LAYOUT
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: start;
+  gap: 0.625rem;
+}
+
+.ExampleSheetWithKeyboard-colorInput {
+  // SELF-LAYOUT
+  height: 1.75rem;
+  width: 1.75rem;
+
+  // APPEARANCE
+  appearance: none;
+  border: 0;
+  background-color: transparent;
+
+  // INTERACTIVITY
+  cursor: pointer;
+
+  // TRANSFORMATION
+  opacity: 0;
+}
+
+.ExampleSheetWithKeyboard-colorInputReplacement {
+  // SELF-LAYOUT
+  position: absolute;
+  inset: 0;
+
+  // APPEARANCE
+  border-radius: 9999px;
+  background-color: var(--color);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 15%);
+
+  // INTERACTIVITY
+  pointer-events: none;
+}
+
+.ExampleSheetWithKeyboard-textarea {
+  // APPEARANCE
+  border-radius: 12px;
+  border: 1px solid var(--primary-low);
+  background-color: var(--secondary);
+
+  // INNER-LAYOUT
+  padding: 0.75rem;
+
+  // TEXT
+  appearance: none;
+  font-size: 1rem;
+  color: var(--primary);
+
+  // FIELD
+  caret-color: var(--tertiary);
+  resize: none;
+}
+
+.ExampleSheetWithKeyboard-textarea::placeholder {
+  // TEXT
+  color: var(--primary-medium);
+}
