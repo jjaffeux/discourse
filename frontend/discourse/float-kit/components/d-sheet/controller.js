@@ -1988,7 +1988,8 @@ export default class Controller {
   }
 
   /**
-   * Step to the next detent.
+   * Step to the next detent (upward direction).
+   * Cycles back to first detent when at the last.
    */
   @action
   step() {
@@ -1996,14 +1997,69 @@ export default class Controller {
       return;
     }
 
-    const nextDetent = this.activeDetent + 1;
     const maxDetent = this.detents?.length ?? 1;
 
-    if (nextDetent > maxDetent) {
+    if (maxDetent <= 1) {
+      return;
+    }
+
+    const nextDetent =
+      this.activeDetent >= maxDetent ? 1 : this.activeDetent + 1;
+
+    if (nextDetent === this.activeDetent) {
       return;
     }
 
     this.handleStateTransition({ type: "STEP", detent: nextDetent });
+  }
+
+  /**
+   * Step to the previous detent (downward direction).
+   * Cycles to last detent when at the first.
+   */
+  @action
+  stepDown() {
+    if (this.currentState !== "open") {
+      return;
+    }
+
+    const maxDetent = this.detents?.length ?? 1;
+
+    if (maxDetent <= 1) {
+      return;
+    }
+
+    const prevDetent =
+      this.activeDetent <= 1 ? maxDetent : this.activeDetent - 1;
+
+    if (prevDetent === this.activeDetent) {
+      return;
+    }
+
+    this.handleStateTransition({ type: "STEP", detent: prevDetent });
+  }
+
+  /**
+   * Step to a specific detent index.
+   *
+   * @param {number} detent - Target detent index (1-based)
+   */
+  @action
+  stepToDetent(detent) {
+    if (this.currentState !== "open") {
+      return;
+    }
+
+    const maxDetent = this.detents?.length ?? 1;
+    if (detent < 1 || detent > maxDetent) {
+      return;
+    }
+
+    if (detent === this.activeDetent) {
+      return;
+    }
+
+    this.handleStateTransition({ type: "STEP", detent });
   }
 
   /**

@@ -4,6 +4,7 @@ import Content from "./d-sheet/content";
 import Handle from "./d-sheet/handle";
 import Portal from "./d-sheet/portal";
 import Root from "./d-sheet/root";
+import Trigger from "./d-sheet/trigger";
 import View from "./d-sheet/view";
 
 const DSheet = {
@@ -14,6 +15,7 @@ const DSheet = {
   Portal,
   View,
   Content,
+  Trigger,
 };
 
 export default DSheet;

@@ -75,21 +75,31 @@ export default class Sheets extends Component {
         </:sample>
       </StyleguideComponent>}}
 
-      {{! <StyleguideComponent @tag="with-detent">
+      <StyleguideComponent @tag="with-detent">
         <:sample>
-          <DSheetWithDetent>
+          <DSheetWithDetent as |sheet|>
             <div class="sheet-with-detent-example-content">
               Content
+
+              <DSheet.Trigger
+                @sheet={{sheet}}
+                @action="step"
+              >Step</DSheet.Trigger>
+
+              <DSheet.Trigger
+                @sheet={{sheet}}
+                @action="dismiss"
+              >Dismiss</DSheet.Trigger>
             </div>
           </DSheetWithDetent>
         </:sample>
-      </StyleguideComponent>}}
+      </StyleguideComponent>
 
-      <StyleguideComponent @tag="toast">
+      {{!-- <StyleguideComponent @tag="toast">
         <:sample>
           <DButton @action={{this.showToast}}>Show toast</DButton>
         </:sample>
-      </StyleguideComponent>
+      </StyleguideComponent> --}}
 
       {{!-- <StyleguideComponent @tag="with-stacking">
         <:sample>

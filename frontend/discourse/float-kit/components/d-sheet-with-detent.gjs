@@ -49,7 +49,7 @@ class DSheetWithDetent extends Component {
                 @onScrollStart={{hash dismissKeyboard=true}}
               >
                 <scroll.Content class="SheetWithDetent-scrollContent">
-                  {{yield}}
+                  {{yield sheet}}
                 </scroll.Content>
               </scroll.View>
             </DScrollRoot>
