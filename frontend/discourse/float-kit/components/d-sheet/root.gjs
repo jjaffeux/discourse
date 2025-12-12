@@ -19,6 +19,7 @@ import View from "./view";
  * Behavioral/visual props should be passed to View, not Root.
  *
  * @component DSheetRoot
+ * @param {string} componentId - Optional ID to identify this sheet for forComponent lookups
  * @param {boolean} defaultPresented - Whether the sheet is initially presented (default: false, uncontrolled mode only)
  * @param {boolean} presented - Controls the presented state (required for controlled mode)
  * @param {Function} onPresentedChange - Callback when presented state changes (required for controlled mode)
@@ -57,7 +58,15 @@ export default class Root extends Component {
   constructor(owner, args) {
     super(owner, args);
 
+    if (this.args.componentId) {
+      this.sheetRegistry.registerRoot(this.args.componentId, this);
+    }
+
     registerDestructor(this, () => {
+      if (this.args.componentId) {
+        this.sheetRegistry.unregisterRoot(this.args.componentId);
+      }
+
       if (this.sheet) {
         if (this.sheet.stackId) {
           this.sheetStackRegistry.unregisterSheetFromStack(this.sheet);

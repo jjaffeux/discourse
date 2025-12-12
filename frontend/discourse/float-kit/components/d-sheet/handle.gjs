@@ -1,11 +1,13 @@
 import Component from "@glimmer/component";
 import { on } from "@ember/modifier";
+import { service } from "@ember/service";
 
 /**
  * Interactive handle for d-sheet; supports dismiss and step actions.
  *
  * @component DSheetHandle
- * @param {Object} sheet - Sheet controller instance
+ * @param {string} forComponent - ID of the Root to associate with (uses Root's componentId)
+ * @param {Object} sheet - Sheet controller instance (alternative to forComponent)
  * @param {string|Object} action - Action to perform:
  *   - "dismiss": closes the sheet
  *   - "step" (default): steps to next detent (upward, cycles)
@@ -16,6 +18,7 @@ import { on } from "@ember/modifier";
  *   Default: { forceFocus: true, runAction: true }
  */
 export default class Handle extends Component {
+  @service sheetRegistry;
   /**
    * Handle click event with onPress behavior processing.
    *
@@ -52,6 +55,27 @@ export default class Handle extends Component {
 
     this.executeAction();
   };
+
+  /**
+   * The Root component found via forComponent lookup.
+   *
+   * @type {Object|undefined}
+   */
+  get targetRoot() {
+    if (this.args.forComponent) {
+      return this.sheetRegistry.getRootByComponentId(this.args.forComponent);
+    }
+    return undefined;
+  }
+
+  /**
+   * The sheet controller - from targetRoot or direct @sheet prop.
+   *
+   * @type {Object|undefined}
+   */
+  get sheet() {
+    return this.targetRoot?.sheet ?? this.args.sheet;
+  }
 
   /**
    * The raw action prop value. Defaults to "step" for Handle.
@@ -99,7 +123,7 @@ export default class Handle extends Component {
    * @type {boolean}
    */
   get isDisabled() {
-    const detents = this.args.sheet?.detents;
+    const detents = this.sheet?.detents;
     return detents?.length === 1 && this.actionType !== "dismiss";
   }
 
@@ -113,25 +137,38 @@ export default class Handle extends Component {
   }
 
   /**
+   * The sheet ID for aria-controls.
+   *
+   * @type {string|undefined}
+   */
+  get sheetId() {
+    return this.sheet?.id;
+  }
+
+  /**
+   * Whether the sheet is presented for aria-expanded.
+   *
+   * @type {boolean}
+   */
+  get isPresented() {
+    return this.sheet?.isPresented ?? false;
+  }
+
+  /**
    * Execute the configured action on the sheet.
    */
   executeAction() {
-    const sheet = this.args.sheet;
-    if (!sheet) {
-      return;
-    }
-
     switch (this.actionType) {
       case "dismiss":
-        sheet.close();
+        this.sheet?.close();
         break;
       case "step":
         if (this.stepDetent !== undefined) {
-          sheet.stepToDetent(this.stepDetent);
+          this.sheet?.stepToDetent(this.stepDetent);
         } else if (this.stepDirection === "down") {
-          sheet.stepDown();
+          this.sheet?.stepDown();
         } else {
-          sheet.step();
+          this.sheet?.step();
         }
         break;
     }
@@ -142,8 +179,8 @@ export default class Handle extends Component {
       type="button"
       data-d-sheet="touch-target-expander handle"
       disabled={{this.isDisabled}}
-      aria-expanded={{@sheet.isPresented}}
-      aria-controls={{@sheet.id}}
+      aria-expanded={{this.isPresented}}
+      aria-controls={{this.sheetId}}
       {{on "click" this.handleClick}}
       ...attributes
     >

@@ -1,12 +1,14 @@
 import Component from "@glimmer/component";
 import { on } from "@ember/modifier";
+import { service } from "@ember/service";
 import DButton from "discourse/components/d-button";
 
 /**
  * Trigger button for controlling a sheet.
  *
  * @component Trigger
- * @param {Object} sheet - The sheet controller instance
+ * @param {string} forComponent - ID of the Root to associate with (uses Root's componentId)
+ * @param {Object} sheet - The sheet controller instance (alternative to forComponent)
  * @param {string|Object} action - Action to perform:
  *   - "present" (default): opens the sheet
  *   - "dismiss": closes the sheet
@@ -18,6 +20,8 @@ import DButton from "discourse/components/d-button";
  *   Default: { forceFocus: true, runAction: true }
  */
 export default class Trigger extends Component {
+  @service sheetRegistry;
+
   /**
    * Handle click event with onPress behavior processing.
    *
@@ -54,6 +58,27 @@ export default class Trigger extends Component {
 
     this.executeAction();
   };
+
+  /**
+   * The Root component found via forComponent lookup.
+   *
+   * @type {Object|undefined}
+   */
+  get targetRoot() {
+    if (this.args.forComponent) {
+      return this.sheetRegistry.getRootByComponentId(this.args.forComponent);
+    }
+    return undefined;
+  }
+
+  /**
+   * The sheet controller - from targetRoot or direct @sheet prop.
+   *
+   * @type {Object|undefined}
+   */
+  get sheet() {
+    return this.targetRoot?.sheet ?? this.args.sheet;
+  }
 
   /**
    * The raw action prop value.
@@ -101,7 +126,7 @@ export default class Trigger extends Component {
    * @type {string|undefined}
    */
   get ariaHasPopup() {
-    const role = this.args.sheet?.role;
+    const role = this.sheet?.role;
     const isDialogRole = role === "dialog" || role === "alertdialog";
     return isDialogRole && this.actionType === "present" ? "dialog" : undefined;
   }
@@ -115,36 +140,44 @@ export default class Trigger extends Component {
   get ariaExpanded() {
     const actionType = this.actionType;
     if (actionType === "present" || actionType === "dismiss") {
-      return this.args.sheet?.isPresented ?? false;
+      return this.sheet?.isPresented ?? false;
     }
     return undefined;
+  }
+
+  /**
+   * The sheet ID for aria-controls.
+   *
+   * @type {string|undefined}
+   */
+  get sheetId() {
+    return this.sheet?.id;
   }
 
   /**
    * Execute the configured action on the sheet.
    */
   executeAction() {
-    const sheet = this.args.sheet;
-    if (!sheet) {
-      return;
-    }
-
     switch (this.actionType) {
       case "dismiss":
-        sheet.close();
+        this.sheet?.close();
         break;
       case "step":
         if (this.stepDetent !== undefined) {
-          sheet.stepToDetent(this.stepDetent);
+          this.sheet?.stepToDetent(this.stepDetent);
         } else if (this.stepDirection === "down") {
-          sheet.stepDown();
+          this.sheet?.stepDown();
         } else {
-          sheet.step();
+          this.sheet?.step();
         }
         break;
       case "present":
       default:
-        sheet.open();
+        if (this.targetRoot) {
+          this.targetRoot.openSheet();
+        } else {
+          this.sheet?.open();
+        }
         break;
     }
   }
@@ -152,7 +185,7 @@ export default class Trigger extends Component {
   <template>
     <DButton
       aria-haspopup={{this.ariaHasPopup}}
-      aria-controls={{@sheet.id}}
+      aria-controls={{this.sheetId}}
       aria-expanded={{this.ariaExpanded}}
       {{on "click" this.handleClick}}
       ...attributes

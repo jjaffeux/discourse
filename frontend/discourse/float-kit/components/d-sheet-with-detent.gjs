@@ -2,6 +2,7 @@ import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
 import { hash } from "@ember/helper";
 import { action } from "@ember/object";
+import { guidFor } from "@ember/object/internals";
 import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import DScrollRoot from "./d-scroll/root";
 import DSheet from "./d-sheet";
@@ -18,8 +19,21 @@ class DSheetWithDetent extends Component {
     this.reachedLastDetent = value;
   }
 
+  get componentId() {
+    return this.args.componentId ?? guidFor(this);
+  }
+
   <template>
-    <DSheet.Root @defaultPresented={{true}} as |sheet|>
+    <DSheet.Root @componentId={{this.componentId}} as |sheet|>
+      {{yield
+        (hash
+          Trigger=(component
+            DSheet.Trigger forComponent=this.componentId sheet=sheet
+          )
+        )
+        to="root"
+      }}
+
       <DSheet.Portal @sheet={{sheet}}>
         <View
           @sheet={{sheet}}
@@ -49,7 +63,16 @@ class DSheetWithDetent extends Component {
                 @onScrollStart={{hash dismissKeyboard=true}}
               >
                 <scroll.Content class="SheetWithDetent-scrollContent">
-                  {{yield sheet}}
+                  {{#if (has-block "content")}}
+                    {{yield
+                      (hash Trigger=(component DSheet.Trigger sheet=sheet))
+                      to="content"
+                    }}
+                  {{else}}
+                    {{yield
+                      (hash Trigger=(component DSheet.Trigger sheet=sheet))
+                    }}
+                  {{/if}}
                 </scroll.Content>
               </scroll.View>
             </DScrollRoot>

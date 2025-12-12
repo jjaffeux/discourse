@@ -11,6 +11,9 @@ export default class SheetRegistry extends Service {
   /** @type {Map<string, Object>} */
   sheets = new Map();
 
+  /** @type {Map<string, Object>} Root components registered by componentId */
+  #rootsByComponentId = new Map();
+
   /** @type {Object[]} */
   sheetsInOrder = [];
 
@@ -359,6 +362,35 @@ export default class SheetRegistry extends Service {
    */
   find(id) {
     return this.sheets.get(id);
+  }
+
+  /**
+   * Registers a Root component by its componentId.
+   *
+   * @param {string} componentId
+   * @param {Object} rootComponent
+   */
+  registerRoot(componentId, rootComponent) {
+    this.#rootsByComponentId.set(componentId, rootComponent);
+  }
+
+  /**
+   * Unregisters a Root component by its componentId.
+   *
+   * @param {string} componentId
+   */
+  unregisterRoot(componentId) {
+    this.#rootsByComponentId.delete(componentId);
+  }
+
+  /**
+   * Gets a Root component by its componentId.
+   *
+   * @param {string} componentId
+   * @returns {Object|undefined}
+   */
+  getRootByComponentId(componentId) {
+    return this.#rootsByComponentId.get(componentId);
   }
 
   /**
