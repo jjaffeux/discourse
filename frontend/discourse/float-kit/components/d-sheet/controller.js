@@ -4,6 +4,10 @@ import { guidFor } from "@ember/object/internals";
 import { TrackedArray } from "@ember-compat/tracked-built-ins";
 import { createTweenFunction } from "./animation";
 import AnimationTravel from "./animation-travel";
+import {
+  isStandaloneWithBlackTranslucent,
+  isWebKit,
+} from "./browser-detection";
 import { trackToPlacement } from "./config-normalizer";
 import DimensionCalculator from "./dimensions-calculator";
 import DOMAttributes from "./dom-attributes";
@@ -144,6 +148,9 @@ export default class Controller {
 
   /** @type {Animation|null} Current backdrop Web Animations API animation */
   backdropAnimation = null;
+
+  /** @type {number|null} Current backdrop rAF loop ID for travel callbacks */
+  backdropRafId = null;
 
   /** @type {Function|null} Backdrop opacity function from travelAnimation */
   backdropOpacityFn = null;
@@ -677,13 +684,7 @@ export default class Controller {
    */
   get effectiveThemeColorDimming() {
     if (this.themeColorDimming === "auto") {
-      if (typeof navigator !== "undefined") {
-        const ua = navigator.userAgent;
-        const isWebKit =
-          /Safari/.test(ua) && !/Chrome/.test(ua) && !/CriOS/.test(ua);
-        return isWebKit;
-      }
-      return false;
+      return isWebKit() && !isStandaloneWithBlackTranslucent();
     }
     return Boolean(this.themeColorDimming);
   }
@@ -1855,13 +1856,6 @@ export default class Controller {
     this.travelAnimations.push({
       target: backdrop,
       callback: (progress) => {
-        if (
-          this.travelStatus === "travellingIn" ||
-          this.travelStatus === "travellingOut"
-        ) {
-          return;
-        }
-
         const opacity = opacityFn({ progress });
         backdrop.style.opacity = opacity;
 
@@ -1897,23 +1891,30 @@ export default class Controller {
       return;
     }
 
+    const startProgress =
+      direction === "in"
+        ? 0
+        : (this.dimensions?.progressValueAtDetents?.[this.activeDetent]
+            ?.exact ?? 1);
+    const endProgress =
+      direction === "in"
+        ? (this.dimensions?.progressValueAtDetents?.[this.targetDetent]
+            ?.exact ?? 1)
+        : 0;
+
     let keyframes;
     if (direction === "in") {
-      // Animate to the target detent's opacity
-      const targetProgress =
-        this.dimensions?.progressValueAtDetents?.[this.targetDetent]?.exact ??
-        1;
-      const targetOpacity = this.backdropOpacityFn({
-        progress: targetProgress,
-      });
+      const targetOpacity = this.backdropOpacityFn({ progress: endProgress });
       keyframes = [{ opacity: 0 }, { opacity: targetOpacity }];
     } else {
-      // Animate from current opacity to 0
       const currentOpacity = parseFloat(this.backdrop.style.opacity) || 0;
       keyframes = [{ opacity: currentOpacity }, { opacity: 0 }];
     }
 
     this.backdropAnimation?.cancel();
+    if (this.backdropRafId) {
+      cancelAnimationFrame(this.backdropRafId);
+    }
 
     const animation = this.backdrop.animate(keyframes, {
       duration,
@@ -1921,7 +1922,26 @@ export default class Controller {
       fill: "forwards",
     });
 
+    const startTime = performance.now();
+    const runTravelCallbacks = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      const progress = startProgress + (endProgress - startProgress) * t;
+
+      this.aggregatedTravelCallback(progress);
+
+      if (t < 1) {
+        this.backdropRafId = requestAnimationFrame(runTravelCallbacks);
+      }
+    };
+    this.backdropRafId = requestAnimationFrame(runTravelCallbacks);
+
     animation.onfinish = () => {
+      if (this.backdropRafId) {
+        cancelAnimationFrame(this.backdropRafId);
+      }
+      this.aggregatedTravelCallback(endProgress);
+
       if (direction === "in" && this.backdrop?.isConnected) {
         animation.commitStyles();
       }
@@ -1929,11 +1949,6 @@ export default class Controller {
     };
 
     this.backdropAnimation = animation;
-
-    if (this.themeColorDimmingOverlay) {
-      // keyframes[1] is always the target (end) opacity
-      this.themeColorDimmingOverlay.animateTo(keyframes[1].opacity, duration);
-    }
   }
 
   /**

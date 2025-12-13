@@ -107,3 +107,33 @@ export function isAppleMobile() {
 export function isAndroid() {
   return getBrowserInfo().platform === "android";
 }
+
+/**
+ * Check if running in iOS standalone PWA mode with black-translucent status bar.
+ * @returns {boolean}
+ */
+export function isStandaloneWithBlackTranslucent() {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return false;
+  }
+
+  const isStandalone = window.navigator.standalone;
+  if (!isStandalone) {
+    return false;
+  }
+
+  const viewport = document.querySelector("meta[name='viewport']");
+  const hasViewportFitCover = viewport?.content?.includes("viewport-fit=cover");
+
+  const webAppCapable = document.querySelector(
+    "meta[name='apple-mobile-web-app-capable']"
+  );
+  const isWebAppCapable = webAppCapable?.content === "yes";
+
+  const statusBarStyle = document.querySelector(
+    "meta[name='apple-mobile-web-app-status-bar-style']"
+  );
+  const isBlackTranslucent = statusBarStyle?.content === "black-translucent";
+
+  return hasViewportFitCover && isWebAppCapable && isBlackTranslucent;
+}
