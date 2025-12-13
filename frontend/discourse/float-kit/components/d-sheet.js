@@ -4,6 +4,8 @@ import Content from "./d-sheet/content";
 import Handle from "./d-sheet/handle";
 import Portal from "./d-sheet/portal";
 import Root from "./d-sheet/root";
+import SpecialWrapperContent from "./d-sheet/special-wrapper/content";
+import SpecialWrapperRoot from "./d-sheet/special-wrapper/root";
 import Trigger from "./d-sheet/trigger";
 import View from "./d-sheet/view";
 
@@ -16,6 +18,10 @@ const DSheet = {
   View,
   Content,
   Trigger,
+  SpecialWrapper: {
+    Root: SpecialWrapperRoot,
+    Content: SpecialWrapperContent,
+  },
 };
 
 export default DSheet;
