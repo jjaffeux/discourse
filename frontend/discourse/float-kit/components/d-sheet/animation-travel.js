@@ -66,6 +66,44 @@ export default class AnimationTravel {
   }
 
   /**
+   * Determine the travel type based on current and destination detent.
+   *
+   * @param {number} destinationDetent - Target detent index
+   * @returns {string} Travel type: "entering", "exiting", or "stepping"
+   */
+  determineTravelType(destinationDetent) {
+    const c = this.controller;
+
+    if (destinationDetent === 0) {
+      return "exiting";
+    } else if (c.activeDetent === 0) {
+      return "entering";
+    }
+    return "stepping";
+  }
+
+  /**
+   * Get the raw animation settings for a travel type.
+   *
+   * @param {string} travelType - Type of travel: "entering", "exiting", or "stepping"
+   * @returns {string|Object|null}
+   */
+  getAnimationSettingsForTravelType(travelType) {
+    const c = this.controller;
+
+    switch (travelType) {
+      case "entering":
+        return c.enteringAnimationSettings;
+      case "exiting":
+        return c.exitingAnimationSettings;
+      case "stepping":
+        return c.steppingAnimationSettings;
+      default:
+        return null;
+    }
+  }
+
+  /**
    * Get animation config for a travel to a destination detent.
    *
    * @param {number} destinationDetent - Target detent index
@@ -73,32 +111,13 @@ export default class AnimationTravel {
    * @returns {Object}
    */
   getAnimationConfigForTravel(destinationDetent, travelType = null) {
-    const c = this.controller;
-
     if (!travelType) {
-      if (destinationDetent === 0) {
-        travelType = "exiting";
-      } else if (c.activeDetent === 0) {
-        travelType = "entering";
-      } else {
-        travelType = "stepping";
-      }
+      travelType = this.determineTravelType(destinationDetent);
     }
 
-    let settings;
-    switch (travelType) {
-      case "entering":
-        settings = c.enteringAnimationSettings;
-        break;
-      case "exiting":
-        settings = c.exitingAnimationSettings;
-        break;
-      case "stepping":
-        settings = c.steppingAnimationSettings;
-        break;
-    }
-
+    const settings = this.getAnimationSettingsForTravelType(travelType);
     const resolved = this.resolveAnimationSettings(settings);
+
     if (resolved) {
       return resolved;
     }
@@ -131,8 +150,14 @@ export default class AnimationTravel {
       return;
     }
 
+    const travelType = this.determineTravelType(detentIndex);
     const resolvedConfig =
-      animationConfig || this.getAnimationConfigForTravel(detentIndex);
+      animationConfig ||
+      this.getAnimationConfigForTravel(detentIndex, travelType);
+
+    const settings = this.getAnimationSettingsForTravelType(travelType);
+    const trackToTravelOn =
+      (settings && typeof settings === "object" && settings.track) || c.tracks;
 
     travelToDetent({
       destinationDetent: detentIndex,
@@ -145,7 +170,7 @@ export default class AnimationTravel {
       travelAnimations: c.travelAnimations,
       belowSheetsInStack: c.belowSheetsInStack,
       touchGestureActive: c.touchGestureActive,
-      trackToTravelOn: c.tracks,
+      trackToTravelOn,
       animationConfig: resolvedConfig,
       setSegment: c.setSegment,
       setProgrammaticScrollOngoing: c.setProgrammaticScrollOngoing,

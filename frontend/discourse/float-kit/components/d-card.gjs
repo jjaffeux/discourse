@@ -27,34 +27,33 @@ class DCard extends Component {
       }}
 
       <DSheet.Portal @sheet={{sheet}}>
-        <DSheet.View class="d-card" @sheet={{sheet}}>
+        <DSheet.View
+          class="d-card"
+          @sheet={{sheet}}
+          @contentPlacement="center"
+          @tracks="top"
+          @enteringAnimationSettings={{hash
+            easing="spring"
+            stiffness=260
+            damping=20
+            mass=1
+          }}
+        >
           <DSheet.Backdrop
             @travelAnimation={{this.backdropTravelAnimation}}
             @themeColorDimming="auto"
             @sheet={{sheet}}
           />
-          <DSheet.Content class="d-card-content" @sheet={{sheet}}>
-            <DSheet.Handle
-              class="SheetWithDetent-handle"
-              @sheet={{sheet}}
-              @action={{if this.reachedLastDetent "dismiss" "step"}}
-            />
+          <DSheet.Content
+            @travelAnimation={{hash scale=(array 0.8 1)}}
+            class="d-card-content"
+            @sheet={{sheet}}
+          >
+            {{!-- <DSheet.Handle @sheet={{sheet}} /> --}}
 
             <DScrollRoot as |scroll|>
-              <scroll.View
-                contentPlacement="center"
-                tracks="top"
-                enteringAnimationSettings={{hash
-                  easing="spring"
-                  stiffness=260
-                  damping=20
-                  mass=1
-                }}
-              >
-                <scroll.Content
-                  &travelAnimation={{hash scale=(array 0.8 1)}}
-                  class="SheetWithDetent-scrollContent"
-                >
+              <scroll.View>
+                <scroll.Content>
                   {{#if (has-block "content")}}
                     {{yield
                       (hash Trigger=(component DSheet.Trigger sheet=sheet))
