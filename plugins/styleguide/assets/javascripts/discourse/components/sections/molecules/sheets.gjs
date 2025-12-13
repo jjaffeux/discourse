@@ -95,11 +95,11 @@ export default class Sheets extends Component {
         </:sample>
       </StyleguideComponent>
 
-      {{!-- <StyleguideComponent @tag="toast">
+      <StyleguideComponent @tag="toast">
         <:sample>
           <DButton @action={{this.showToast}}>Show toast</DButton>
         </:sample>
-      </StyleguideComponent> --}}
+      </StyleguideComponent>
 
       {{!-- <StyleguideComponent @tag="with-stacking">
         <:sample>

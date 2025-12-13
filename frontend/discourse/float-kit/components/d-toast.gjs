@@ -161,8 +161,8 @@ export default class DToast extends Component {
             }}
           >
             <DSheet.Content @sheet={{sheet}} class="d-toast-content">
-              <DSheetSpecialWrapperRoot @sheet={{sheet}}>
-                <DSheetSpecialWrapperContent
+              <DSheet.SpecialWrapper.Root @sheet={{sheet}}>
+                <DSheet.SpecialWrapper.Content
                   class="d-toast-inner-content"
                   {{on "pointerenter" this.handlePointerEnter}}
                   {{on "pointerleave" this.handlePointerLeave}}
@@ -174,8 +174,8 @@ export default class DToast extends Component {
                     ></div>
                   {{/if}}
                   <DDefaultToast @data={{@toast.options.data}} />
-                </DSheetSpecialWrapperContent>
-              </DSheetSpecialWrapperRoot>
+                </DSheet.SpecialWrapper.Content>
+              </DSheet.SpecialWrapper.Root>
             </DSheet.Content>
           </DSheet.View>
         </div>
