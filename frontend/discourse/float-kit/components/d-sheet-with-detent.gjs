@@ -84,10 +84,6 @@ class DSheetWithDetent extends Component {
 }
 
 class View extends Component {
-  get detents() {
-    return this.args.reachedLastDetent ? undefined : this.args.detents;
-  }
-
   @action
   handleTravelStatusChange(status) {
     if (status === "idleOutside") {
@@ -121,7 +117,7 @@ class View extends Component {
     <DSheet.View
       class="SheetWithDetent-view"
       @sheet={{@sheet}}
-      @detents={{this.detents}}
+      @detents={{@detents}}
       @swipeOvershoot={{false}}
       @onTravelStatusChange={{this.handleTravelStatusChange}}
       @onTravelRangeChange={{this.handleTravelRangeChange}}

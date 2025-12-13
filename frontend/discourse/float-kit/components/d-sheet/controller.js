@@ -1,7 +1,7 @@
+import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
 import { guidFor } from "@ember/object/internals";
 import { TrackedArray } from "@ember-compat/tracked-built-ins";
-import { tracked } from "@glimmer/tracking";
 import { createTweenFunction } from "./animation";
 import AnimationTravel from "./animation-travel";
 import { trackToPlacement } from "./config-normalizer";
@@ -774,7 +774,12 @@ export default class Controller {
    * @type {boolean}
    */
   get edgeAlignedNoOvershoot() {
-    return !this.isCenteredTrack && !this.swipeOvershoot;
+    const dismissalOrAlertDisabled =
+      this.role === "alertdialog" || !this.swipeDismissal;
+    return (
+      (!this.isCenteredTrack || dismissalOrAlertDisabled) &&
+      !this.swipeOvershoot
+    );
   }
 
   /**
