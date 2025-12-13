@@ -1731,6 +1731,14 @@ export default class Controller {
 
     const scrollTop = this.scrollContainer.scrollTop;
     const contentSize = this.dimensions.content?.travelAxis?.unitless ?? 1;
+    const scrollSize =
+      this.dimensions.scroll?.travelAxis?.unitless ?? contentSize;
+    const effectiveContentSize =
+      this.contentPlacement !== "center"
+        ? contentSize
+        : contentSize + (scrollSize - contentSize) / 2;
+
+    const edgePadding = this.dimensions.frontSpacerEdgePadding ?? 0;
     const snapAccelerator =
       this.dimensions.snapOutAccelerator?.travelAxis?.unitless ?? 0;
 
@@ -1739,7 +1747,24 @@ export default class Controller {
         ? (this.dimensions.progressValueAtDetents?.[1]?.exact ?? 0)
         : 0;
 
-    const rawProgress = (scrollTop - snapAccelerator) / contentSize;
+    let rawProgress;
+    const isTopOrLeft = this.tracks === "top" || this.tracks === "left";
+
+    if (this.contentPlacement === "center") {
+      if (isTopOrLeft) {
+        rawProgress =
+          (effectiveContentSize + edgePadding - scrollTop) /
+          effectiveContentSize;
+      } else {
+        rawProgress = (scrollTop - snapAccelerator) / effectiveContentSize;
+      }
+    } else {
+      if (isTopOrLeft) {
+        rawProgress = (contentSize + edgePadding - scrollTop) / contentSize;
+      } else {
+        rawProgress = (scrollTop - snapAccelerator) / contentSize;
+      }
+    }
 
     const clampedProgress = Math.max(
       firstDetentProgress,
