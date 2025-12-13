@@ -74,6 +74,8 @@ export default class Controller {
   @tracked detentsConfig = null;
   /** @type {boolean} */
   @tracked swipeOvershoot = true;
+  /** @type {boolean} */
+  @tracked backdropSwipeable = true;
   /** @type {TrackedArray<HTMLElement>} */
   detentMarkers = new TrackedArray();
 
@@ -677,6 +679,15 @@ export default class Controller {
     }
 
     return null;
+  }
+
+  /**
+   * Whether the scroll container should allow pointer events to pass through.
+   *
+   * @type {boolean}
+   */
+  get scrollContainerShouldBePassThrough() {
+    return !this.inertOutside && !this.backdropSwipeable;
   }
 
   /**
@@ -1827,10 +1838,12 @@ export default class Controller {
    * @param {HTMLElement} backdrop
    * @param {Object} travelAnimation
    * @param {Array|Function} travelAnimation.opacity - Opacity config
+   * @param {boolean} swipeable - Whether backdrop responds to swipe/click
    */
   @action
-  registerBackdrop(backdrop, travelAnimation = null) {
+  registerBackdrop(backdrop, travelAnimation = null, swipeable = true) {
     this.backdrop = backdrop;
+    this.backdropSwipeable = swipeable;
     backdrop.style.opacity = 0;
     backdrop.style.willChange = "opacity";
 

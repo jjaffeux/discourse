@@ -132,7 +132,8 @@ export default class View extends Component {
           "scroll-trap-root"
           (if @sheet.isHorizontalTrack "scroll-horizontal" "scroll-vertical")
           @sheet.tracks
-          (if (not @sheet.inertOutside) "no-pointer-events pass-through")
+          (if (not @sheet.inertOutside) "no-pointer-events")
+          (if @sheet.scrollContainerShouldBePassThrough "pass-through")
           (if
             @sheet.isScrollTrapActive
             "scroll-trap-active"
