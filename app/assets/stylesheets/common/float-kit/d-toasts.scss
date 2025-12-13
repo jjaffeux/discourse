@@ -3,9 +3,9 @@
   z-index: z("max");
 
   .d-toast {
-    --toast-padding-x: 0.75rem;
-    --toast-padding-top: 0.75rem;
-    --toast-padding-bottom: 2.75rem;
+    --toast-padding-x: var(--space-3);
+    --toast-padding-top: var(--space-3);
+    --toast-padding-bottom: var(--space-6);
     --toast-max-height: 90px;
     --toast-content-height: calc(
       max(env(safe-area-inset-top, 0px), var(--toast-padding-top)) +
@@ -18,11 +18,9 @@
     --toast-offset: 8px;
 
     @media (width >= 1000px) {
-      .Toast-view {
-        --toast-padding-x: 0.875rem;
-        --toast-padding-top: 0.875rem;
-        height: var(--toast-content-height);
-      }
+      --toast-padding-x: var(--space-4);
+      --toast-padding-top: var(--space-4);
+      height: var(--toast-content-height);
     }
 
     &-content {

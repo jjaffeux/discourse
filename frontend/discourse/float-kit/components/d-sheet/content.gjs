@@ -41,7 +41,7 @@ export default class Content extends Component {
         "scroll-trap-marker"
         "scroll-behavior-smooth"
         @sheet.tracks
-        @sheet.contentPlacement
+        @sheet.contentPlacementCssClass
         (if @sheet.swipeOutDisabled "swipe-out-disabled")
         (if (not @sheet.swipeOvershoot) "overshoot-inactive")
         (if (not @sheet.inertOutside) "no-pointer-events")
@@ -56,7 +56,7 @@ export default class Content extends Component {
       <div
         data-d-sheet={{concatClass
           "content-wrapper"
-          @sheet.contentPlacement
+          @sheet.contentPlacementCssClass
           (if @sheet.swipeOvershoot "overshoot-active" "overshoot-inactive")
           (if @sheet.swipeOutDisabled "swipe-out-disabled")
           (if
@@ -71,7 +71,7 @@ export default class Content extends Component {
         <div
           data-d-sheet={{concatClass
             "content"
-            @sheet.contentPlacement
+            @sheet.contentPlacementCssClass
             @sheet.tracks
             (if @scrollTrapRoot "scroll-trap-root")
             (if

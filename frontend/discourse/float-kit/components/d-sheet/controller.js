@@ -8,7 +8,13 @@ import {
   isStandaloneWithBlackTranslucent,
   isWebKit,
 } from "./browser-detection";
-import { trackToPlacement } from "./config-normalizer";
+import {
+  getDefaultTrackForPlacement,
+  normalizeTrack,
+  placementToCssClass,
+  trackToPlacement,
+  validateTracksPlacement,
+} from "./config-normalizer";
 import DimensionCalculator from "./dimensions-calculator";
 import DOMAttributes from "./dom-attributes";
 import FocusManagement from "./focus-management";
@@ -369,11 +375,71 @@ export default class Controller {
    * @param {Object} options.themeColorManager - Theme color manager
    */
   configure(options = {}) {
+    this.#configureRole(options);
+    this.#configureDetents(options);
+    this.#configureTracksAndPlacement(options);
+    this.#configureSwipe(options);
+    this.#configureAnimation(options);
+    this.#configureThemeColor(options);
+    this.#configureCallbacks(options);
+    this.#configureRegistries(options);
+  }
+
+  /**
+   * Merge an event handler option with the current value.
+   * Handles function values, object merging, and undefined.
+   *
+   * @param {Object} options - The options object
+   * @param {string} key - The option key to merge
+   * @param {Object|Function} currentValue - The current value
+   * @returns {Object|Function} The merged value
+   * @private
+   */
+  #mergeEventHandler(options, key, currentValue) {
+    const value = options[key];
+    if (value === undefined) {
+      return currentValue;
+    }
+    if (typeof value === "function") {
+      return value;
+    }
+    return { ...currentValue, ...value };
+  }
+
+  /**
+   * Assign option values to this instance if they are defined.
+   *
+   * @param {Object} options - The options object
+   * @param {Array<string>} keys - The keys to assign
+   * @private
+   */
+  #assignIfDefined(options, keys) {
+    for (const key of keys) {
+      if (options[key] !== undefined) {
+        this[key] = options[key];
+      }
+    }
+  }
+
+  /**
+   * Configure the ARIA role.
+   *
+   * @param {Object} options - Configuration options
+   * @private
+   */
+  #configureRole(options) {
     if (options.role !== undefined) {
       this.role = options.role;
     }
+  }
 
-    // Target detent (activeDetent takes priority over defaultActiveDetent)
+  /**
+   * Configure detent-related options.
+   *
+   * @param {Object} options - Configuration options
+   * @private
+   */
+  #configureDetents(options) {
     if (options.activeDetent !== undefined) {
       this.targetDetent = options.activeDetent;
     } else if (options.defaultActiveDetent !== undefined) {
@@ -383,126 +449,153 @@ export default class Controller {
     if ("detents" in options) {
       this.detentsConfig = options.detents;
     }
+  }
 
-    // Handle tracks first, then contentPlacement
-    // If tracks is provided but contentPlacement is not, derive placement from tracks
-    if (options.tracks !== undefined) {
-      this.tracks = options.tracks;
-      if (options.contentPlacement === undefined) {
-        this.contentPlacement = trackToPlacement(options.tracks);
-      }
-    }
-    if (options.contentPlacement !== undefined) {
+  /**
+   * Configure tracks and content placement.
+   * Handles all 4 Silk cases:
+   * 1. Only contentPlacement → derive tracks from contentPlacement
+   * 2. Only tracks → derive contentPlacement from tracks
+   * 3. Both provided → use both as-is (validation ensures compatibility)
+   * 4. Neither → keep defaults
+   *
+   * @param {Object} options - Configuration options
+   * @private
+   */
+  #configureTracksAndPlacement(options) {
+    const hasPlacement = options.contentPlacement !== undefined;
+    const hasTracks = options.tracks !== undefined;
+
+    if (hasPlacement && !hasTracks) {
+      // Case 1: Only contentPlacement provided
+      // Per Silk: tracks = contentPlacement (or "bottom" if center)
       this.contentPlacement = options.contentPlacement;
+      this.tracks =
+        options.contentPlacement === "center"
+          ? "bottom"
+          : options.contentPlacement;
+    } else if (hasTracks && !hasPlacement) {
+      // Case 2: Only tracks provided
+      // Per Silk: contentPlacement = tracks (or "center" for arrays)
+      this.tracks = normalizeTrack(options.tracks);
+      this.contentPlacement = trackToPlacement(options.tracks);
+    } else if (hasPlacement && hasTracks) {
+      // Case 3: Both provided - use as-is
+      this.contentPlacement = options.contentPlacement;
+      this.tracks = normalizeTrack(options.tracks);
     }
+    // Case 4: Neither provided - keep class defaults (tracks="bottom", contentPlacement="end")
 
-    // Swipe settings
-    if (options.swipe !== undefined) {
-      this.swipe = options.swipe;
-    }
-    if (options.swipeDismissal !== undefined) {
-      this.swipeDismissal = options.swipeDismissal;
-    }
-    if (options.swipeOvershoot !== undefined) {
-      this.swipeOvershoot = options.swipeOvershoot;
-    }
-    if (options.swipeTrap !== undefined) {
-      this.swipeTrap = options.swipeTrap;
-    }
-    if (options.nativeEdgeSwipePrevention !== undefined) {
-      this.nativeEdgeSwipePrevention = options.nativeEdgeSwipePrevention;
-    }
-    if (options.onSwipeFromEdgeToGoBackAttempt !== undefined) {
-      this.onSwipeFromEdgeToGoBackAttempt =
-        options.onSwipeFromEdgeToGoBackAttempt;
-    }
-    if (options.nativeFocusScrollPrevention !== undefined) {
-      this.nativeFocusScrollPrevention = options.nativeFocusScrollPrevention;
-    }
-    if (options.pageScroll !== undefined) {
-      this.pageScroll = options.pageScroll;
-    }
-    if (options.inertOutside !== undefined) {
-      this.inertOutside = options.inertOutside;
-    }
+    validateTracksPlacement(this.tracks, this.contentPlacement);
+  }
 
-    if (options.onClickOutside !== undefined) {
-      this.onClickOutside =
-        typeof options.onClickOutside === "object"
-          ? { ...this.onClickOutside, ...options.onClickOutside }
-          : options.onClickOutside;
-    }
-    if (options.onEscapeKeyDown !== undefined) {
-      this.onEscapeKeyDown =
-        typeof options.onEscapeKeyDown === "function"
-          ? options.onEscapeKeyDown
-          : { ...this.onEscapeKeyDown, ...options.onEscapeKeyDown };
-    }
-    if (options.onPresentAutoFocus !== undefined) {
-      this.onPresentAutoFocus =
-        typeof options.onPresentAutoFocus === "function"
-          ? options.onPresentAutoFocus
-          : { ...this.onPresentAutoFocus, ...options.onPresentAutoFocus };
-    }
-    if (options.onDismissAutoFocus !== undefined) {
-      this.onDismissAutoFocus =
-        typeof options.onDismissAutoFocus === "function"
-          ? options.onDismissAutoFocus
-          : { ...this.onDismissAutoFocus, ...options.onDismissAutoFocus };
-    }
+  /**
+   * Configure swipe and scroll behavior options.
+   *
+   * @param {Object} options - Configuration options
+   * @private
+   */
+  #configureSwipe(options) {
+    this.#assignIfDefined(options, [
+      "swipe",
+      "swipeDismissal",
+      "swipeOvershoot",
+      "swipeTrap",
+      "nativeEdgeSwipePrevention",
+      "onSwipeFromEdgeToGoBackAttempt",
+      "nativeFocusScrollPrevention",
+      "pageScroll",
+      "inertOutside",
+    ]);
+  }
 
-    if (options.enteringAnimationSettings !== undefined) {
-      this.enteringAnimationSettings = options.enteringAnimationSettings;
-    }
-    if (options.exitingAnimationSettings !== undefined) {
-      this.exitingAnimationSettings = options.exitingAnimationSettings;
-    }
-    if (options.steppingAnimationSettings !== undefined) {
-      this.steppingAnimationSettings = options.steppingAnimationSettings;
-    }
-    if (options.snapOutAcceleration !== undefined) {
-      this.snapOutAcceleration = options.snapOutAcceleration;
-    }
-    if (options.snapToEndDetentsAcceleration !== undefined) {
-      this.snapToEndDetentsAcceleration = options.snapToEndDetentsAcceleration;
-    }
+  /**
+   * Configure event handler options with proper merging.
+   *
+   * @param {Object} options - Configuration options
+   * @private
+   */
+  #configureEventHandlers(options) {
+    this.onClickOutside = this.#mergeEventHandler(
+      options,
+      "onClickOutside",
+      this.onClickOutside
+    );
+    this.onEscapeKeyDown = this.#mergeEventHandler(
+      options,
+      "onEscapeKeyDown",
+      this.onEscapeKeyDown
+    );
+    this.onPresentAutoFocus = this.#mergeEventHandler(
+      options,
+      "onPresentAutoFocus",
+      this.onPresentAutoFocus
+    );
+    this.onDismissAutoFocus = this.#mergeEventHandler(
+      options,
+      "onDismissAutoFocus",
+      this.onDismissAutoFocus
+    );
+  }
 
-    if (options.themeColorDimming !== undefined) {
-      this.themeColorDimming = options.themeColorDimming;
-    }
-    if (options.themeColorDimmingAlpha !== undefined) {
-      this.themeColorDimmingAlpha = options.themeColorDimmingAlpha;
-    }
+  /**
+   * Configure animation settings.
+   *
+   * @param {Object} options - Configuration options
+   * @private
+   */
+  #configureAnimation(options) {
+    this.#assignIfDefined(options, [
+      "enteringAnimationSettings",
+      "exitingAnimationSettings",
+      "steppingAnimationSettings",
+      "snapOutAcceleration",
+      "snapToEndDetentsAcceleration",
+    ]);
+  }
 
-    // Callbacks
-    if (options.onTravelStatusChange !== undefined) {
-      this.onTravelStatusChange = options.onTravelStatusChange;
-    }
-    if (options.onTravelRangeChange !== undefined) {
-      this.onTravelRangeChange = options.onTravelRangeChange;
-    }
-    if (options.onTravel !== undefined) {
-      this.onTravel = options.onTravel;
-    }
-    if (options.onTravelStart !== undefined) {
-      this.onTravelStart = options.onTravelStart;
-    }
-    if (options.onTravelEnd !== undefined) {
-      this.onTravelEnd = options.onTravelEnd;
-    }
-    if (options.onActiveDetentChange !== undefined) {
-      this.onActiveDetentChange = options.onActiveDetentChange;
-    }
+  /**
+   * Configure theme color settings.
+   *
+   * @param {Object} options - Configuration options
+   * @private
+   */
+  #configureThemeColor(options) {
+    this.#assignIfDefined(options, [
+      "themeColorDimming",
+      "themeColorDimmingAlpha",
+    ]);
+  }
 
-    if (options.sheetStackRegistry !== undefined) {
-      this.sheetStackRegistry = options.sheetStackRegistry;
-    }
-    if (options.sheetRegistry !== undefined) {
-      this.sheetRegistry = options.sheetRegistry;
-    }
-    if (options.themeColorManager !== undefined) {
-      this.themeColorManager = options.themeColorManager;
-    }
+  /**
+   * Configure travel and detent change callbacks.
+   *
+   * @param {Object} options - Configuration options
+   * @private
+   */
+  #configureCallbacks(options) {
+    this.#assignIfDefined(options, [
+      "onTravelStatusChange",
+      "onTravelRangeChange",
+      "onTravel",
+      "onTravelStart",
+      "onTravelEnd",
+      "onActiveDetentChange",
+    ]);
+  }
+
+  /**
+   * Configure registry references.
+   *
+   * @param {Object} options - Configuration options
+   * @private
+   */
+  #configureRegistries(options) {
+    this.#assignIfDefined(options, [
+      "sheetStackRegistry",
+      "sheetRegistry",
+      "themeColorManager",
+    ]);
   }
 
   /**
@@ -827,6 +920,16 @@ export default class Controller {
    */
   get isCenteredTrack() {
     return this.tracks === "horizontal" || this.tracks === "vertical";
+  }
+
+  /**
+   * Get the CSS class for content placement.
+   * Converts API values (top/bottom/left/right/center) to CSS values (start/end/center).
+   *
+   * @type {string}
+   */
+  get contentPlacementCssClass() {
+    return placementToCssClass(this.contentPlacement);
   }
 
   /**

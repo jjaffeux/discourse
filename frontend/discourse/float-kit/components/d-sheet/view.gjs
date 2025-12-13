@@ -17,7 +17,7 @@ import { scrollTrapModifier } from "./scroll-trap-modifier";
  * @component DSheetView
  * @param {Object} sheet - The sheet controller instance
  * @param {string} contentPlacement - Placement: "top" | "bottom" | "left" | "right" | "center"
- * @param {string} tracks - Track content travels on
+ * @param {string|Array<string>} tracks - Track content travels on: "top" | "bottom" | "left" | "right" | ["top", "bottom"] | ["left", "right"]
  * @param {Array<string>} detents - Detent values for the sheet
  * @param {boolean} swipe - Enable swipe gestures (default: true)
  * @param {boolean} swipeDismissal - Allow swipe to dismiss (default: true)

@@ -10,8 +10,6 @@ import DDefaultToast from "discourse/float-kit/components/d-default-toast";
 import concatClass from "discourse/helpers/concat-class";
 import TrackedMediaQuery from "discourse/lib/tracked-media-query";
 import DSheet from "./d-sheet";
-import DSheetSpecialWrapperContent from "./d-sheet/special-wrapper/content";
-import DSheetSpecialWrapperRoot from "./d-sheet/special-wrapper/root";
 
 export default class DToast extends Component {
   @service capabilities;
@@ -21,7 +19,6 @@ export default class DToast extends Component {
   @tracked presented = true;
 
   autoCloseTimeout = null;
-  contentPlacement = "start";
   largeViewport = new TrackedMediaQuery("(min-width: 1000px)");
   progressBar = null;
   progressAnimation = null;
@@ -34,14 +31,17 @@ export default class DToast extends Component {
     this.progressBar = null;
   }
 
-  get tracks() {
+  get contentPlacement() {
+    // Per Silk's toast pattern: only set contentPlacement, tracks is derived
+    // Large viewport/Android: "right" (slides from right)
+    // Small viewport: "top" (slides from top)
     return this.largeViewport.matches || this.capabilities.isAndroid
       ? "right"
       : "top";
   }
 
   get autoCloseDelay() {
-    return this.args.autoCloseDelay ?? 5000;
+    return this.args.autoCloseDelay ?? 55000;
   }
 
   @action
@@ -151,13 +151,12 @@ export default class DToast extends Component {
         <div role="status" aria-live="polite">
           <DSheet.View
             @sheet={{sheet}}
-            @contentPlacement="start"
-            @tracks={{this.tracks}}
+            @contentPlacement={{this.contentPlacement}}
             @inertOutside={{false}}
             @onClickOutside={{hash dismiss=false stopOverlayPropagation=false}}
             class={{concatClass
               "d-toast"
-              (if this.tracks (concat "d-toast-" this.tracks))
+              (concat "d-toast-" this.contentPlacement)
             }}
           >
             <DSheet.Content @sheet={{sheet}} class="d-toast-content">
