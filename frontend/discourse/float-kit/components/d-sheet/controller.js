@@ -379,6 +379,7 @@ export default class Controller {
     this.#configureDetents(options);
     this.#configureTracksAndPlacement(options);
     this.#configureSwipe(options);
+    this.#configureEventHandlers(options);
     this.#configureAnimation(options);
     this.#configureThemeColor(options);
     this.#configureCallbacks(options);
