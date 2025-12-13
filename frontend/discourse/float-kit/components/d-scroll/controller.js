@@ -1,5 +1,5 @@
-import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
+import { action } from "@ember/object";
 import { prefersReducedMotion } from "discourse/lib/utilities";
 
 /**
@@ -22,6 +22,18 @@ export default class ScrollController {
 
   /** @type {boolean} - Hides caret during scroll to avoid visual glitches */
   @tracked scrollOngoing = false;
+
+  /** @type {boolean} - Whether content overflows on x-axis */
+  @tracked overflowX = false;
+
+  /** @type {boolean} - Whether content overflows on y-axis */
+  @tracked overflowY = false;
+
+  /** @type {boolean} - Whether x-axis scroll trap is active */
+  @tracked trapX = false;
+
+  /** @type {boolean} - Whether y-axis scroll trap is active */
+  @tracked trapY = false;
 
   /** @type {HTMLElement|null} */
   startSpacerElement = null;
@@ -58,6 +70,9 @@ export default class ScrollController {
 
   /** @type {number|null} */
   scrollEndTimeout = null;
+
+  /** @type {ResizeObserver|null} */
+  resizeObserver = null;
 
   /**
    * @param {Object} options - Configuration options
@@ -130,6 +145,45 @@ export default class ScrollController {
   @action
   registerEndSpacer(element) {
     this.endSpacerElement = element;
+  }
+
+  /**
+   * Set up ResizeObserver to track overflow state.
+   * Per Silk (original-source.js lines 12777-12789).
+   */
+  @action
+  setupOverflowObserver() {
+    if (this.resizeObserver || !this.viewElement) {
+      return;
+    }
+
+    this.resizeObserver = new ResizeObserver(() => {
+      this.updateOverflowState();
+    });
+
+    this.resizeObserver.observe(this.viewElement);
+    if (this.contentElement) {
+      this.resizeObserver.observe(this.contentElement);
+    }
+
+    this.updateOverflowState();
+  }
+
+  /**
+   * Update overflow state based on current scroll dimensions.
+   */
+  @action
+  updateOverflowState() {
+    const el = this.viewElement;
+    if (!el) {
+      return;
+    }
+
+    if (this.axis === "y") {
+      this.overflowY = el.scrollHeight > el.clientHeight;
+    } else {
+      this.overflowX = el.scrollWidth > el.clientWidth;
+    }
   }
 
   /**
@@ -305,6 +359,10 @@ export default class ScrollController {
     if (this.scrollEndTimeout) {
       clearTimeout(this.scrollEndTimeout);
       this.scrollEndTimeout = null;
+    }
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
     }
     this.viewElement = null;
     this.contentElement = null;

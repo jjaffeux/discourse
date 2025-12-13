@@ -466,26 +466,66 @@ export function executeSheetTravel(config) {
   };
 
   const animateTravelCallbacks = (callback) => {
-    if (!travelAnimations.length && !stackingAnimations.length) {
+    if (!travelAnimations.length && !stackingAnimations.length && !onTravel) {
       callback();
       return;
     }
 
-    const initialProgress = mappedProgressValues[0];
-    for (let i = 0; i < travelAnimations.length; i++) {
-      travelAnimations[i].callback(initialProgress);
-    }
-
-    const useLinearEasingForStacking = supportsLinearEasing();
-    const easingValue = useLinearEasingForStacking
+    const useLinearEasingForAnimations = supportsLinearEasing();
+    const easingValue = useLinearEasingForAnimations
       ? `linear(${filteredProgressValues.join(",")})`
       : "linear";
 
-    const stackingAnimationPromises = [];
+    const allAnimationPromises = [];
+
+    travelAnimations
+      .filter((anim) => anim.config && anim.target)
+      .forEach((anim) => {
+        const travelProgressValues = useLinearEasingForAnimations
+          ? [
+              mappedProgressValues[0],
+              mappedProgressValues[mappedProgressValues.length - 1],
+            ]
+          : mappedProgressValues;
+        const keyframes = buildKeyframesFromConfig(
+          anim.config,
+          travelProgressValues,
+          useLinearEasingForAnimations
+        );
+
+        if (anim.config.transformOrigin) {
+          anim.target.style.transformOrigin = anim.config.transformOrigin;
+        }
+
+        const travelAnim = anim.target.animate(keyframes, {
+          duration,
+          easing: easingValue,
+          delay,
+        });
+
+        const promise = new Promise((resolve) => {
+          travelAnim.addEventListener("finish", function onFinish() {
+            const finalKeyframe = keyframes[keyframes.length - 1];
+            if (finalKeyframe) {
+              Object.entries(finalKeyframe).forEach(([property, value]) => {
+                const kebabProperty =
+                  (property.startsWith("webkit") || property.startsWith("moz")
+                    ? "-"
+                    : "") + property.replace(/[A-Z]/g, "-$&").toLowerCase();
+                anim.target.style.setProperty(kebabProperty, value);
+              });
+            }
+            travelAnim.removeEventListener("finish", onFinish);
+            resolve();
+          });
+        });
+        allAnimationPromises.push(promise);
+      });
+
     stackingAnimations
       .filter((anim) => anim.config && anim.target)
       .forEach((anim) => {
-        const stackingProgressValues = useLinearEasingForStacking
+        const stackingProgressValues = useLinearEasingForAnimations
           ? [
               mappedProgressValues[0],
               mappedProgressValues[mappedProgressValues.length - 1],
@@ -494,7 +534,7 @@ export function executeSheetTravel(config) {
         const keyframes = buildKeyframesFromConfig(
           anim.config,
           stackingProgressValues,
-          useLinearEasingForStacking,
+          useLinearEasingForAnimations,
           {
             reversedStackingIndex: anim.reversedStackingIndex,
             selfAndAboveTravelProgressSum: anim.selfAndAboveTravelProgressSum,
@@ -527,27 +567,22 @@ export function executeSheetTravel(config) {
             resolve();
           });
         });
-        stackingAnimationPromises.push(promise);
+        allAnimationPromises.push(promise);
       });
 
     let startTime = null;
-    let frameIndex = 0;
 
-    const callbackLoop = (timestamp) => {
+    const progressReportLoop = (timestamp) => {
       if (startTime === null) {
         startTime = timestamp;
       }
 
       const elapsed = timestamp - startTime;
-      frameIndex = Math.floor(elapsed);
+      const frameIndex = Math.floor(elapsed);
 
       if (frameIndex < progressValuesArray.length) {
         const progress =
           currentProgress + progressDelta * progressValuesArray[frameIndex];
-
-        for (let i = 0; i < travelAnimations.length; i++) {
-          travelAnimations[i].callback(progress);
-        }
 
         let currentSegment = [0, 0];
         if (progress < 0) {
@@ -582,21 +617,22 @@ export function executeSheetTravel(config) {
           });
         }
 
-        requestAnimationFrame(callbackLoop);
+        requestAnimationFrame(progressReportLoop);
       } else {
-        const finalProgress = targetProgress;
-
-        for (let i = 0; i < travelAnimations.length; i++) {
-          travelAnimations[i].callback(finalProgress);
-        }
-
-        Promise.all(stackingAnimationPromises).then(() => {
+        // Loop finished, wait for WAAPI animations to complete
+        Promise.all(allAnimationPromises).then(() => {
           callback();
         });
       }
     };
 
-    requestAnimationFrame(callbackLoop);
+    if (onTravel || dimensions?.progressValueAtDetents) {
+      requestAnimationFrame(progressReportLoop);
+    } else {
+      Promise.all(allAnimationPromises).then(() => {
+        callback();
+      });
+    }
   };
 
   requestAnimationFrame(() => {

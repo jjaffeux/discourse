@@ -132,6 +132,7 @@ export default class DScrollView extends Component {
     this.viewElement = element;
     this.configureController();
     this.controller.registerView(element);
+    this.controller.setupOverflowObserver();
   }
 
   @action
@@ -454,16 +455,31 @@ export default class DScrollView extends Component {
       parts.push("scroll-auto");
     }
 
-    if (this.gestureTrapHandler.effectiveXTrap) {
+    const trapX = this.gestureTrapHandler.effectiveXTrap;
+    const trapY = this.gestureTrapHandler.effectiveYTrap;
+
+    if (trapX) {
       parts.push("trap-x");
     }
-    if (this.gestureTrapHandler.effectiveYTrap) {
+    if (trapY) {
       parts.push("trap-y");
+    }
+
+    if (this.controller) {
+      this.controller.trapX = trapX;
+      this.controller.trapY = trapY;
     }
 
     const scrollGesture = this.args.scrollGesture ?? "auto";
     if (scrollGesture === false) {
       parts.push("no-scroll-gesture");
+    }
+
+    if (this.controller?.overflowX) {
+      parts.push("overflow-x");
+    }
+    if (this.controller?.overflowY) {
+      parts.push("overflow-y");
     }
 
     return parts.join(" ");
@@ -490,6 +506,38 @@ export default class DScrollView extends Component {
 
   get shouldPreventNativeFocus() {
     return this.args.nativeFocusScrollPrevention ?? true;
+  }
+
+  /**
+   * Compute tabIndex per Silk (original-source.js line 13580).
+   * tabIndex: f ? 0 : u ? -1 : void 0
+   * We use 0 as default since we don't have the focusable context from Sheet.
+   *
+   * @returns {string|undefined}
+   */
+  get computedTabIndex() {
+    if (this.shouldPreventNativeFocus) {
+      return "-1";
+    }
+    return "0";
+  }
+
+  /**
+   * Compute role per Silk (original-source.js line 13581).
+   * role: m && !h ? void 0 : "region"
+   * When pageScroll is true and nativePageScrollReplacement is false, omit role.
+   *
+   * @returns {string|undefined}
+   */
+  get computedRole() {
+    const pageScroll = this.args.pageScroll ?? false;
+    const nativePageScrollReplacement =
+      this.args.nativePageScrollReplacement ?? false;
+
+    if (pageScroll && !nativePageScrollReplacement) {
+      return undefined;
+    }
+    return "region";
   }
 
   get axis() {
@@ -530,8 +578,8 @@ export default class DScrollView extends Component {
       <div
         data-d-scroll={{this.scrollContainerDataAttribute}}
         style={{this.combinedStyle}}
-        tabindex="0"
-        role="region"
+        tabindex={{this.computedTabIndex}}
+        role={{this.computedRole}}
         {{this.registerElement
           onRegister=this.handleElementRegister
           onScroll=this.onScrollEvent

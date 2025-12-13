@@ -2,7 +2,6 @@ import Component from "@glimmer/component";
 import { array, hash } from "@ember/helper";
 import { action } from "@ember/object";
 import { guidFor } from "@ember/object/internals";
-import DScrollRoot from "./d-scroll/root";
 import DSheet from "./d-sheet";
 
 class DCard extends Component {
@@ -51,7 +50,7 @@ class DCard extends Component {
           >
             {{!-- <DSheet.Handle @sheet={{sheet}} /> --}}
 
-            <DScrollRoot as |scroll|>
+            <DSheet.Scroll.Root as |scroll|>
               <scroll.View>
                 <scroll.Content>
                   {{#if (has-block "content")}}
@@ -66,7 +65,7 @@ class DCard extends Component {
                   {{/if}}
                 </scroll.Content>
               </scroll.View>
-            </DScrollRoot>
+            </DSheet.Scroll.Root>
           </DSheet.Content>
         </DSheet.View>
       </DSheet.Portal>

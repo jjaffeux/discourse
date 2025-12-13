@@ -1,6 +1,6 @@
 .d-card {
   --card-radius: var(--d-border-radius);
-  z-index: 1;
+  z-index: z("max");
 }
 
 .d-card-content {

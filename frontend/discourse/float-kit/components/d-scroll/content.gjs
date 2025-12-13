@@ -1,3 +1,4 @@
+import Component from "@glimmer/component";
 import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 
 /**
@@ -6,16 +7,41 @@ import didInsert from "@ember/render-modifiers/modifiers/did-insert";
  * This component represents the content that moves as scroll occurs.
  *
  * @component
- * @param {Object} controller - The scroll controller instance
+ * @param {Object} @controller - The scroll controller instance
  */
-const DScrollContent = <template>
-  <div
-    data-d-scroll="content"
-    {{didInsert @controller.registerContent}}
-    ...attributes
-  >
-    {{yield}}
-  </div>
-</template>;
+export default class DScrollContent extends Component {
+  /**
+   * Build data-d-scroll attribute value for content element.
+   *
+   * @returns {string}
+   */
+  get dataAttribute() {
+    const parts = ["content"];
+    const controller = this.args.controller;
 
-export default DScrollContent;
+    if (controller?.overflowX) {
+      parts.push("overflow-x");
+    }
+    if (controller?.overflowY) {
+      parts.push("overflow-y");
+    }
+    if (controller?.trapX) {
+      parts.push("trap-x");
+    }
+    if (controller?.trapY) {
+      parts.push("trap-y");
+    }
+
+    return parts.join(" ");
+  }
+
+  <template>
+    <div
+      data-d-scroll={{this.dataAttribute}}
+      {{didInsert @controller.registerContent}}
+      ...attributes
+    >
+      {{yield}}
+    </div>
+  </template>
+}

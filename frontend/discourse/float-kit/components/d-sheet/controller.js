@@ -154,15 +154,6 @@ export default class Controller {
   /** @type {Array<Object>} Registered stacking animation callbacks */
   stackingAnimations = [];
 
-  /** @type {Animation|null} Current backdrop Web Animations API animation */
-  backdropAnimation = null;
-
-  /** @type {number|null} Current backdrop rAF loop ID for travel callbacks */
-  backdropRafId = null;
-
-  /** @type {Function|null} Backdrop opacity function from travelAnimation */
-  backdropOpacityFn = null;
-
   /** @type {Array<Controller>} Sheets below this one in the stack */
   belowSheetsInStack = [];
 
@@ -994,10 +985,6 @@ export default class Controller {
       this.updateAnimationActiveAttribute(status);
       this.handleStackingStateChange(status);
 
-      if (status === "travellingOut" && !this.closingWithoutAnimation) {
-        this.animateBackdrop("out");
-      }
-
       this.onTravelStatusChange?.(status);
     }
   }
@@ -1326,8 +1313,6 @@ export default class Controller {
   handleClosedPending() {
     if (this.closingWithoutAnimation) {
       this.stateHelper.beginClosingImmediate(true);
-      // Call updateTravelStatus BEFORE resetting the flag so animateBackdrop
-      // can check it and skip the animation for swipe-out dismissal
       this.updateTravelStatus("travellingOut");
       this.closingWithoutAnimation = false;
       this.stateHelper.goOut();
@@ -1427,9 +1412,6 @@ export default class Controller {
 
         requestAnimationFrame(() => {
           this.handleStateTransition({ type: "PREPARED" });
-          if (this.backdrop && this.travelStatus === "travellingIn") {
-            this.animateBackdrop("in");
-          }
           this.animationTravel.animateToDetent(this.targetDetent);
         });
       }
@@ -1957,7 +1939,7 @@ export default class Controller {
       typeof travelAnimation === "object" &&
       travelAnimation.opacity === null;
 
-    if (!isDisabled) {
+    if (!isDisabled && this.effectiveThemeColorDimming) {
       const opacityFn =
         typeof travelAnimation === "function"
           ? travelAnimation
@@ -1965,104 +1947,25 @@ export default class Controller {
             ? travelAnimation.opacity
             : ({ progress }) => Math.min(progress * 0.33, 0.33);
 
-      this.backdropOpacityFn = opacityFn;
+      const computedStyle = window.getComputedStyle(backdrop);
+      const backgroundColor = computedStyle.backgroundColor || "rgb(0, 0, 0)";
 
-      if (this.effectiveThemeColorDimming) {
-        const computedStyle = window.getComputedStyle(backdrop);
-        const backgroundColor = computedStyle.backgroundColor || "rgb(0, 0, 0)";
+      this.themeColorDimmingOverlay = this.registerThemeColorDimmingOverlay({
+        color: backgroundColor,
+        alpha: 0,
+      });
 
-        this.themeColorDimmingOverlay = this.registerThemeColorDimmingOverlay({
-          color: backgroundColor,
-          alpha: 0,
-        });
-
-        this.travelAnimations.push({
-          target: backdrop,
-          isThemeColorDimming: true,
-          callback: (progress) => {
-            const opacity = opacityFn({ progress });
-            if (this.themeColorDimmingOverlay) {
-              this.themeColorDimmingOverlay.updateAlpha(opacity);
-            }
-          },
-        });
-      }
+      this.travelAnimations.push({
+        target: backdrop,
+        isThemeColorDimming: true,
+        callback: (progress) => {
+          const opacity = opacityFn({ progress });
+          if (this.themeColorDimmingOverlay) {
+            this.themeColorDimmingOverlay.updateAlpha(opacity);
+          }
+        },
+      });
     }
-
-    this.animateBackdrop("out");
-  }
-
-  /**
-   * Animate the backdrop using Web Animations API.
-   * Called when travel status changes to travellingIn or travellingOut.
-   *
-   * @param {string} direction - "in" or "out"
-   * @param {number} duration - Animation duration in ms
-   * @private
-   */
-  animateBackdrop(direction, duration = 500) {
-    if (!this.backdrop || !this.backdropOpacityFn) {
-      return;
-    }
-
-    const startProgress =
-      direction === "in"
-        ? 0
-        : (this.dimensions?.progressValueAtDetents?.[this.activeDetent]
-            ?.exact ?? 1);
-    const endProgress =
-      direction === "in"
-        ? (this.dimensions?.progressValueAtDetents?.[this.targetDetent]
-            ?.exact ?? 1)
-        : 0;
-
-    let keyframes;
-    if (direction === "in") {
-      const targetOpacity = this.backdropOpacityFn({ progress: endProgress });
-      keyframes = [{ opacity: 0 }, { opacity: targetOpacity }];
-    } else {
-      const currentOpacity = parseFloat(this.backdrop.style.opacity) || 0;
-      keyframes = [{ opacity: currentOpacity }, { opacity: 0 }];
-    }
-
-    this.backdropAnimation?.cancel();
-    if (this.backdropRafId) {
-      cancelAnimationFrame(this.backdropRafId);
-    }
-
-    const animation = this.backdrop.animate(keyframes, {
-      duration,
-      easing: "cubic-bezier(0.25, 0.1, 0.25, 1)",
-      fill: "forwards",
-    });
-
-    const startTime = performance.now();
-    const runTravelCallbacks = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const t = Math.min(elapsed / duration, 1);
-      const progress = startProgress + (endProgress - startProgress) * t;
-
-      this.aggregatedTravelCallback(progress);
-
-      if (t < 1) {
-        this.backdropRafId = requestAnimationFrame(runTravelCallbacks);
-      }
-    };
-    this.backdropRafId = requestAnimationFrame(runTravelCallbacks);
-
-    animation.onfinish = () => {
-      if (this.backdropRafId) {
-        cancelAnimationFrame(this.backdropRafId);
-      }
-      this.aggregatedTravelCallback(endProgress);
-
-      if (direction === "in" && this.backdrop?.isConnected) {
-        animation.commitStyles();
-      }
-      animation.cancel();
-    };
-
-    this.backdropAnimation = animation;
   }
 
   /**

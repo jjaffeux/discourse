@@ -1,3 +1,6 @@
+import ScrollContent from "./d-scroll/content";
+import ScrollRoot from "./d-scroll/root";
+import ScrollView from "./d-scroll/view";
 import Backdrop from "./d-sheet/backdrop";
 import BleedingBackground from "./d-sheet/bleeding-background";
 import Content from "./d-sheet/content";
@@ -23,6 +26,11 @@ const DSheet = {
   SpecialWrapper: {
     Root: SpecialWrapperRoot,
     Content: SpecialWrapperContent,
+  },
+  Scroll: {
+    Root: ScrollRoot,
+    View: ScrollView,
+    Content: ScrollContent,
   },
 };
 
