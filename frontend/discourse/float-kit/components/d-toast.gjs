@@ -32,9 +32,6 @@ export default class DToast extends Component {
   }
 
   get contentPlacement() {
-    // Per Silk's toast pattern: only set contentPlacement, tracks is derived
-    // Large viewport/Android: "right" (slides from right)
-    // Small viewport: "top" (slides from top)
     return this.largeViewport.matches || this.capabilities.isAndroid
       ? "right"
       : "top";

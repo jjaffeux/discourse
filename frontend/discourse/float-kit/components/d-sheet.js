@@ -2,6 +2,7 @@ import Backdrop from "./d-sheet/backdrop";
 import BleedingBackground from "./d-sheet/bleeding-background";
 import Content from "./d-sheet/content";
 import Handle from "./d-sheet/handle";
+import Outlet from "./d-sheet/outlet";
 import Portal from "./d-sheet/portal";
 import Root from "./d-sheet/root";
 import SpecialWrapperContent from "./d-sheet/special-wrapper/content";
@@ -14,6 +15,7 @@ const DSheet = {
   Backdrop,
   BleedingBackground,
   Handle,
+  Outlet,
   Portal,
   View,
   Content,

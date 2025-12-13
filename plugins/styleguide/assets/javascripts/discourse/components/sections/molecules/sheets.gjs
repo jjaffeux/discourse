@@ -6,6 +6,7 @@ import { action } from "@ember/object";
 import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
 import DButton from "discourse/components/d-button";
+import DCard from "discourse/float-kit/components/d-card";
 import DSheet from "discourse/float-kit/components/d-sheet";
 import DSheetBottom from "discourse/float-kit/components/d-sheet-bottom";
 import DSheetWithDetent from "discourse/float-kit/components/d-sheet-with-detent";
@@ -92,6 +93,21 @@ export default class Sheets extends Component {
               </sheet.Trigger>
             </:content>
           </DSheetWithDetent>
+        </:sample>
+      </StyleguideComponent>
+
+      <StyleguideComponent @tag="card">
+        <:sample>
+          <DCard>
+            <:root as |sheet|>
+              <sheet.Trigger @action="present">
+                Present
+              </sheet.Trigger>
+            </:root>
+            <:content as |sheet|>
+              Card
+            </:content>
+          </DCard>
         </:sample>
       </StyleguideComponent>
 

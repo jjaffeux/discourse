@@ -4,15 +4,22 @@ import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import { htmlSafe } from "@ember/template";
 import concatClass from "discourse/helpers/concat-class";
 import { eq, not } from "discourse/truth-helpers";
+import outletAnimationModifier from "./outlet-animation-modifier";
 import { scrollTrapModifier } from "./scroll-trap-modifier";
-import stackingAnimationModifier from "./stacking-animation-modifier";
 
 /**
  * Content component for d-sheet - renders the scrollable content area with detent markers.
  *
  * @component Content
  * @param {Object} sheet - The sheet controller instance
- * @param {Object} stackingAnimation - Custom stacking animation config (optional)
+ * @param {Object} [travelAnimation] - Travel animation config. Properties can be:
+ *   - [start, end] array for keyframe tweening
+ *   - ({ progress, tween }) => value function
+ *   - string for static values
+ *   - null to disable
+ *   Supports: opacity, visibility, transforms (translate, scale, rotate, skew variants),
+ *   and any CSS property
+ * @param {Object} [stackingAnimation] - Custom stacking animation config (same format as travelAnimation)
  * @param {boolean} scrollTrapRoot - Whether content is a scroll trap root
  * @param {string} scrollTrapAxis - Axis for scroll trap ("horizontal" or "vertical")
  */
@@ -86,7 +93,7 @@ export default class Content extends Component {
           }}
           ...attributes
           {{didInsert @sheet.registerContent}}
-          {{stackingAnimationModifier @sheet @stackingAnimation}}
+          {{outletAnimationModifier @sheet @travelAnimation @stackingAnimation}}
           {{scrollTrapModifier @scrollTrapRoot}}
         >
           {{yield}}

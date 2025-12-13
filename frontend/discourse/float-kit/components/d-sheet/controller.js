@@ -1938,10 +1938,11 @@ export default class Controller {
 
   /**
    * Register backdrop element with optional custom travel animation.
+   * Note: Travel animations are now handled by Outlet component via outlet-animation-modifier.
+   * This method only handles element registration, swipeable state, and theme color dimming.
    *
    * @param {HTMLElement} backdrop
-   * @param {Object} travelAnimation
-   * @param {Array|Function} travelAnimation.opacity - Opacity config
+   * @param {Object} travelAnimation - Travel animation config (used for theme color dimming)
    * @param {boolean} swipeable - Whether backdrop responds to swipe/click
    */
   @action
@@ -1951,48 +1952,44 @@ export default class Controller {
     backdrop.style.opacity = 0;
     backdrop.style.willChange = "opacity";
 
-    // Check if opacity is explicitly disabled via { opacity: null }
     const isDisabled =
       travelAnimation &&
       typeof travelAnimation === "object" &&
       travelAnimation.opacity === null;
 
-    if (isDisabled) {
-      return;
+    if (!isDisabled) {
+      const opacityFn =
+        typeof travelAnimation === "function"
+          ? travelAnimation
+          : typeof travelAnimation?.opacity === "function"
+            ? travelAnimation.opacity
+            : ({ progress }) => Math.min(progress * 0.33, 0.33);
+
+      this.backdropOpacityFn = opacityFn;
+
+      if (this.effectiveThemeColorDimming) {
+        const computedStyle = window.getComputedStyle(backdrop);
+        const backgroundColor = computedStyle.backgroundColor || "rgb(0, 0, 0)";
+
+        this.themeColorDimmingOverlay = this.registerThemeColorDimmingOverlay({
+          color: backgroundColor,
+          alpha: 0,
+        });
+
+        this.travelAnimations.push({
+          target: backdrop,
+          isThemeColorDimming: true,
+          callback: (progress) => {
+            const opacity = opacityFn({ progress });
+            if (this.themeColorDimmingOverlay) {
+              this.themeColorDimmingOverlay.updateAlpha(opacity);
+            }
+          },
+        });
+      }
     }
-
-    const opacityFn =
-      typeof travelAnimation === "function"
-        ? travelAnimation
-        : typeof travelAnimation?.opacity === "function"
-          ? travelAnimation.opacity
-          : ({ progress }) => Math.min(progress * 0.33, 0.33);
-
-    this.backdropOpacityFn = opacityFn;
-
-    this.travelAnimations.push({
-      target: backdrop,
-      callback: (progress) => {
-        const opacity = opacityFn({ progress });
-        backdrop.style.opacity = opacity;
-
-        if (this.themeColorDimmingOverlay) {
-          this.themeColorDimmingOverlay.updateAlpha(opacity);
-        }
-      },
-    });
 
     this.animateBackdrop("out");
-
-    if (this.effectiveThemeColorDimming) {
-      const computedStyle = window.getComputedStyle(backdrop);
-      const backgroundColor = computedStyle.backgroundColor || "rgb(0, 0, 0)";
-
-      this.themeColorDimmingOverlay = this.registerThemeColorDimmingOverlay({
-        color: backgroundColor,
-        alpha: 0,
-      });
-    }
   }
 
   /**
@@ -2084,6 +2081,27 @@ export default class Controller {
       const index = this.stackingAnimations.indexOf(animation);
       if (index !== -1) {
         this.stackingAnimations.splice(index, 1);
+      }
+    };
+  }
+
+  /**
+   * Register a travel animation callback.
+   *
+   * @param {Object} animation - Animation config with callback
+   * @param {Function} animation.callback - Called with (progress) during travel
+   * @param {HTMLElement} animation.target - Target element for the animation
+   * @param {Object} animation.config - Animation configuration object
+   * @returns {Function} Unregister function
+   */
+  @action
+  registerTravelAnimation(animation) {
+    this.travelAnimations.push(animation);
+
+    return () => {
+      const index = this.travelAnimations.indexOf(animation);
+      if (index !== -1) {
+        this.travelAnimations.splice(index, 1);
       }
     };
   }
