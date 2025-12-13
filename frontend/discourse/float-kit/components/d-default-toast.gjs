@@ -1,10 +1,10 @@
 import { concat, fn, hash } from "@ember/helper";
-import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import { htmlSafe } from "@ember/template";
 import DButton from "discourse/components/d-button";
 import concatClass from "discourse/helpers/concat-class";
 import icon from "discourse/helpers/d-icon";
 import { or } from "discourse/truth-helpers";
+import DSheet from "./d-sheet";
 
 const DDefaultToast = <template>
   <div
@@ -54,7 +54,11 @@ const DDefaultToast = <template>
       {{/if}}
     </div>
     <div class="fk-d-default-toast__close-container">
-      <DButton class="btn-transparent" @icon="xmark" @action={{@close}} />
+      <DSheet.Trigger
+        @sheet={{@sheet}}
+        @action="dismiss"
+        class="btn-transparent"
+      >{{icon "xmark"}}</DSheet.Trigger>
     </div>
   </div>
 </template>;

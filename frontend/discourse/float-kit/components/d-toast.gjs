@@ -172,7 +172,10 @@ export default class DToast extends Component {
                       {{didInsert this.registerProgressBar}}
                     ></div>
                   {{/if}}
-                  <DDefaultToast @data={{@toast.options.data}} />
+                  <DDefaultToast
+                    @data={{@toast.options.data}}
+                    @sheet={{sheet}}
+                  />
                 </DSheet.SpecialWrapper.Content>
               </DSheet.SpecialWrapper.Root>
             </DSheet.Content>
