@@ -11,38 +11,28 @@ export default class SheetRegistry extends Service {
   /** @type {Map<string, Object>} */
   sheets = new Map();
 
-  /** @type {Map<string, Object>} Root components registered by componentId */
-  #rootsByComponentId = new Map();
-
   /** @type {Object[]} */
   sheetsInOrder = [];
-
   /** @type {Function|null} */
   clickOutsideCleanup = null;
-
   /** @type {Function|null} */
   escapeKeyCleanup = null;
-
   /** @type {EventTarget|null} */
   pointerDownTarget = null;
-
   /** @type {number} */
   scrollLockCount = 0;
-
   /** @type {[number, number]} */
   savedScrollPosition = [0, 0];
-
   /** @type {Function|null} */
   scrollLockCleanup = null;
-
   /** @type {boolean} */
   isResizing = false;
-
   /** @type {number|null} */
   resizeTimeout = null;
-
   /** @type {Set<string>} */
   controllersWithScrollLock = new Set();
+  /** @type {Map<string, Object>} Root components registered by componentId */
+  #rootsByComponentId = new Map();
 
   /** @type {Function|null} */
   inertCleanup = null;
@@ -527,6 +517,35 @@ export default class SheetRegistry extends Service {
   }
 
   /**
+   * Processes a behavior handler that can be either an object or a function.
+   *
+   * @param {Object|Function} handler - The handler (object or function with changeDefault)
+   * @param {Object} defaultBehavior - The default behavior object
+   * @param {Event} nativeEvent - The native DOM event
+   * @returns {Object} The resolved behavior object
+   */
+  processBehaviorHandler(handler, defaultBehavior, nativeEvent) {
+    let result = { ...defaultBehavior };
+    if (handler) {
+      if (typeof handler === "function") {
+        const customEvent = {
+          ...defaultBehavior,
+          nativeEvent,
+          changeDefault(changedBehavior) {
+            result = { ...defaultBehavior, ...changedBehavior };
+            Object.assign(this, changedBehavior);
+          },
+        };
+        customEvent.changeDefault = customEvent.changeDefault.bind(customEvent);
+        handler(customEvent);
+      } else {
+        result = { ...defaultBehavior, ...handler };
+      }
+    }
+    return result;
+  }
+
+  /**
    * Handles Escape key for stacked sheets.
    * Processes from topmost sheet down, respecting stopOverlayPropagation.
    *
@@ -556,20 +575,15 @@ export default class SheetRegistry extends Service {
       return;
     }
 
-    let behavior = sheet.onEscapeKeyDown;
-
-    if (typeof behavior === "function") {
-      const customEvent = {
-        nativeEvent: event,
-        changeDefault: (changedBehavior) => {
-          behavior = { ...sheet.onEscapeKeyDown, ...changedBehavior };
-        },
-      };
-      behavior(customEvent);
-      if (typeof behavior === "function") {
-        behavior = sheet.onEscapeKeyDown;
-      }
-    }
+    const behavior = this.processBehaviorHandler(
+      sheet.onEscapeKeyDown,
+      {
+        nativePreventDefault: true,
+        dismiss: true,
+        stopOverlayPropagation: true,
+      },
+      event
+    );
 
     if (behavior.nativePreventDefault !== false) {
       event.preventDefault();
@@ -643,13 +657,17 @@ export default class SheetRegistry extends Service {
       (isOutsideView && !isInsideContent);
 
     if (isClickOutside) {
-      const { dismiss, stopOverlayPropagation } = sheet.onClickOutside;
+      const behavior = this.processBehaviorHandler(
+        sheet.onClickOutside,
+        { dismiss: true, stopOverlayPropagation: true },
+        event
+      );
 
-      if (dismiss) {
+      if (behavior.dismiss && sheet.role !== "alertdialog") {
         sheet.close();
       }
 
-      if (!stopOverlayPropagation && layerIndex > 0) {
+      if (!behavior.stopOverlayPropagation && layerIndex > 0) {
         this.processClickOnLayer(layerIndex - 1, event);
       }
     }
