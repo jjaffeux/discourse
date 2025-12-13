@@ -605,7 +605,6 @@ html[data-d-sheet-native-page-scroll-replaced="false"]:has(
 [data-d-sheet~="scroll-container"][data-d-sheet~="vertical"] {
   height: var(--d-sheet-scroll-container-height);
   scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
   flex-direction: column;
   width: 100%;
   overflow-x: hidden;
@@ -618,7 +617,6 @@ html[data-d-sheet-native-page-scroll-replaced="false"]:has(
 [data-d-sheet~="scroll-container"][data-d-sheet~="horizontal"] {
   width: var(--d-sheet-scroll-container-height);
   scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
   flex-direction: row;
   height: 100%;
   overflow-y: hidden;

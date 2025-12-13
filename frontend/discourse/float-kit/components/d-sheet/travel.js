@@ -433,14 +433,12 @@ export function executeSheetTravel(config) {
       scrollContainer.scrollTo({
         left: finalScrollPosition,
         top: 0,
-        behavior: "instant",
       });
       scrollContainer.scrollLeft = finalScrollPosition;
     } else {
       scrollContainer.scrollTo({
         left: 0,
         top: finalScrollPosition,
-        behavior: "instant",
       });
       scrollContainer.scrollTop = finalScrollPosition;
     }
