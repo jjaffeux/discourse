@@ -17,6 +17,7 @@ import SheetActionBase from "./sheet-action-base";
  *   - { forceFocus?: boolean, runAction?: boolean }
  *   - Or function receiving event with changeDefault method
  *   Default: { forceFocus: true, runAction: true }
+ * @param {Function} onClick - Called after onPress behavior/action handling
  */
 export default class Trigger extends SheetActionBase {
   /**
