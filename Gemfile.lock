@@ -364,8 +364,9 @@ GEM
     oj (3.16.12)
       bigdecimal (>= 3.0)
       ostruct (>= 0.2)
-    omniauth (2.1.2)
+    omniauth (2.1.4)
       hashie (>= 3.4.6)
+      logger
       rack (>= 2.2.3)
       rack-protection
     omniauth-facebook (9.0.0)
@@ -1105,7 +1106,7 @@ CHECKSUMS
   oauth2 (1.4.11) sha256=6739fcc8872bc94f476b0cae3e8bd78a56d8364b1b79b0757794c25e152d5c10
   octokit (5.6.1) sha256=48efb2c2aa83c2c394358f073d35ad71d4ac0f14870cd00ceebd3ef3949fe495
   oj (3.16.12) sha256=ad9fad6a06dabcf4cfe6a420690a4375377685c16eee0ae88e8d38a43ed7b556
-  omniauth (2.1.2) sha256=def03277298b8f8a5d3ff16cdb2eb5edb9bffed60ee7dda24cc0c89b3ae6a0ce
+  omniauth (2.1.4) sha256=42a05b0496f0d22e1dd85d42aaf602f064e36bb47a6826a27ab55e5ba608763c
   omniauth-facebook (9.0.0) sha256=440ad8dd9edc9ebec1fd6607b787667c8ce70d2969c2030d7e9ca42a271af854
   omniauth-github (2.0.0) sha256=1ca26576125a97e27d3f8dc39cd98853d7382dd0fc04a40d3b9ec345ee378649
   omniauth-google-oauth2 (1.0.1) sha256=2ed7a4ac8d98ab824c95e0d6760784abf1248262b3ba2ab56ec7ebd7074d12a6
