@@ -201,7 +201,7 @@ export default class DModal extends Component {
       event.preventDefault();
     }
 
-    if (event.key === "Escape" && this.dismissable) {
+    if (event.key === "Escape" && this.dismissable && !event.defaultPrevented) {
       event.stopPropagation();
       this.closeModal(CLOSE_INITIATED_BY_ESC);
     }
