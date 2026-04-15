@@ -36,7 +36,7 @@ importers:
         version: 7.29.0(@babel/core@7.29.0)
       '@discourse/lint-configs':
         specifier: ^2.44.0
-        version: 2.44.0(jiti@2.6.1)(postcss@8.5.8)(prettier@3.8.1)
+        version: 2.44.0(jiti@2.6.1)(postcss@8.5.10)(prettier@3.8.1)
       '@discourse/moment-timezone-names-translations':
         specifier: ^1.0.0
         version: 1.0.0
@@ -114,7 +114,7 @@ importers:
     devDependencies:
       '@discourse/lint-configs':
         specifier: ^2.43.0
-        version: 2.44.0(jiti@2.6.1)(postcss@8.5.8)(prettier@3.8.1)
+        version: 2.44.0(jiti@2.6.1)(postcss@8.5.10)(prettier@3.8.1)
       prettier:
         specifier: 3.8.1
         version: 3.8.1
@@ -132,7 +132,7 @@ importers:
         version: 7.29.2
       '@csstools/postcss-light-dark-function':
         specifier: ^3.0.0
-        version: 3.0.0(postcss@8.5.8)
+        version: 3.0.0(postcss@8.5.10)
       '@rollup/browser':
         specifier: ^4.59.0
         version: 4.59.0
@@ -144,7 +144,7 @@ importers:
         version: 3.0.0
       autoprefixer:
         specifier: ^10.4.27
-        version: 10.4.27(postcss@8.5.8)
+        version: 10.4.27(postcss@8.5.10)
       babel-plugin-ember-template-compilation:
         specifier: ^4.0.0
         version: 4.0.0
@@ -188,17 +188,17 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       postcss:
-        specifier: ^8.5.6
-        version: 8.5.8
+        specifier: ^8.5.9
+        version: 8.5.10
       postcss-js:
         specifier: ^5.1.0
-        version: 5.1.0(postcss@8.5.8)
+        version: 5.1.0(postcss@8.5.10)
       postcss-media-minmax:
         specifier: ^5.0.0
-        version: 5.0.0(postcss@8.5.8)
+        version: 5.0.0(postcss@8.5.10)
       postcss-nesting:
         specifier: ^14.0.0
-        version: 14.0.0(postcss@8.5.8)
+        version: 14.0.0(postcss@8.5.10)
       readable-stream:
         specifier: ^4.7.0
         version: 4.7.0
@@ -782,259 +782,259 @@ importers:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/chat:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/checklist:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-adplugin:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-affiliate:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-ai:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-apple-auth:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-assign:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-cakeday:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-calendar:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-chat-integration:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-data-explorer:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-details:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-gamification:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-github:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-graphviz:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-hcaptcha:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-lazy-videos:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-local-dates:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-login-with-amazon:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-lti:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-math:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-microsoft-auth:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-narrative-bot:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-oauth2-basic:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-openid-connect:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-patreon:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-policy:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-post-voting:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-presence:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-reactions:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-rss-polling:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-solved:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-subscriptions:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-templates:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-topic-voting:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-user-notes:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/discourse-zendesk-plugin:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/footnote:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/poll:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/spoiler-alert:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   plugins/styleguide:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
   themes/horizon:
     dependencies:
       discourse:
         specifier: npm:@discourse/types@*
-        version: '@discourse/types@2026.3.0-d02b2966'
+        version: '@discourse/types@2026.4.0-fdd750d9'
 
 packages:
 
@@ -1778,8 +1778,8 @@ packages:
   '@discourse/moment-timezone-names-translations@1.0.0':
     resolution: {integrity: sha512-4xr1QWQ0nzmFa2ZXQgWZA+dtE/BU2ePA+qkJWPFzNpq4ZnQi8MmMMAS2285t3rc2ySMBQqYaAArmcSUiufUgRA==}
 
-  '@discourse/types@2026.3.0-d02b2966':
-    resolution: {integrity: sha512-TzgaVI0serxgv3/ebc1or0MRJIDRMYhTd+B9gA7HTsAZmMGCRPrrxYeqD5TAkZurL5Tj1o6fP5Jk6mbyFm5Qwg==}
+  '@discourse/types@2026.4.0-fdd750d9':
+    resolution: {integrity: sha512-73Fr5RIzLK17qUdZrb2MjpYJVEnvgkh3Gm2hp6+d4krT5iI9u9AlAJaXt3ISQNBSWe1+fEY8mzizxLTQare/lg==}
     engines: {node: '>= 20', npm: please-use-pnpm, pnpm: ^10, yarn: please-use-pnpm}
 
   '@ember-compat/tracked-built-ins@0.9.1':
@@ -3361,6 +3361,7 @@ packages:
   '@xmldom/xmldom@0.8.11':
     resolution: {integrity: sha512-cQzWCtO6C8TQiYl1ruKNn2U6Ao4o4WBBcbL61yJl84x+j5sOWWFU9X7DpND8XZG3daDppSsigMdfAIl2upQBRw==}
     engines: {node: '>=10.0.0'}
+    deprecated: this version has critical issues, please update to the latest version
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -7789,8 +7790,8 @@ packages:
   postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
 
-  postcss@8.5.8:
-    resolution: {integrity: sha512-OW/rX8O/jXnm82Ey1k44pObPtdblfiuWnrd8X7GJ7emImCOstunGbXUpp7HdBrFQX6rJzn3sPT397Wp5aCwCHg==}
+  postcss@8.5.10:
+    resolution: {integrity: sha512-pMMHxBOZKFU6HgAZ4eyGnwXF/EvPGGqUr0MnZ5+99485wwW41kW91A4LOGxSHhgugZmSChL5AlElNdwlNgcnLQ==}
     engines: {node: ^10 || ^12 || >=14}
 
   preact@10.12.1:
@@ -10540,17 +10541,17 @@ snapshots:
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
 
-  '@csstools/postcss-light-dark-function@3.0.0(postcss@8.5.8)':
+  '@csstools/postcss-light-dark-function@3.0.0(postcss@8.5.10)':
     dependencies:
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
-      '@csstools/postcss-progressive-custom-properties': 5.0.0(postcss@8.5.8)
-      '@csstools/utilities': 3.0.0(postcss@8.5.8)
-      postcss: 8.5.8
+      '@csstools/postcss-progressive-custom-properties': 5.0.0(postcss@8.5.10)
+      '@csstools/utilities': 3.0.0(postcss@8.5.10)
+      postcss: 8.5.10
 
-  '@csstools/postcss-progressive-custom-properties@5.0.0(postcss@8.5.8)':
+  '@csstools/postcss-progressive-custom-properties@5.0.0(postcss@8.5.10)':
     dependencies:
-      postcss: 8.5.8
+      postcss: 8.5.10
       postcss-value-parser: 4.2.0
 
   '@csstools/selector-resolve-nested@4.0.0(postcss-selector-parser@7.1.1)':
@@ -10561,9 +10562,9 @@ snapshots:
     dependencies:
       postcss-selector-parser: 7.1.1
 
-  '@csstools/utilities@3.0.0(postcss@8.5.8)':
+  '@csstools/utilities@3.0.0(postcss@8.5.10)':
     dependencies:
-      postcss: 8.5.8
+      postcss: 8.5.10
 
   '@dabh/diagnostics@2.0.3':
     dependencies:
@@ -10573,7 +10574,7 @@ snapshots:
 
   '@discourse/itsatrap@2.0.10': {}
 
-  '@discourse/lint-configs@2.44.0(jiti@2.6.1)(postcss@8.5.8)(prettier@3.8.1)':
+  '@discourse/lint-configs@2.44.0(jiti@2.6.1)(postcss@8.5.10)(prettier@3.8.1)':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/eslint-parser': 7.28.6(@babel/core@7.29.0)(eslint@9.39.2(jiti@2.6.1))
@@ -10593,7 +10594,7 @@ snapshots:
       prettier-plugin-ember-template-tag: 2.1.3(prettier@3.8.1)
       stylelint: 17.4.0(typescript@5.9.3)
       stylelint-config-standard: 40.0.0(stylelint@17.4.0(typescript@5.9.3))
-      stylelint-config-standard-scss: 17.0.0(postcss@8.5.8)(stylelint@17.4.0(typescript@5.9.3))
+      stylelint-config-standard-scss: 17.0.0(postcss@8.5.10)(stylelint@17.4.0(typescript@5.9.3))
       stylelint-scss: 7.0.0(stylelint@17.4.0(typescript@5.9.3))
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -10606,7 +10607,7 @@ snapshots:
 
   '@discourse/moment-timezone-names-translations@1.0.0': {}
 
-  '@discourse/types@2026.3.0-d02b2966': {}
+  '@discourse/types@2026.4.0-fdd750d9': {}
 
   '@ember-compat/tracked-built-ins@0.9.1(patch_hash=febdd1f1d24565f6f3be7747fd89cbc86a4476e2836e383610c6bc430436a842)':
     dependencies:
@@ -12689,13 +12690,13 @@ snapshots:
       stubborn-fs: 2.0.0
       when-exit: 2.1.5
 
-  autoprefixer@10.4.27(postcss@8.5.8):
+  autoprefixer@10.4.27(postcss@8.5.10):
     dependencies:
       browserslist: 4.28.1
       caniuse-lite: 1.0.30001777
       fraction.js: 5.3.4
       picocolors: 1.1.1
-      postcss: 8.5.8
+      postcss: 8.5.10
       postcss-value-parser: 4.2.0
 
   autosize@6.0.1: {}
@@ -13836,13 +13837,13 @@ snapshots:
 
   css-loader@5.2.7(webpack@5.99.9(@swc/core@1.15.18)(esbuild@0.25.12)):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.5.8)
+      icss-utils: 5.1.0(postcss@8.5.10)
       loader-utils: 2.0.4
-      postcss: 8.5.8
-      postcss-modules-extract-imports: 3.1.0(postcss@8.5.8)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.5.8)
-      postcss-modules-scope: 3.2.1(postcss@8.5.8)
-      postcss-modules-values: 4.0.0(postcss@8.5.8)
+      postcss: 8.5.10
+      postcss-modules-extract-imports: 3.1.0(postcss@8.5.10)
+      postcss-modules-local-by-default: 4.2.0(postcss@8.5.10)
+      postcss-modules-scope: 3.2.1(postcss@8.5.10)
+      postcss-modules-values: 4.0.0(postcss@8.5.10)
       postcss-value-parser: 4.2.0
       schema-utils: 3.3.0
       semver: 7.7.4
@@ -16127,9 +16128,9 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
-  icss-utils@5.1.0(postcss@8.5.8):
+  icss-utils@5.1.0(postcss@8.5.10):
     dependencies:
-      postcss: 8.5.8
+      postcss: 8.5.10
 
   ieee754@1.2.1: {}
 
@@ -17774,53 +17775,53 @@ snapshots:
 
   possible-typed-array-names@1.1.0: {}
 
-  postcss-js@5.1.0(postcss@8.5.8):
+  postcss-js@5.1.0(postcss@8.5.10):
     dependencies:
-      postcss: 8.5.8
+      postcss: 8.5.10
 
-  postcss-media-minmax@5.0.0(postcss@8.5.8):
+  postcss-media-minmax@5.0.0(postcss@8.5.10):
     dependencies:
-      postcss: 8.5.8
+      postcss: 8.5.10
 
   postcss-media-query-parser@0.2.3: {}
 
-  postcss-modules-extract-imports@3.1.0(postcss@8.5.8):
+  postcss-modules-extract-imports@3.1.0(postcss@8.5.10):
     dependencies:
-      postcss: 8.5.8
+      postcss: 8.5.10
 
-  postcss-modules-local-by-default@4.2.0(postcss@8.5.8):
+  postcss-modules-local-by-default@4.2.0(postcss@8.5.10):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.5.8)
-      postcss: 8.5.8
+      icss-utils: 5.1.0(postcss@8.5.10)
+      postcss: 8.5.10
       postcss-selector-parser: 7.1.1
       postcss-value-parser: 4.2.0
 
-  postcss-modules-scope@3.2.1(postcss@8.5.8):
+  postcss-modules-scope@3.2.1(postcss@8.5.10):
     dependencies:
-      postcss: 8.5.8
+      postcss: 8.5.10
       postcss-selector-parser: 7.1.1
 
-  postcss-modules-values@4.0.0(postcss@8.5.8):
+  postcss-modules-values@4.0.0(postcss@8.5.10):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.5.8)
-      postcss: 8.5.8
+      icss-utils: 5.1.0(postcss@8.5.10)
+      postcss: 8.5.10
 
-  postcss-nesting@14.0.0(postcss@8.5.8):
+  postcss-nesting@14.0.0(postcss@8.5.10):
     dependencies:
       '@csstools/selector-resolve-nested': 4.0.0(postcss-selector-parser@7.1.1)
       '@csstools/selector-specificity': 6.0.0(postcss-selector-parser@7.1.1)
-      postcss: 8.5.8
+      postcss: 8.5.10
       postcss-selector-parser: 7.1.1
 
   postcss-resolve-nested-selector@0.1.6: {}
 
-  postcss-safe-parser@7.0.1(postcss@8.5.8):
+  postcss-safe-parser@7.0.1(postcss@8.5.10):
     dependencies:
-      postcss: 8.5.8
+      postcss: 8.5.10
 
-  postcss-scss@4.0.9(postcss@8.5.8):
+  postcss-scss@4.0.9(postcss@8.5.10):
     dependencies:
-      postcss: 8.5.8
+      postcss: 8.5.10
 
   postcss-selector-parser@6.1.2:
     dependencies:
@@ -17834,7 +17835,7 @@ snapshots:
 
   postcss-value-parser@4.2.0: {}
 
-  postcss@8.5.8:
+  postcss@8.5.10:
     dependencies:
       nanoid: 3.3.11
       picocolors: 1.1.1
@@ -19037,26 +19038,26 @@ snapshots:
 
   styled_string@0.0.1: {}
 
-  stylelint-config-recommended-scss@17.0.0(postcss@8.5.8)(stylelint@17.4.0(typescript@5.9.3)):
+  stylelint-config-recommended-scss@17.0.0(postcss@8.5.10)(stylelint@17.4.0(typescript@5.9.3)):
     dependencies:
-      postcss-scss: 4.0.9(postcss@8.5.8)
+      postcss-scss: 4.0.9(postcss@8.5.10)
       stylelint: 17.4.0(typescript@5.9.3)
       stylelint-config-recommended: 18.0.0(stylelint@17.4.0(typescript@5.9.3))
       stylelint-scss: 7.0.0(stylelint@17.4.0(typescript@5.9.3))
     optionalDependencies:
-      postcss: 8.5.8
+      postcss: 8.5.10
 
   stylelint-config-recommended@18.0.0(stylelint@17.4.0(typescript@5.9.3)):
     dependencies:
       stylelint: 17.4.0(typescript@5.9.3)
 
-  stylelint-config-standard-scss@17.0.0(postcss@8.5.8)(stylelint@17.4.0(typescript@5.9.3)):
+  stylelint-config-standard-scss@17.0.0(postcss@8.5.10)(stylelint@17.4.0(typescript@5.9.3)):
     dependencies:
       stylelint: 17.4.0(typescript@5.9.3)
-      stylelint-config-recommended-scss: 17.0.0(postcss@8.5.8)(stylelint@17.4.0(typescript@5.9.3))
+      stylelint-config-recommended-scss: 17.0.0(postcss@8.5.10)(stylelint@17.4.0(typescript@5.9.3))
       stylelint-config-standard: 40.0.0(stylelint@17.4.0(typescript@5.9.3))
     optionalDependencies:
-      postcss: 8.5.8
+      postcss: 8.5.10
 
   stylelint-config-standard@40.0.0(stylelint@17.4.0(typescript@5.9.3)):
     dependencies:
@@ -19105,8 +19106,8 @@ snapshots:
       micromatch: 4.0.8
       normalize-path: 3.0.0
       picocolors: 1.1.1
-      postcss: 8.5.8
-      postcss-safe-parser: 7.0.1(postcss@8.5.8)
+      postcss: 8.5.10
+      postcss-safe-parser: 7.0.1(postcss@8.5.10)
       postcss-selector-parser: 7.1.1
       postcss-value-parser: 4.2.0
       string-width: 8.2.0
@@ -19694,7 +19695,7 @@ snapshots:
       esbuild: 0.27.3
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
-      postcss: 8.5.8
+      postcss: 8.5.10
       rollup: 4.59.0
       tinyglobby: 0.2.15
     optionalDependencies:
