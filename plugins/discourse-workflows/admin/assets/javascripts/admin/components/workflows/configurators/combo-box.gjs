@@ -30,7 +30,9 @@ export default class ComboBoxField extends Component {
     super(owner, args);
     const source = args.schema?.options_source;
     const identifier = args.nodeDefinition?.identifier;
-    if (source && identifier) {
+    const localOptions =
+      args.metadata?.[source] || args.nodeDefinition?.metadata?.[source];
+    if (source && identifier && !localOptions) {
       this.workflowsNodeTypes
         .loadSourceOptions(identifier, source)
         .then((options) => {
@@ -43,6 +45,12 @@ export default class ComboBoxField extends Component {
     const source = this.args.schema?.options_source;
     if (!source) {
       return null;
+    }
+    const localOptions =
+      this.args.metadata?.[source] ||
+      this.args.nodeDefinition?.metadata?.[source];
+    if (localOptions) {
+      return localOptions;
     }
     return this._remoteOptions || [];
   }
